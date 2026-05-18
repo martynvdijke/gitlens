@@ -1,0 +1,40 @@
+version: "3"
+
+tasks:
+  default:
+    desc: Build the project
+    cmds:
+      - task: build
+
+  build:
+    desc: Build the binary
+    cmds:
+      - go build -o gitoverviewer .
+
+  generate:
+    desc: Generate ent code
+    cmds:
+      - go generate ./ent
+
+  tidy:
+    desc: Tidy dependencies
+    cmds:
+      - go mod tidy
+
+  dev:
+    desc: Run in development mode with air
+    cmds:
+      - air
+
+  run:
+    desc: Run the server
+    cmds:
+      - go run .
+
+  clean:
+    desc: Clean build artifacts
+    cmds:
+      - rm -f gitoverviewer
+      - rm -f gitoverviewer.db
+      - rm -f gitoverviewer.db-wal
+      - rm -f gitoverviewer.db-shm

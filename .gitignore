@@ -1,0 +1,6 @@
+gitoverviewer
+gitoverviewer.db
+gitoverviewer.db-wal
+gitoverviewer.db-shm
+tmp/
+.env

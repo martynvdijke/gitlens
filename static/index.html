@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitOverviewer</title>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <script src="https://unpkg.com/htmx.org@2.0.4/dist/ext/ws.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav>
+        <div class="nav-brand">
+            <h1>GitOverviewer</h1>
+        </div>
+        <div class="nav-user">
+            {{if .User}}
+            <img src="{{.User.AvatarURL}}" alt="" class="avatar" width="32" height="32">
+            <span class="username">{{.User.Login}}</span>
+            <button class="btn btn-outline" hx-post="/auth/logout" hx-target="body">Logout</button>
+            {{end}}
+        </div>
+    </nav>
+
+    <main>
+        {{if .User}}
+        <div class="dashboard-controls">
+            <button class="btn btn-primary" hx-post="/repos/sync" hx-target="#repo-grid" hx-swap="outerHTML" hx-indicator="#sync-spinner">
+                Sync Repositories
+            </button>
+            <span id="sync-spinner" class="htmx-indicator">Syncing...</span>
+        </div>
+
+        <div id="repo-grid" hx-ext="ws" ws-connect="/ws">
+            {{template "repo_list" .}}
+        </div>
+        {{else}}
+        <div class="login-prompt">
+            <h2>Track your GitHub repositories</h2>
+            <p>Monitor latest commits, releases, and workflow status across all your projects.</p>
+            <a href="/auth/github" class="btn btn-github">Login with GitHub</a>
+        </div>
+        {{end}}
+    </main>
+
+    {{define "repo_list"}}
+    <div class="repo-grid">
+        {{range .Repos}}
+        {{template "repo_card" .}}
+        {{else}}
+        <div class="empty-state">
+            <p>No repositories tracked yet. Click "Sync Repositories" to get started.</p>
+        </div>
+        {{end}}
+    </div>
+    {{end}}
+
+    {{define "repo_card"}}
+    <div class="repo-card" id="repo-{{.ID}}">
+        <div class="repo-header">
+            <div class="repo-title">
+                <a href="{{.HTMLURL}}" target="_blank" rel="noopener">{{.FullName}}</a>
+                {{if .Language}}<span class="repo-language">{{.Language}}</span>{{end}}
+            </div>
+            {{if .Description}}
+            <p class="repo-description">{{.Description}}</p>
+            {{end}}
+        </div>
+
+        <div class="repo-stats">
+            <div class="stat commit">
+                <div class="stat-label">Latest Commit</div>
+                <div class="stat-value">
+                    {{if .LatestCommitSHA}}
+                    <code>{{shortSHA .LatestCommitSHA}}</code>
+                    <span class="stat-detail">{{truncate .LatestCommitMessage 60}}</span>
+                    {{if not .LatestCommitDate.IsZero}}<span class="stat-time">{{formatTime .LatestCommitDate}}</span>{{end}}
+                    {{else}}
+                    <span class="stat-empty">Not synced</span>
+                    {{end}}
+                </div>
+            </div>
+
+            <div class="stat release">
+                <div class="stat-label">Latest Release</div>
+                <div class="stat-value">
+                    {{if .LatestReleaseTag}}
+                    <strong>{{.LatestReleaseTag}}</strong>
+                    {{if .LatestReleaseName}}<span class="stat-detail">{{.LatestReleaseName}}</span>{{end}}
+                    {{if not .LatestReleaseDate.IsZero}}<span class="stat-time">{{formatTime .LatestReleaseDate}}</span>{{end}}
+                    {{else}}
+                    <span class="stat-none">No releases</span>
+                    {{end}}
+                </div>
+            </div>
+
+            <div class="stat workflow">
+                <div class="stat-label">Workflow Status</div>
+                <div class="stat-value">
+                    {{if hasWorkflowRun .WorkflowStatus}}
+                    <span class="workflow-badge {{.WorkflowStatus}}">{{workflowIcon .WorkflowStatus}} {{workflowLabel .WorkflowStatus}}</span>
+                    {{else}}
+                    <span class="stat-none">No workflows</span>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+
+        <div class="repo-footer">
+            {{if not .SyncedAt.IsZero}}<span class="synced-at">Last synced: {{formatTime .SyncedAt}}</span>{{end}}
+            <button class="btn btn-sm" hx-post="/repos/{{.ID}}/sync" hx-target="#repo-{{.ID}}" hx-swap="outerHTML">Refresh</button>
+        </div>
+    </div>
+    {{end}}
+</body>
+</html>
