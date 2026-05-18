@@ -118,6 +118,47 @@ func (_u *UserUpdate) SetNillableAccessToken(v *string) *UserUpdate {
 	return _u
 }
 
+// SetSyncIntervalMinutes sets the "sync_interval_minutes" field.
+func (_u *UserUpdate) SetSyncIntervalMinutes(v int) *UserUpdate {
+	_u.mutation.ResetSyncIntervalMinutes()
+	_u.mutation.SetSyncIntervalMinutes(v)
+	return _u
+}
+
+// SetNillableSyncIntervalMinutes sets the "sync_interval_minutes" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableSyncIntervalMinutes(v *int) *UserUpdate {
+	if v != nil {
+		_u.SetSyncIntervalMinutes(*v)
+	}
+	return _u
+}
+
+// AddSyncIntervalMinutes adds value to the "sync_interval_minutes" field.
+func (_u *UserUpdate) AddSyncIntervalMinutes(v int) *UserUpdate {
+	_u.mutation.AddSyncIntervalMinutes(v)
+	return _u
+}
+
+// SetSyncedAt sets the "synced_at" field.
+func (_u *UserUpdate) SetSyncedAt(v time.Time) *UserUpdate {
+	_u.mutation.SetSyncedAt(v)
+	return _u
+}
+
+// SetNillableSyncedAt sets the "synced_at" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableSyncedAt(v *time.Time) *UserUpdate {
+	if v != nil {
+		_u.SetSyncedAt(*v)
+	}
+	return _u
+}
+
+// ClearSyncedAt clears the value of the "synced_at" field.
+func (_u *UserUpdate) ClearSyncedAt() *UserUpdate {
+	_u.mutation.ClearSyncedAt()
+	return _u
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_u *UserUpdate) SetCreatedAt(v time.Time) *UserUpdate {
 	_u.mutation.SetCreatedAt(v)
@@ -232,6 +273,18 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.AccessToken(); ok {
 		_spec.SetField(user.FieldAccessToken, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.SyncIntervalMinutes(); ok {
+		_spec.SetField(user.FieldSyncIntervalMinutes, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedSyncIntervalMinutes(); ok {
+		_spec.AddField(user.FieldSyncIntervalMinutes, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.SyncedAt(); ok {
+		_spec.SetField(user.FieldSyncedAt, field.TypeTime, value)
+	}
+	if _u.mutation.SyncedAtCleared() {
+		_spec.ClearField(user.FieldSyncedAt, field.TypeTime)
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
@@ -390,6 +443,47 @@ func (_u *UserUpdateOne) SetNillableAccessToken(v *string) *UserUpdateOne {
 	return _u
 }
 
+// SetSyncIntervalMinutes sets the "sync_interval_minutes" field.
+func (_u *UserUpdateOne) SetSyncIntervalMinutes(v int) *UserUpdateOne {
+	_u.mutation.ResetSyncIntervalMinutes()
+	_u.mutation.SetSyncIntervalMinutes(v)
+	return _u
+}
+
+// SetNillableSyncIntervalMinutes sets the "sync_interval_minutes" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableSyncIntervalMinutes(v *int) *UserUpdateOne {
+	if v != nil {
+		_u.SetSyncIntervalMinutes(*v)
+	}
+	return _u
+}
+
+// AddSyncIntervalMinutes adds value to the "sync_interval_minutes" field.
+func (_u *UserUpdateOne) AddSyncIntervalMinutes(v int) *UserUpdateOne {
+	_u.mutation.AddSyncIntervalMinutes(v)
+	return _u
+}
+
+// SetSyncedAt sets the "synced_at" field.
+func (_u *UserUpdateOne) SetSyncedAt(v time.Time) *UserUpdateOne {
+	_u.mutation.SetSyncedAt(v)
+	return _u
+}
+
+// SetNillableSyncedAt sets the "synced_at" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableSyncedAt(v *time.Time) *UserUpdateOne {
+	if v != nil {
+		_u.SetSyncedAt(*v)
+	}
+	return _u
+}
+
+// ClearSyncedAt clears the value of the "synced_at" field.
+func (_u *UserUpdateOne) ClearSyncedAt() *UserUpdateOne {
+	_u.mutation.ClearSyncedAt()
+	return _u
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_u *UserUpdateOne) SetCreatedAt(v time.Time) *UserUpdateOne {
 	_u.mutation.SetCreatedAt(v)
@@ -534,6 +628,18 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if value, ok := _u.mutation.AccessToken(); ok {
 		_spec.SetField(user.FieldAccessToken, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.SyncIntervalMinutes(); ok {
+		_spec.SetField(user.FieldSyncIntervalMinutes, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedSyncIntervalMinutes(); ok {
+		_spec.AddField(user.FieldSyncIntervalMinutes, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.SyncedAt(); ok {
+		_spec.SetField(user.FieldSyncedAt, field.TypeTime, value)
+	}
+	if _u.mutation.SyncedAtCleared() {
+		_spec.ClearField(user.FieldSyncedAt, field.TypeTime)
 	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)

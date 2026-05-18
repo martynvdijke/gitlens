@@ -27,6 +27,10 @@ type User struct {
 	Name string `json:"name,omitempty"`
 	// AccessToken holds the value of the "access_token" field.
 	AccessToken string `json:"access_token,omitempty"`
+	// SyncIntervalMinutes holds the value of the "sync_interval_minutes" field.
+	SyncIntervalMinutes int `json:"sync_interval_minutes,omitempty"`
+	// SyncedAt holds the value of the "synced_at" field.
+	SyncedAt time.Time `json:"synced_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -58,11 +62,11 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldID, user.FieldGithubID:
+		case user.FieldID, user.FieldGithubID, user.FieldSyncIntervalMinutes:
 			values[i] = new(sql.NullInt64)
 		case user.FieldLogin, user.FieldAvatarURL, user.FieldName, user.FieldAccessToken:
 			values[i] = new(sql.NullString)
-		case user.FieldCreatedAt:
+		case user.FieldSyncedAt, user.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -114,6 +118,18 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field access_token", values[i])
 			} else if value.Valid {
 				_m.AccessToken = value.String
+			}
+		case user.FieldSyncIntervalMinutes:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field sync_interval_minutes", values[i])
+			} else if value.Valid {
+				_m.SyncIntervalMinutes = int(value.Int64)
+			}
+		case user.FieldSyncedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field synced_at", values[i])
+			} else if value.Valid {
+				_m.SyncedAt = value.Time
 			}
 		case user.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -176,6 +192,12 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("access_token=")
 	builder.WriteString(_m.AccessToken)
+	builder.WriteString(", ")
+	builder.WriteString("sync_interval_minutes=")
+	builder.WriteString(fmt.Sprintf("%v", _m.SyncIntervalMinutes))
+	builder.WriteString(", ")
+	builder.WriteString("synced_at=")
+	builder.WriteString(_m.SyncedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

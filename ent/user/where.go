@@ -80,6 +80,16 @@ func AccessToken(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldAccessToken, v))
 }
 
+// SyncIntervalMinutes applies equality check predicate on the "sync_interval_minutes" field. It's identical to SyncIntervalMinutesEQ.
+func SyncIntervalMinutes(v int) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldSyncIntervalMinutes, v))
+}
+
+// SyncedAt applies equality check predicate on the "synced_at" field. It's identical to SyncedAtEQ.
+func SyncedAt(v time.Time) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldSyncedAt, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCreatedAt, v))
@@ -403,6 +413,96 @@ func AccessTokenEqualFold(v string) predicate.User {
 // AccessTokenContainsFold applies the ContainsFold predicate on the "access_token" field.
 func AccessTokenContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldAccessToken, v))
+}
+
+// SyncIntervalMinutesEQ applies the EQ predicate on the "sync_interval_minutes" field.
+func SyncIntervalMinutesEQ(v int) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldSyncIntervalMinutes, v))
+}
+
+// SyncIntervalMinutesNEQ applies the NEQ predicate on the "sync_interval_minutes" field.
+func SyncIntervalMinutesNEQ(v int) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldSyncIntervalMinutes, v))
+}
+
+// SyncIntervalMinutesIn applies the In predicate on the "sync_interval_minutes" field.
+func SyncIntervalMinutesIn(vs ...int) predicate.User {
+	return predicate.User(sql.FieldIn(FieldSyncIntervalMinutes, vs...))
+}
+
+// SyncIntervalMinutesNotIn applies the NotIn predicate on the "sync_interval_minutes" field.
+func SyncIntervalMinutesNotIn(vs ...int) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldSyncIntervalMinutes, vs...))
+}
+
+// SyncIntervalMinutesGT applies the GT predicate on the "sync_interval_minutes" field.
+func SyncIntervalMinutesGT(v int) predicate.User {
+	return predicate.User(sql.FieldGT(FieldSyncIntervalMinutes, v))
+}
+
+// SyncIntervalMinutesGTE applies the GTE predicate on the "sync_interval_minutes" field.
+func SyncIntervalMinutesGTE(v int) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldSyncIntervalMinutes, v))
+}
+
+// SyncIntervalMinutesLT applies the LT predicate on the "sync_interval_minutes" field.
+func SyncIntervalMinutesLT(v int) predicate.User {
+	return predicate.User(sql.FieldLT(FieldSyncIntervalMinutes, v))
+}
+
+// SyncIntervalMinutesLTE applies the LTE predicate on the "sync_interval_minutes" field.
+func SyncIntervalMinutesLTE(v int) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldSyncIntervalMinutes, v))
+}
+
+// SyncedAtEQ applies the EQ predicate on the "synced_at" field.
+func SyncedAtEQ(v time.Time) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldSyncedAt, v))
+}
+
+// SyncedAtNEQ applies the NEQ predicate on the "synced_at" field.
+func SyncedAtNEQ(v time.Time) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldSyncedAt, v))
+}
+
+// SyncedAtIn applies the In predicate on the "synced_at" field.
+func SyncedAtIn(vs ...time.Time) predicate.User {
+	return predicate.User(sql.FieldIn(FieldSyncedAt, vs...))
+}
+
+// SyncedAtNotIn applies the NotIn predicate on the "synced_at" field.
+func SyncedAtNotIn(vs ...time.Time) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldSyncedAt, vs...))
+}
+
+// SyncedAtGT applies the GT predicate on the "synced_at" field.
+func SyncedAtGT(v time.Time) predicate.User {
+	return predicate.User(sql.FieldGT(FieldSyncedAt, v))
+}
+
+// SyncedAtGTE applies the GTE predicate on the "synced_at" field.
+func SyncedAtGTE(v time.Time) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldSyncedAt, v))
+}
+
+// SyncedAtLT applies the LT predicate on the "synced_at" field.
+func SyncedAtLT(v time.Time) predicate.User {
+	return predicate.User(sql.FieldLT(FieldSyncedAt, v))
+}
+
+// SyncedAtLTE applies the LTE predicate on the "synced_at" field.
+func SyncedAtLTE(v time.Time) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldSyncedAt, v))
+}
+
+// SyncedAtIsNil applies the IsNil predicate on the "synced_at" field.
+func SyncedAtIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldSyncedAt))
+}
+
+// SyncedAtNotNil applies the NotNil predicate on the "synced_at" field.
+func SyncedAtNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldSyncedAt))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

@@ -11,11 +11,14 @@
 <body>
     <nav>
         <div class="nav-brand">
-            <h1>GitOverviewer</h1>
+            <h1><a href="/" style="color:inherit;text-decoration:none">GitOverviewer</a></h1>
         </div>
         <div class="nav-user">
             {{if .User}}
-            <img src="{{.User.AvatarURL}}" alt="" class="avatar" width="32" height="32">
+            <button class="btn btn-icon" hx-get="/settings" hx-target="#main-content" hx-swap="innerHTML" title="Settings">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            </button>
+            <img src="{{.User.AvatarURL}}" alt="" class="avatar" width="28" height="28">
             <span class="username">{{.User.Login}}</span>
             <button class="btn btn-outline" hx-post="/auth/logout" hx-target="body">Logout</button>
             {{end}}
@@ -24,15 +27,8 @@
 
     <main>
         {{if .User}}
-        <div class="dashboard-controls">
-            <button class="btn btn-primary" hx-post="/repos/sync" hx-target="#repo-grid" hx-swap="outerHTML" hx-indicator="#sync-spinner">
-                Sync Repositories
-            </button>
-            <span id="sync-spinner" class="htmx-indicator">Syncing...</span>
-        </div>
-
-        <div id="repo-grid" hx-ext="ws" ws-connect="/ws">
-            {{template "repo_list" .}}
+        <div id="main-content">
+            {{template "dashboard" .}}
         </div>
         {{else}}
         <div class="login-prompt">
@@ -43,29 +39,57 @@
         {{end}}
     </main>
 
+    {{define "dashboard"}}
+    <div class="dashboard-controls">
+        <button class="btn btn-primary" hx-post="/repos/import-all" hx-target="#repo-grid" hx-swap="outerHTML" hx-indicator="#sync-spinner">
+            Import All Repositories
+        </button>
+        <button class="btn btn-secondary" hx-get="/settings/repos/available" hx-target="#main-content" hx-swap="innerHTML">
+            Select Repositories
+        </button>
+        <span id="sync-spinner" class="htmx-indicator">Working...</span>
+    </div>
+
+    {{template "repo_list" .}}
+    {{end}}
+
     {{define "repo_list"}}
+    <div id="repo-grid" hx-ext="ws" ws-connect="/ws">
     <div class="repo-grid">
         {{range .Repos}}
         {{template "repo_card" .}}
         {{else}}
         <div class="empty-state">
-            <p>No repositories tracked yet. Click "Sync Repositories" to get started.</p>
+            <h3>Welcome to GitOverviewer</h3>
+            <p>Start by importing repositories from GitHub to track their latest commits, releases, and workflow status.</p>
+            <div class="empty-actions">
+                <button class="btn btn-primary" hx-post="/repos/import-all" hx-target="#repo-grid" hx-swap="outerHTML" hx-indicator="#sync-spinner">
+                    Import All
+                </button>
+                <button class="btn btn-secondary" hx-get="/settings/repos/available" hx-target="#main-content" hx-swap="innerHTML">
+                    Select Repositories
+                </button>
+            </div>
         </div>
         {{end}}
     </div>
-    {{end}}
+</div>
+{{end}}
 
     {{define "repo_card"}}
     <div class="repo-card" id="repo-{{.ID}}">
-        <div class="repo-header">
+        <div class="repo-card-header">
             <div class="repo-title">
                 <a href="{{.HTMLURL}}" target="_blank" rel="noopener">{{.FullName}}</a>
                 {{if .Language}}<span class="repo-language">{{.Language}}</span>{{end}}
             </div>
-            {{if .Description}}
-            <p class="repo-description">{{.Description}}</p>
-            {{end}}
+            <button class="btn btn-icon btn-icon-sm" hx-delete="/repos/{{.ID}}" hx-target="#repo-{{.ID}}" hx-swap="delete" hx-confirm="Remove {{.FullName}} from tracking?" title="Remove repository">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
         </div>
+        {{if .Description}}
+        <p class="repo-description">{{.Description}}</p>
+        {{end}}
 
         <div class="repo-stats">
             <div class="stat commit">
@@ -110,6 +134,105 @@
             {{if not .SyncedAt.IsZero}}<span class="synced-at">Last synced: {{formatTime .SyncedAt}}</span>{{end}}
             <button class="btn btn-sm" hx-post="/repos/{{.ID}}/sync" hx-target="#repo-{{.ID}}" hx-swap="outerHTML">Refresh</button>
         </div>
+    </div>
+    {{end}}
+
+    {{define "settings"}}
+    <div class="settings-page">
+        <div class="settings-header">
+            <h2>Settings</h2>
+            <button class="btn btn-outline" hx-get="/dashboard" hx-target="#main-content" hx-swap="innerHTML">Back to Dashboard</button>
+        </div>
+
+        <section class="settings-section">
+            <h3>Sync Interval</h3>
+            <p class="settings-desc">How often to automatically refresh repository data.</p>
+            <form hx-post="/settings/interval" hx-target="#interval-status" hx-swap="innerHTML" class="settings-form">
+                <select name="interval" class="settings-select">
+                    <option value="1" {{if eq .User.SyncIntervalMinutes 1}}selected{{end}}>Every 1 minute</option>
+                    <option value="5" {{if eq .User.SyncIntervalMinutes 5}}selected{{end}}>Every 5 minutes</option>
+                    <option value="15" {{if eq .User.SyncIntervalMinutes 15}}selected{{end}}>Every 15 minutes</option>
+                    <option value="30" {{if eq .User.SyncIntervalMinutes 30}}selected{{end}}>Every 30 minutes</option>
+                    <option value="60" {{if eq .User.SyncIntervalMinutes 60}}selected{{end}}>Every 1 hour</option>
+                    <option value="360" {{if eq .User.SyncIntervalMinutes 360}}selected{{end}}>Every 6 hours</option>
+                    <option value="720" {{if eq .User.SyncIntervalMinutes 720}}selected{{end}}>Every 12 hours</option>
+                    <option value="1440" {{if eq .User.SyncIntervalMinutes 1440}}selected{{end}}>Every 24 hours</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </form>
+            <span id="interval-status"></span>
+        </section>
+
+        <section class="settings-section">
+            <h3>Tracked Repositories ({{len .Repos}})</h3>
+            <ul class="tracked-repos">
+                {{range .Repos}}
+                <li class="tracked-repo">
+                    <a href="{{.HTMLURL}}" target="_blank" rel="noopener">{{.FullName}}</a>
+                    <button class="btn btn-icon btn-icon-sm" hx-delete="/repos/{{.ID}}" hx-target="closest li" hx-swap="delete" hx-confirm="Remove {{.FullName}}?">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </li>
+                {{else}}
+                <li class="tracked-repo-empty">No repositories tracked yet.</li>
+                {{end}}
+            </ul>
+            <button class="btn btn-secondary" hx-get="/settings/repos/available" hx-target="#main-content" hx-swap="innerHTML" style="margin-top:12px">
+                Add Repositories
+            </button>
+        </section>
+
+        <section class="settings-section">
+            <h3>GitHub Webhook</h3>
+            <p class="settings-desc">Set up this URL as a GitHub webhook to automatically sync on every push.</p>
+            <div class="webhook-url">
+                <code id="webhook-url-text">{{.WebhookURL}}</code>
+                <button class="btn btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('webhook-url-text').textContent)">Copy</button>
+            </div>
+            <p class="settings-desc" style="margin-top:8px">Payload: <code>application/json</code> &middot; Events: <strong>Push</strong> &middot; Secret: <em>configured via <code>GITHUB_WEBHOOK_SECRET</code></em></p>
+        </section>
+    </div>
+    {{end}}
+
+    {{define "available_repos"}}
+    <div class="settings-page">
+        <div class="settings-header">
+            <h2>Select Repositories</h2>
+            <button class="btn btn-outline" hx-get="/settings" hx-target="#main-content" hx-swap="innerHTML">Back</button>
+        </div>
+
+        {{if .Error}}
+        <div class="error">{{.Error}}</div>
+        {{else if .Repos}}
+        <form hx-post="/settings/repos/select" hx-target="#main-content" hx-swap="innerHTML" class="repo-picker-form">
+            <div class="picker-controls">
+                <label class="checkbox-label">
+                    <input type="checkbox" onchange="document.querySelectorAll('.repo-checkbox').forEach(c => c.checked = this.checked)">
+                    Select All
+                </label>
+                <button type="submit" class="btn btn-primary">Import Selected</button>
+            </div>
+            <ul class="repo-picker-list">
+                {{range .Repos}}
+                <li class="repo-picker-item">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="repo_ids" value="{{.ID}}" class="repo-checkbox">
+                        <span class="picker-repo-name">{{.FullName}}</span>
+                        {{if .Language}}<span class="repo-language">{{.Language}}</span>{{end}}
+                        {{if .Description}}<span class="picker-repo-desc">{{.Description}}</span>{{end}}
+                    </label>
+                </li>
+                {{end}}
+            </ul>
+            <div class="picker-controls" style="margin-top:12px">
+                <button type="submit" class="btn btn-primary">Import Selected</button>
+            </div>
+        </form>
+        {{else}}
+        <div class="empty-state">
+            <p>All your GitHub repositories are already being tracked.</p>
+        </div>
+        {{end}}
     </div>
     {{end}}
 </body>

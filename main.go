@@ -116,6 +116,8 @@ func main() {
 
 	authHandler := handlers.NewAuthHandler(client, sessionStore, ghClient)
 	dashHandler := handlers.NewDashboardHandler(client, sessionStore, ghClient, syncer)
+	settingsHandler := handlers.NewSettingsHandler(client, sessionStore, ghClient, syncer)
+	webhookHandler := handlers.NewWebhookHandler(client, syncer, os.Getenv("GITHUB_WEBHOOK_SECRET"))
 
 	r := gin.Default()
 
@@ -128,19 +130,27 @@ func main() {
 
 	r.GET("/", dashHandler.Index)
 
+	r.POST("/webhook/github", webhookHandler.HandlePush)
+
 	authed := r.Group("/")
 	authed.Use(middleware.AuthRequired(sessionStore))
 	{
+		authed.GET("/dashboard", dashHandler.Dashboard)
 		authed.GET("/repos", dashHandler.ListRepos)
-		authed.POST("/repos/sync", dashHandler.SyncRepos)
 		authed.POST("/repos/:id/sync", dashHandler.SyncRepo)
+		authed.POST("/repos/import-all", dashHandler.ImportAllRepos)
+
+		authed.GET("/settings", settingsHandler.Index)
+		authed.POST("/settings/interval", settingsHandler.UpdateInterval)
+		authed.GET("/settings/repos/available", settingsHandler.AvailableRepos)
+		authed.POST("/settings/repos/select", settingsHandler.SelectRepos)
+		authed.DELETE("/repos/:id", settingsHandler.RemoveRepo)
 	}
 
 	r.GET("/ws", func(c *gin.Context) {
 		hub.HandleWebSocket(c.Writer, c.Request)
 	})
 
-	// The following will properly handle ent imports
 	_ = repository.FieldName
 	_ = user.FieldLogin
 
@@ -160,7 +170,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	go syncer.StartPeriodicSync(ctx, 15*time.Minute)
+	go syncer.StartPeriodicSync(ctx)
 
 	go func() {
 		log.Printf("Server starting on :%s", port)

@@ -67,6 +67,34 @@ func (_c *UserCreate) SetAccessToken(v string) *UserCreate {
 	return _c
 }
 
+// SetSyncIntervalMinutes sets the "sync_interval_minutes" field.
+func (_c *UserCreate) SetSyncIntervalMinutes(v int) *UserCreate {
+	_c.mutation.SetSyncIntervalMinutes(v)
+	return _c
+}
+
+// SetNillableSyncIntervalMinutes sets the "sync_interval_minutes" field if the given value is not nil.
+func (_c *UserCreate) SetNillableSyncIntervalMinutes(v *int) *UserCreate {
+	if v != nil {
+		_c.SetSyncIntervalMinutes(*v)
+	}
+	return _c
+}
+
+// SetSyncedAt sets the "synced_at" field.
+func (_c *UserCreate) SetSyncedAt(v time.Time) *UserCreate {
+	_c.mutation.SetSyncedAt(v)
+	return _c
+}
+
+// SetNillableSyncedAt sets the "synced_at" field if the given value is not nil.
+func (_c *UserCreate) SetNillableSyncedAt(v *time.Time) *UserCreate {
+	if v != nil {
+		_c.SetSyncedAt(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *UserCreate) SetCreatedAt(v time.Time) *UserCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -131,6 +159,10 @@ func (_c *UserCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *UserCreate) defaults() {
+	if _, ok := _c.mutation.SyncIntervalMinutes(); !ok {
+		v := user.DefaultSyncIntervalMinutes
+		_c.mutation.SetSyncIntervalMinutes(v)
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := user.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
@@ -147,6 +179,9 @@ func (_c *UserCreate) check() error {
 	}
 	if _, ok := _c.mutation.AccessToken(); !ok {
 		return &ValidationError{Name: "access_token", err: errors.New(`ent: missing required field "User.access_token"`)}
+	}
+	if _, ok := _c.mutation.SyncIntervalMinutes(); !ok {
+		return &ValidationError{Name: "sync_interval_minutes", err: errors.New(`ent: missing required field "User.sync_interval_minutes"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
@@ -196,6 +231,14 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.AccessToken(); ok {
 		_spec.SetField(user.FieldAccessToken, field.TypeString, value)
 		_node.AccessToken = value
+	}
+	if value, ok := _c.mutation.SyncIntervalMinutes(); ok {
+		_spec.SetField(user.FieldSyncIntervalMinutes, field.TypeInt, value)
+		_node.SyncIntervalMinutes = value
+	}
+	if value, ok := _c.mutation.SyncedAt(); ok {
+		_spec.SetField(user.FieldSyncedAt, field.TypeTime, value)
+		_node.SyncedAt = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)

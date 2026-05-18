@@ -33,15 +33,14 @@ func (s *Syncer) SetTemplate(tmpl *template.Template) {
 	s.tmpl = tmpl
 }
 
-func (s *Syncer) StartPeriodicSync(ctx context.Context, interval time.Duration) {
-	ticker := time.NewTicker(interval)
+func (s *Syncer) StartPeriodicSync(ctx context.Context) {
+	ticker := time.NewTicker(1 * time.Minute)
 	defer ticker.Stop()
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			log.Println("Starting periodic sync...")
 			s.SyncAll(ctx)
 		}
 	}
@@ -50,25 +49,34 @@ func (s *Syncer) StartPeriodicSync(ctx context.Context, interval time.Duration) 
 func (s *Syncer) SyncAll(ctx context.Context) {
 	users, err := s.client.User.Query().All(ctx)
 	if err != nil {
-		log.Printf("Error fetching users for sync: %v", err)
 		return
 	}
 	for _, u := range users {
-		repos, err := s.client.Repository.Query().Where(repository.HasUserWith(user.ID(u.ID))).All(ctx)
-		if err != nil {
-			log.Printf("Error fetching repos for user %d: %v", u.ID, err)
-			continue
+		if !u.SyncedAt.IsZero() {
+			elapsed := time.Since(u.SyncedAt)
+			if elapsed < time.Duration(u.SyncIntervalMinutes)*time.Minute {
+				continue
+			}
 		}
-		for _, r := range repos {
-			s.SyncOne(ctx, r)
-		}
+		s.syncUserRepos(ctx, u)
 	}
+}
+
+func (s *Syncer) syncUserRepos(ctx context.Context, u *ent.User) {
+	repos, err := s.client.Repository.Query().Where(repository.HasUserWith(user.ID(u.ID))).All(ctx)
+	if err != nil {
+		log.Printf("Error fetching repos for user %d: %v", u.ID, err)
+		return
+	}
+	for _, r := range repos {
+		s.SyncOne(ctx, r)
+	}
+	_, _ = s.client.User.UpdateOne(u).SetSyncedAt(time.Now()).Save(ctx)
 }
 
 func (s *Syncer) SyncOne(ctx context.Context, repo *ent.Repository) *ent.Repository {
 	u, err := repo.QueryUser().Only(ctx)
 	if err != nil {
-		log.Printf("Error fetching user for repo %s: %v", repo.FullName, err)
 		return repo
 	}
 
@@ -104,7 +112,6 @@ func (s *Syncer) SyncOne(ctx context.Context, repo *ent.Repository) *ent.Reposit
 	updated.SetSyncedAt(time.Now())
 	repo, err = updated.Save(ctx)
 	if err != nil {
-		log.Printf("Error saving repo %s: %v", repo.FullName, err)
 		return repo
 	}
 
@@ -115,6 +122,14 @@ func (s *Syncer) SyncOne(ctx context.Context, repo *ent.Repository) *ent.Reposit
 	return repo
 }
 
+func (s *Syncer) SyncOneByGithubID(ctx context.Context, githubID int64) {
+	r, err := s.client.Repository.Query().Where(repository.GithubID(githubID)).Only(ctx)
+	if err != nil {
+		return
+	}
+	s.SyncOne(ctx, r)
+}
+
 func (s *Syncer) broadcastUpdate(repo *ent.Repository) {
 	if s.tmpl == nil {
 		return
@@ -122,7 +137,6 @@ func (s *Syncer) broadcastUpdate(repo *ent.Repository) {
 	var buf bytes.Buffer
 	err := s.tmpl.ExecuteTemplate(&buf, "repo_card", repo)
 	if err != nil {
-		log.Printf("Error rendering repo card for broadcast: %v", err)
 		return
 	}
 	s.hub.Broadcast(buf.Bytes())

@@ -19,6 +19,8 @@ func (User) Fields() []ent.Field {
 		field.String("avatar_url").Optional(),
 		field.String("name").Optional(),
 		field.String("access_token"),
+		field.Int("sync_interval_minutes").Default(15),
+		field.Time("synced_at").Optional(),
 		field.Time("created_at").Default(time.Now),
 	}
 }

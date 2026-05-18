@@ -31,8 +31,12 @@ func init() {
 	repository.UpdateDefaultUpdatedAt = repositoryDescUpdatedAt.UpdateDefault.(func() time.Time)
 	userFields := schema.User{}.Fields()
 	_ = userFields
+	// userDescSyncIntervalMinutes is the schema descriptor for sync_interval_minutes field.
+	userDescSyncIntervalMinutes := userFields[5].Descriptor()
+	// user.DefaultSyncIntervalMinutes holds the default value on creation for the sync_interval_minutes field.
+	user.DefaultSyncIntervalMinutes = userDescSyncIntervalMinutes.Default.(int)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[5].Descriptor()
+	userDescCreatedAt := userFields[7].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 }

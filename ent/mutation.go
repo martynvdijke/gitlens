@@ -1679,23 +1679,26 @@ func (m *RepositoryMutation) ResetEdge(name string) error {
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op                  Op
-	typ                 string
-	id                  *int
-	github_id           *int64
-	addgithub_id        *int64
-	login               *string
-	avatar_url          *string
-	name                *string
-	access_token        *string
-	created_at          *time.Time
-	clearedFields       map[string]struct{}
-	repositories        map[int]struct{}
-	removedrepositories map[int]struct{}
-	clearedrepositories bool
-	done                bool
-	oldValue            func(context.Context) (*User, error)
-	predicates          []predicate.User
+	op                       Op
+	typ                      string
+	id                       *int
+	github_id                *int64
+	addgithub_id             *int64
+	login                    *string
+	avatar_url               *string
+	name                     *string
+	access_token             *string
+	sync_interval_minutes    *int
+	addsync_interval_minutes *int
+	synced_at                *time.Time
+	created_at               *time.Time
+	clearedFields            map[string]struct{}
+	repositories             map[int]struct{}
+	removedrepositories      map[int]struct{}
+	clearedrepositories      bool
+	done                     bool
+	oldValue                 func(context.Context) (*User, error)
+	predicates               []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -2022,6 +2025,111 @@ func (m *UserMutation) ResetAccessToken() {
 	m.access_token = nil
 }
 
+// SetSyncIntervalMinutes sets the "sync_interval_minutes" field.
+func (m *UserMutation) SetSyncIntervalMinutes(i int) {
+	m.sync_interval_minutes = &i
+	m.addsync_interval_minutes = nil
+}
+
+// SyncIntervalMinutes returns the value of the "sync_interval_minutes" field in the mutation.
+func (m *UserMutation) SyncIntervalMinutes() (r int, exists bool) {
+	v := m.sync_interval_minutes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSyncIntervalMinutes returns the old "sync_interval_minutes" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldSyncIntervalMinutes(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSyncIntervalMinutes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSyncIntervalMinutes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSyncIntervalMinutes: %w", err)
+	}
+	return oldValue.SyncIntervalMinutes, nil
+}
+
+// AddSyncIntervalMinutes adds i to the "sync_interval_minutes" field.
+func (m *UserMutation) AddSyncIntervalMinutes(i int) {
+	if m.addsync_interval_minutes != nil {
+		*m.addsync_interval_minutes += i
+	} else {
+		m.addsync_interval_minutes = &i
+	}
+}
+
+// AddedSyncIntervalMinutes returns the value that was added to the "sync_interval_minutes" field in this mutation.
+func (m *UserMutation) AddedSyncIntervalMinutes() (r int, exists bool) {
+	v := m.addsync_interval_minutes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetSyncIntervalMinutes resets all changes to the "sync_interval_minutes" field.
+func (m *UserMutation) ResetSyncIntervalMinutes() {
+	m.sync_interval_minutes = nil
+	m.addsync_interval_minutes = nil
+}
+
+// SetSyncedAt sets the "synced_at" field.
+func (m *UserMutation) SetSyncedAt(t time.Time) {
+	m.synced_at = &t
+}
+
+// SyncedAt returns the value of the "synced_at" field in the mutation.
+func (m *UserMutation) SyncedAt() (r time.Time, exists bool) {
+	v := m.synced_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSyncedAt returns the old "synced_at" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldSyncedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSyncedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSyncedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSyncedAt: %w", err)
+	}
+	return oldValue.SyncedAt, nil
+}
+
+// ClearSyncedAt clears the value of the "synced_at" field.
+func (m *UserMutation) ClearSyncedAt() {
+	m.synced_at = nil
+	m.clearedFields[user.FieldSyncedAt] = struct{}{}
+}
+
+// SyncedAtCleared returns if the "synced_at" field was cleared in this mutation.
+func (m *UserMutation) SyncedAtCleared() bool {
+	_, ok := m.clearedFields[user.FieldSyncedAt]
+	return ok
+}
+
+// ResetSyncedAt resets all changes to the "synced_at" field.
+func (m *UserMutation) ResetSyncedAt() {
+	m.synced_at = nil
+	delete(m.clearedFields, user.FieldSyncedAt)
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *UserMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -2146,7 +2254,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 8)
 	if m.github_id != nil {
 		fields = append(fields, user.FieldGithubID)
 	}
@@ -2161,6 +2269,12 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.access_token != nil {
 		fields = append(fields, user.FieldAccessToken)
+	}
+	if m.sync_interval_minutes != nil {
+		fields = append(fields, user.FieldSyncIntervalMinutes)
+	}
+	if m.synced_at != nil {
+		fields = append(fields, user.FieldSyncedAt)
 	}
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
@@ -2183,6 +2297,10 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case user.FieldAccessToken:
 		return m.AccessToken()
+	case user.FieldSyncIntervalMinutes:
+		return m.SyncIntervalMinutes()
+	case user.FieldSyncedAt:
+		return m.SyncedAt()
 	case user.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -2204,6 +2322,10 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldName(ctx)
 	case user.FieldAccessToken:
 		return m.OldAccessToken(ctx)
+	case user.FieldSyncIntervalMinutes:
+		return m.OldSyncIntervalMinutes(ctx)
+	case user.FieldSyncedAt:
+		return m.OldSyncedAt(ctx)
 	case user.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -2250,6 +2372,20 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetAccessToken(v)
 		return nil
+	case user.FieldSyncIntervalMinutes:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSyncIntervalMinutes(v)
+		return nil
+	case user.FieldSyncedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSyncedAt(v)
+		return nil
 	case user.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -2268,6 +2404,9 @@ func (m *UserMutation) AddedFields() []string {
 	if m.addgithub_id != nil {
 		fields = append(fields, user.FieldGithubID)
 	}
+	if m.addsync_interval_minutes != nil {
+		fields = append(fields, user.FieldSyncIntervalMinutes)
+	}
 	return fields
 }
 
@@ -2278,6 +2417,8 @@ func (m *UserMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case user.FieldGithubID:
 		return m.AddedGithubID()
+	case user.FieldSyncIntervalMinutes:
+		return m.AddedSyncIntervalMinutes()
 	}
 	return nil, false
 }
@@ -2294,6 +2435,13 @@ func (m *UserMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddGithubID(v)
 		return nil
+	case user.FieldSyncIntervalMinutes:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSyncIntervalMinutes(v)
+		return nil
 	}
 	return fmt.Errorf("unknown User numeric field %s", name)
 }
@@ -2307,6 +2455,9 @@ func (m *UserMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(user.FieldName) {
 		fields = append(fields, user.FieldName)
+	}
+	if m.FieldCleared(user.FieldSyncedAt) {
+		fields = append(fields, user.FieldSyncedAt)
 	}
 	return fields
 }
@@ -2327,6 +2478,9 @@ func (m *UserMutation) ClearField(name string) error {
 		return nil
 	case user.FieldName:
 		m.ClearName()
+		return nil
+	case user.FieldSyncedAt:
+		m.ClearSyncedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown User nullable field %s", name)
@@ -2350,6 +2504,12 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldAccessToken:
 		m.ResetAccessToken()
+		return nil
+	case user.FieldSyncIntervalMinutes:
+		m.ResetSyncIntervalMinutes()
+		return nil
+	case user.FieldSyncedAt:
+		m.ResetSyncedAt()
 		return nil
 	case user.FieldCreatedAt:
 		m.ResetCreatedAt()

@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 
@@ -50,6 +49,20 @@ func (h *DashboardHandler) Index(c *gin.Context) {
 	})
 }
 
+func (h *DashboardHandler) Dashboard(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	u, _ := h.client.User.Get(c.Request.Context(), int(userID))
+	repos, _ := h.client.Repository.Query().
+		Where(repository.HasUserWith(user.ID(int(userID)))).
+		Order(ent.Desc(repository.FieldUpdatedAt)).
+		All(c.Request.Context())
+
+	c.HTML(http.StatusOK, "dashboard", gin.H{
+		"User":  u,
+		"Repos": repos,
+	})
+}
+
 func (h *DashboardHandler) ListRepos(c *gin.Context) {
 	userID := c.GetInt64("user_id")
 	repos, err := h.client.Repository.Query().
@@ -60,75 +73,6 @@ func (h *DashboardHandler) ListRepos(c *gin.Context) {
 		c.HTML(http.StatusInternalServerError, "repo_list", gin.H{"Error": "Failed to fetch repositories"})
 		return
 	}
-	c.HTML(http.StatusOK, "repo_list", gin.H{"Repos": repos})
-}
-
-func (h *DashboardHandler) SyncRepos(c *gin.Context) {
-	userID := c.GetInt64("user_id")
-	ctx := c.Request.Context()
-
-	u, err := h.client.User.Get(ctx, int(userID))
-	if err != nil {
-		c.HTML(http.StatusInternalServerError, "repo_list", gin.H{"Error": "User not found"})
-		return
-	}
-
-	ghRepos, err := h.gh.ListRepositories(u.AccessToken)
-	if err != nil {
-		log.Printf("Error listing repos: %v", err)
-		c.HTML(http.StatusInternalServerError, "repo_list", gin.H{"Error": "Failed to fetch repositories from GitHub"})
-		return
-	}
-
-	for _, r := range ghRepos {
-		exists, err := h.client.Repository.Query().
-			Where(
-				repository.HasUserWith(user.ID(u.ID)),
-				repository.GithubID(r.ID),
-			).
-			Exist(ctx)
-		if err != nil {
-			log.Printf("Error checking repo existence: %v", err)
-			continue
-		}
-		if exists {
-			continue
-		}
-
-		_, err = h.client.Repository.Create().
-			SetGithubID(r.ID).
-			SetOwner(r.Owner).
-			SetName(r.Name).
-			SetFullName(r.FullName).
-			SetDescription(r.Description).
-			SetHTMLURL(r.HTMLURL).
-			SetLanguage(r.Language).
-			SetDefaultBranch(r.DefaultBranch).
-			SetUserID(u.ID).
-			Save(ctx)
-		if err != nil {
-			log.Printf("Error saving repo %s: %v", r.FullName, err)
-		}
-	}
-
-	repos, err := h.client.Repository.Query().
-		Where(repository.HasUserWith(user.ID(u.ID))).
-		Order(ent.Desc(repository.FieldUpdatedAt)).
-		All(ctx)
-	if err != nil {
-		c.HTML(http.StatusInternalServerError, "repo_list", gin.H{"Error": "Database error"})
-		return
-	}
-
-	for _, r := range repos {
-		h.syncer.SyncOne(ctx, r)
-	}
-
-	repos, _ = h.client.Repository.Query().
-		Where(repository.HasUserWith(user.ID(u.ID))).
-		Order(ent.Desc(repository.FieldUpdatedAt)).
-		All(ctx)
-
 	c.HTML(http.StatusOK, "repo_list", gin.H{"Repos": repos})
 }
 
@@ -154,4 +98,60 @@ func (h *DashboardHandler) SyncRepo(c *gin.Context) {
 
 	r = h.syncer.SyncOne(ctx, r)
 	c.HTML(http.StatusOK, "repo_card", r)
+}
+
+func (h *DashboardHandler) ImportAllRepos(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	u, err := h.client.User.Get(c.Request.Context(), int(userID))
+	if err != nil {
+		c.String(http.StatusInternalServerError, "User not found")
+		return
+	}
+
+	ghRepos, err := h.gh.ListRepositories(u.AccessToken)
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "repo_list", gin.H{"Error": "Failed to fetch repositories from GitHub"})
+		return
+	}
+
+	ctx := c.Request.Context()
+	for _, r := range ghRepos {
+		exists, _ := h.client.Repository.Query().
+			Where(
+				repository.HasUserWith(user.ID(u.ID)),
+				repository.GithubID(r.ID),
+			).
+			Exist(ctx)
+		if exists {
+			continue
+		}
+
+		h.client.Repository.Create().
+			SetGithubID(r.ID).
+			SetOwner(r.Owner).
+			SetName(r.Name).
+			SetFullName(r.FullName).
+			SetDescription(r.Description).
+			SetHTMLURL(r.HTMLURL).
+			SetLanguage(r.Language).
+			SetDefaultBranch(r.DefaultBranch).
+			SetUserID(u.ID).
+			Save(ctx)
+	}
+
+	repos, _ := h.client.Repository.Query().
+		Where(repository.HasUserWith(user.ID(u.ID))).
+		Order(ent.Desc(repository.FieldUpdatedAt)).
+		All(ctx)
+
+	for _, r := range repos {
+		h.syncer.SyncOne(ctx, r)
+	}
+
+	repos, _ = h.client.Repository.Query().
+		Where(repository.HasUserWith(user.ID(u.ID))).
+		Order(ent.Desc(repository.FieldUpdatedAt)).
+		All(ctx)
+
+	c.HTML(http.StatusOK, "repo_list", gin.H{"Repos": repos})
 }

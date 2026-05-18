@@ -24,6 +24,10 @@ const (
 	FieldName = "name"
 	// FieldAccessToken holds the string denoting the access_token field in the database.
 	FieldAccessToken = "access_token"
+	// FieldSyncIntervalMinutes holds the string denoting the sync_interval_minutes field in the database.
+	FieldSyncIntervalMinutes = "sync_interval_minutes"
+	// FieldSyncedAt holds the string denoting the synced_at field in the database.
+	FieldSyncedAt = "synced_at"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeRepositories holds the string denoting the repositories edge name in mutations.
@@ -47,6 +51,8 @@ var Columns = []string{
 	FieldAvatarURL,
 	FieldName,
 	FieldAccessToken,
+	FieldSyncIntervalMinutes,
+	FieldSyncedAt,
 	FieldCreatedAt,
 }
 
@@ -61,6 +67,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultSyncIntervalMinutes holds the default value on creation for the "sync_interval_minutes" field.
+	DefaultSyncIntervalMinutes int
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 )
@@ -96,6 +104,16 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 // ByAccessToken orders the results by the access_token field.
 func ByAccessToken(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAccessToken, opts...).ToFunc()
+}
+
+// BySyncIntervalMinutes orders the results by the sync_interval_minutes field.
+func BySyncIntervalMinutes(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSyncIntervalMinutes, opts...).ToFunc()
+}
+
+// BySyncedAt orders the results by the synced_at field.
+func BySyncedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSyncedAt, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
