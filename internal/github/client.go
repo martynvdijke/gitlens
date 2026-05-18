@@ -250,6 +250,57 @@ func (c *Client) GetLatestCommit(token, owner, repo, branch string) (*Commit, er
 	}, nil
 }
 
+func (c *Client) GetCommits(token, owner, repo, branch string, perPage int) ([]*Commit, error) {
+	url := fmt.Sprintf("%s/repos/%s/%s/commits?per_page=%d&sha=%s", c.apiURL, owner, repo, perPage, branch)
+	resp, err := c.doRequest("GET", url, token, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var ghCommits []ghCommit
+	if err := json.NewDecoder(resp.Body).Decode(&ghCommits); err != nil {
+		return nil, fmt.Errorf("decoding commits: %w", err)
+	}
+
+	var commits []*Commit
+	for _, c := range ghCommits {
+		t, _ := time.Parse(time.RFC3339, c.Commit.Committer.Date)
+		commits = append(commits, &Commit{
+			SHA:     c.SHA,
+			Message: strings.Split(c.Commit.Message, "\n")[0],
+			Date:    t,
+		})
+	}
+	return commits, nil
+}
+
+func ParseCommitType(msg string) string {
+	// Parse conventional commit prefix like "feat:", "fix:", "feat(scope):", etc.
+	msg = strings.TrimSpace(msg)
+	colonIdx := strings.Index(msg, ":")
+	if colonIdx == -1 {
+		return "other"
+	}
+	prefix := msg[:colonIdx]
+	// Handle scope like "feat(scope)"
+	if parenIdx := strings.Index(prefix, "("); parenIdx != -1 {
+		prefix = prefix[:parenIdx]
+	}
+	switch strings.ToLower(strings.TrimSpace(prefix)) {
+	case "feat", "feature":
+		return "feat"
+	case "fix", "bugfix", "bug":
+		return "fix"
+	case "docs", "documentation":
+		return "docs"
+	case "chore", "refactor", "test", "style", "perf", "ci", "build", "revert":
+		return "chore"
+	default:
+		return "other"
+	}
+}
+
 func (c *Client) GetLatestRelease(token, owner, repo string) (*Release, error) {
 	url := fmt.Sprintf("%s/repos/%s/%s/releases/latest", c.apiURL, owner, repo)
 	resp, err := c.doRequest("GET", url, token, nil)
@@ -269,6 +320,54 @@ func (c *Client) GetLatestRelease(token, owner, repo string) (*Release, error) {
 		Name:        r.Name,
 		PublishedAt: t,
 	}, nil
+}
+
+func (c *Client) ListReleases(token, owner, repo string) ([]*Release, error) {
+	var all []*Release
+	page := 1
+	for {
+		url := fmt.Sprintf("%s/repos/%s/%s/releases?per_page=100&page=%d", c.apiURL, owner, repo, page)
+		resp, err := c.doRequest("GET", url, token, nil)
+		if err != nil {
+			return all, err
+		}
+
+		var ghReleases []ghRelease
+		if err := json.NewDecoder(resp.Body).Decode(&ghReleases); err != nil {
+			resp.Body.Close()
+			return all, fmt.Errorf("decoding releases: %w", err)
+		}
+		resp.Body.Close()
+
+		if len(ghReleases) == 0 {
+			break
+		}
+		for _, r := range ghReleases {
+			t, _ := time.Parse(time.RFC3339, r.PublishedAt)
+			all = append(all, &Release{TagName: r.TagName, Name: r.Name, PublishedAt: t})
+		}
+		page++
+	}
+	return all, nil
+}
+
+func (c *Client) GetWorkflowRuns(token, owner, repo, branch string, perPage int) ([]*WorkflowRun, error) {
+	url := fmt.Sprintf("%s/repos/%s/%s/actions/runs?per_page=%d&branch=%s", c.apiURL, owner, repo, perPage, branch)
+	resp, err := c.doRequest("GET", url, token, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var runs ghWorkflowRuns
+	if err := json.NewDecoder(resp.Body).Decode(&runs); err != nil {
+		return nil, fmt.Errorf("decoding workflow runs: %w", err)
+	}
+	var result []*WorkflowRun
+	for _, r := range runs.WorkflowRuns {
+		result = append(result, &WorkflowRun{ID: r.ID, Conclusion: r.Conclusion})
+	}
+	return result, nil
 }
 
 func (c *Client) GetWorkflowStatus(token, owner, repo, branch string) (*WorkflowRun, error) {

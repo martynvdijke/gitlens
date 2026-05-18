@@ -241,3 +241,176 @@ func TestTruncateNewlineInCommitMessage(t *testing.T) {
 		t.Errorf("expected 'feat: add stuff', got '%s'", commit.Message)
 	}
 }
+
+func TestParseCommitType_Feat(t *testing.T) {
+	if tp := ParseCommitType("feat: add login"); tp != "feat" {
+		t.Errorf("expected feat, got %s", tp)
+	}
+}
+
+func TestParseCommitType_FeatScope(t *testing.T) {
+	if tp := ParseCommitType("feat(auth): add login"); tp != "feat" {
+		t.Errorf("expected feat, got %s", tp)
+	}
+}
+
+func TestParseCommitType_Feature(t *testing.T) {
+	if tp := ParseCommitType("feature: big thing"); tp != "feat" {
+		t.Errorf("expected feat, got %s", tp)
+	}
+}
+
+func TestParseCommitType_Fix(t *testing.T) {
+	if tp := ParseCommitType("fix: crash on load"); tp != "fix" {
+		t.Errorf("expected fix, got %s", tp)
+	}
+}
+
+func TestParseCommitType_FixScope(t *testing.T) {
+	if tp := ParseCommitType("fix(parser): handle null"); tp != "fix" {
+		t.Errorf("expected fix, got %s", tp)
+	}
+}
+
+func TestParseCommitType_Bug(t *testing.T) {
+	if tp := ParseCommitType("bug: wrong color"); tp != "fix" {
+		t.Errorf("expected fix, got %s", tp)
+	}
+}
+
+func TestParseCommitType_Docs(t *testing.T) {
+	if tp := ParseCommitType("docs: update readme"); tp != "docs" {
+		t.Errorf("expected docs, got %s", tp)
+	}
+}
+
+func TestParseCommitType_Chore(t *testing.T) {
+	if tp := ParseCommitType("chore: bump deps"); tp != "chore" {
+		t.Errorf("expected chore, got %s", tp)
+	}
+}
+
+func TestParseCommitType_Refactor(t *testing.T) {
+	if tp := ParseCommitType("refactor: clean up"); tp != "chore" {
+		t.Errorf("expected chore, got %s", tp)
+	}
+}
+
+func TestParseCommitType_NoPrefix(t *testing.T) {
+	if tp := ParseCommitType("fix stuff"); tp != "other" {
+		t.Errorf("expected other, got %s", tp)
+	}
+}
+
+func TestParseCommitType_Empty(t *testing.T) {
+	if tp := ParseCommitType(""); tp != "other" {
+		t.Errorf("expected other, got %s", tp)
+	}
+}
+
+func TestParseCommitType_UpperCase(t *testing.T) {
+	if tp := ParseCommitType("FEAT: add"); tp != "feat" {
+		t.Errorf("expected feat, got %s", tp)
+	}
+}
+
+func TestGetCommits(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`[
+			{"sha":"a","commit":{"message":"feat: one","committer":{"date":"2024-01-01T00:00:00Z"}}},
+			{"sha":"b","commit":{"message":"fix: two","committer":{"date":"2024-01-02T00:00:00Z"}}},
+			{"sha":"c","commit":{"message":"chore: three","committer":{"date":"2024-01-03T00:00:00Z"}}}
+		]`))
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.apiURL = srv.URL
+
+	commits, err := c.GetCommits("token", "user", "repo", "main", 3)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(commits) != 3 {
+		t.Fatalf("expected 3 commits, got %d", len(commits))
+	}
+	if commits[0].Message != "feat: one" {
+		t.Errorf("expected 'feat: one', got '%s'", commits[0].Message)
+	}
+}
+
+func TestListReleases(t *testing.T) {
+	page := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		page++
+		w.Header().Set("Content-Type", "application/json")
+		if page == 1 {
+			w.Write([]byte(`[
+				{"tag_name":"v2","name":"Two","published_at":"2024-06-01T00:00:00Z"},
+				{"tag_name":"v1","name":"One","published_at":"2024-01-01T00:00:00Z"}
+			]`))
+		} else {
+			w.Write([]byte(`[]`))
+		}
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.apiURL = srv.URL
+
+	releases, err := c.ListReleases("token", "user", "repo")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(releases) != 2 {
+		t.Fatalf("expected 2 releases, got %d", len(releases))
+	}
+	if releases[0].TagName != "v2" {
+		t.Errorf("expected v2 first, got %s", releases[0].TagName)
+	}
+}
+
+func TestGetWorkflowRuns(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"workflow_runs":[
+			{"id":1,"status":"completed","conclusion":"success"},
+			{"id":2,"status":"completed","conclusion":"failure"}
+		]}`))
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.apiURL = srv.URL
+
+	runs, err := c.GetWorkflowRuns("token", "user", "repo", "main", 2)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(runs) != 2 {
+		t.Fatalf("expected 2 runs, got %d", len(runs))
+	}
+	if runs[0].Conclusion != "success" || runs[1].Conclusion != "failure" {
+		t.Errorf("unexpected conclusions: %+v", runs)
+	}
+}
+
+func TestListReleases_Empty(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`[]`))
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.apiURL = srv.URL
+
+	releases, err := c.ListReleases("token", "user", "repo")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(releases) != 0 {
+		t.Fatalf("expected 0 releases, got %d", len(releases))
+	}
+}

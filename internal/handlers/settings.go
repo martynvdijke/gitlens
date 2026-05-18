@@ -193,8 +193,9 @@ func (h *SettingsHandler) SelectRepos(c *gin.Context) {
 		All(ctx)
 
 	c.HTML(http.StatusOK, "dashboard", gin.H{
-		"User":  u,
-		"Repos": repos,
+		"User":    u,
+		"Repos":   repos,
+		"Metrics": computeMetrics(repos),
 	})
 }
 

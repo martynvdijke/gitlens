@@ -50,6 +50,26 @@ type Repository struct {
 	WorkflowStatus string `json:"workflow_status,omitempty"`
 	// WorkflowRunID holds the value of the "workflow_run_id" field.
 	WorkflowRunID int64 `json:"workflow_run_id,omitempty"`
+	// TotalCommitsFetched holds the value of the "total_commits_fetched" field.
+	TotalCommitsFetched int `json:"total_commits_fetched,omitempty"`
+	// FeatCount holds the value of the "feat_count" field.
+	FeatCount int `json:"feat_count,omitempty"`
+	// FixCount holds the value of the "fix_count" field.
+	FixCount int `json:"fix_count,omitempty"`
+	// DocsCount holds the value of the "docs_count" field.
+	DocsCount int `json:"docs_count,omitempty"`
+	// ChoreCount holds the value of the "chore_count" field.
+	ChoreCount int `json:"chore_count,omitempty"`
+	// OtherCommitCount holds the value of the "other_commit_count" field.
+	OtherCommitCount int `json:"other_commit_count,omitempty"`
+	// ReleaseCount holds the value of the "release_count" field.
+	ReleaseCount int `json:"release_count,omitempty"`
+	// AvgLeadTimeHours holds the value of the "avg_lead_time_hours" field.
+	AvgLeadTimeHours float64 `json:"avg_lead_time_hours,omitempty"`
+	// WorkflowSuccessCount holds the value of the "workflow_success_count" field.
+	WorkflowSuccessCount int `json:"workflow_success_count,omitempty"`
+	// WorkflowFailureCount holds the value of the "workflow_failure_count" field.
+	WorkflowFailureCount int `json:"workflow_failure_count,omitempty"`
 	// SyncedAt holds the value of the "synced_at" field.
 	SyncedAt time.Time `json:"synced_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -88,7 +108,9 @@ func (*Repository) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case repository.FieldID, repository.FieldGithubID, repository.FieldWorkflowRunID:
+		case repository.FieldAvgLeadTimeHours:
+			values[i] = new(sql.NullFloat64)
+		case repository.FieldID, repository.FieldGithubID, repository.FieldWorkflowRunID, repository.FieldTotalCommitsFetched, repository.FieldFeatCount, repository.FieldFixCount, repository.FieldDocsCount, repository.FieldChoreCount, repository.FieldOtherCommitCount, repository.FieldReleaseCount, repository.FieldWorkflowSuccessCount, repository.FieldWorkflowFailureCount:
 			values[i] = new(sql.NullInt64)
 		case repository.FieldOwner, repository.FieldName, repository.FieldFullName, repository.FieldDescription, repository.FieldHTMLURL, repository.FieldLanguage, repository.FieldDefaultBranch, repository.FieldLatestCommitSha, repository.FieldLatestCommitMessage, repository.FieldLatestReleaseTag, repository.FieldLatestReleaseName, repository.FieldWorkflowStatus:
 			values[i] = new(sql.NullString)
@@ -213,6 +235,66 @@ func (_m *Repository) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.WorkflowRunID = value.Int64
 			}
+		case repository.FieldTotalCommitsFetched:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field total_commits_fetched", values[i])
+			} else if value.Valid {
+				_m.TotalCommitsFetched = int(value.Int64)
+			}
+		case repository.FieldFeatCount:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field feat_count", values[i])
+			} else if value.Valid {
+				_m.FeatCount = int(value.Int64)
+			}
+		case repository.FieldFixCount:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field fix_count", values[i])
+			} else if value.Valid {
+				_m.FixCount = int(value.Int64)
+			}
+		case repository.FieldDocsCount:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field docs_count", values[i])
+			} else if value.Valid {
+				_m.DocsCount = int(value.Int64)
+			}
+		case repository.FieldChoreCount:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field chore_count", values[i])
+			} else if value.Valid {
+				_m.ChoreCount = int(value.Int64)
+			}
+		case repository.FieldOtherCommitCount:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field other_commit_count", values[i])
+			} else if value.Valid {
+				_m.OtherCommitCount = int(value.Int64)
+			}
+		case repository.FieldReleaseCount:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field release_count", values[i])
+			} else if value.Valid {
+				_m.ReleaseCount = int(value.Int64)
+			}
+		case repository.FieldAvgLeadTimeHours:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field avg_lead_time_hours", values[i])
+			} else if value.Valid {
+				_m.AvgLeadTimeHours = value.Float64
+			}
+		case repository.FieldWorkflowSuccessCount:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field workflow_success_count", values[i])
+			} else if value.Valid {
+				_m.WorkflowSuccessCount = int(value.Int64)
+			}
+		case repository.FieldWorkflowFailureCount:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field workflow_failure_count", values[i])
+			} else if value.Valid {
+				_m.WorkflowFailureCount = int(value.Int64)
+			}
 		case repository.FieldSyncedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field synced_at", values[i])
@@ -326,6 +408,36 @@ func (_m *Repository) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("workflow_run_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.WorkflowRunID))
+	builder.WriteString(", ")
+	builder.WriteString("total_commits_fetched=")
+	builder.WriteString(fmt.Sprintf("%v", _m.TotalCommitsFetched))
+	builder.WriteString(", ")
+	builder.WriteString("feat_count=")
+	builder.WriteString(fmt.Sprintf("%v", _m.FeatCount))
+	builder.WriteString(", ")
+	builder.WriteString("fix_count=")
+	builder.WriteString(fmt.Sprintf("%v", _m.FixCount))
+	builder.WriteString(", ")
+	builder.WriteString("docs_count=")
+	builder.WriteString(fmt.Sprintf("%v", _m.DocsCount))
+	builder.WriteString(", ")
+	builder.WriteString("chore_count=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ChoreCount))
+	builder.WriteString(", ")
+	builder.WriteString("other_commit_count=")
+	builder.WriteString(fmt.Sprintf("%v", _m.OtherCommitCount))
+	builder.WriteString(", ")
+	builder.WriteString("release_count=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ReleaseCount))
+	builder.WriteString(", ")
+	builder.WriteString("avg_lead_time_hours=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AvgLeadTimeHours))
+	builder.WriteString(", ")
+	builder.WriteString("workflow_success_count=")
+	builder.WriteString(fmt.Sprintf("%v", _m.WorkflowSuccessCount))
+	builder.WriteString(", ")
+	builder.WriteString("workflow_failure_count=")
+	builder.WriteString(fmt.Sprintf("%v", _m.WorkflowFailureCount))
 	builder.WriteString(", ")
 	builder.WriteString("synced_at=")
 	builder.WriteString(_m.SyncedAt.Format(time.ANSIC))

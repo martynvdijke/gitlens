@@ -135,6 +135,56 @@ func WorkflowRunID(v int64) predicate.Repository {
 	return predicate.Repository(sql.FieldEQ(FieldWorkflowRunID, v))
 }
 
+// TotalCommitsFetched applies equality check predicate on the "total_commits_fetched" field. It's identical to TotalCommitsFetchedEQ.
+func TotalCommitsFetched(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldTotalCommitsFetched, v))
+}
+
+// FeatCount applies equality check predicate on the "feat_count" field. It's identical to FeatCountEQ.
+func FeatCount(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldFeatCount, v))
+}
+
+// FixCount applies equality check predicate on the "fix_count" field. It's identical to FixCountEQ.
+func FixCount(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldFixCount, v))
+}
+
+// DocsCount applies equality check predicate on the "docs_count" field. It's identical to DocsCountEQ.
+func DocsCount(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldDocsCount, v))
+}
+
+// ChoreCount applies equality check predicate on the "chore_count" field. It's identical to ChoreCountEQ.
+func ChoreCount(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldChoreCount, v))
+}
+
+// OtherCommitCount applies equality check predicate on the "other_commit_count" field. It's identical to OtherCommitCountEQ.
+func OtherCommitCount(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldOtherCommitCount, v))
+}
+
+// ReleaseCount applies equality check predicate on the "release_count" field. It's identical to ReleaseCountEQ.
+func ReleaseCount(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldReleaseCount, v))
+}
+
+// AvgLeadTimeHours applies equality check predicate on the "avg_lead_time_hours" field. It's identical to AvgLeadTimeHoursEQ.
+func AvgLeadTimeHours(v float64) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldAvgLeadTimeHours, v))
+}
+
+// WorkflowSuccessCount applies equality check predicate on the "workflow_success_count" field. It's identical to WorkflowSuccessCountEQ.
+func WorkflowSuccessCount(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldWorkflowSuccessCount, v))
+}
+
+// WorkflowFailureCount applies equality check predicate on the "workflow_failure_count" field. It's identical to WorkflowFailureCountEQ.
+func WorkflowFailureCount(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldWorkflowFailureCount, v))
+}
+
 // SyncedAt applies equality check predicate on the "synced_at" field. It's identical to SyncedAtEQ.
 func SyncedAt(v time.Time) predicate.Repository {
 	return predicate.Repository(sql.FieldEQ(FieldSyncedAt, v))
@@ -1188,6 +1238,506 @@ func WorkflowRunIDIsNil() predicate.Repository {
 // WorkflowRunIDNotNil applies the NotNil predicate on the "workflow_run_id" field.
 func WorkflowRunIDNotNil() predicate.Repository {
 	return predicate.Repository(sql.FieldNotNull(FieldWorkflowRunID))
+}
+
+// TotalCommitsFetchedEQ applies the EQ predicate on the "total_commits_fetched" field.
+func TotalCommitsFetchedEQ(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldTotalCommitsFetched, v))
+}
+
+// TotalCommitsFetchedNEQ applies the NEQ predicate on the "total_commits_fetched" field.
+func TotalCommitsFetchedNEQ(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldTotalCommitsFetched, v))
+}
+
+// TotalCommitsFetchedIn applies the In predicate on the "total_commits_fetched" field.
+func TotalCommitsFetchedIn(vs ...int) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldTotalCommitsFetched, vs...))
+}
+
+// TotalCommitsFetchedNotIn applies the NotIn predicate on the "total_commits_fetched" field.
+func TotalCommitsFetchedNotIn(vs ...int) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldTotalCommitsFetched, vs...))
+}
+
+// TotalCommitsFetchedGT applies the GT predicate on the "total_commits_fetched" field.
+func TotalCommitsFetchedGT(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldTotalCommitsFetched, v))
+}
+
+// TotalCommitsFetchedGTE applies the GTE predicate on the "total_commits_fetched" field.
+func TotalCommitsFetchedGTE(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldTotalCommitsFetched, v))
+}
+
+// TotalCommitsFetchedLT applies the LT predicate on the "total_commits_fetched" field.
+func TotalCommitsFetchedLT(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldTotalCommitsFetched, v))
+}
+
+// TotalCommitsFetchedLTE applies the LTE predicate on the "total_commits_fetched" field.
+func TotalCommitsFetchedLTE(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldTotalCommitsFetched, v))
+}
+
+// TotalCommitsFetchedIsNil applies the IsNil predicate on the "total_commits_fetched" field.
+func TotalCommitsFetchedIsNil() predicate.Repository {
+	return predicate.Repository(sql.FieldIsNull(FieldTotalCommitsFetched))
+}
+
+// TotalCommitsFetchedNotNil applies the NotNil predicate on the "total_commits_fetched" field.
+func TotalCommitsFetchedNotNil() predicate.Repository {
+	return predicate.Repository(sql.FieldNotNull(FieldTotalCommitsFetched))
+}
+
+// FeatCountEQ applies the EQ predicate on the "feat_count" field.
+func FeatCountEQ(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldFeatCount, v))
+}
+
+// FeatCountNEQ applies the NEQ predicate on the "feat_count" field.
+func FeatCountNEQ(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldFeatCount, v))
+}
+
+// FeatCountIn applies the In predicate on the "feat_count" field.
+func FeatCountIn(vs ...int) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldFeatCount, vs...))
+}
+
+// FeatCountNotIn applies the NotIn predicate on the "feat_count" field.
+func FeatCountNotIn(vs ...int) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldFeatCount, vs...))
+}
+
+// FeatCountGT applies the GT predicate on the "feat_count" field.
+func FeatCountGT(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldFeatCount, v))
+}
+
+// FeatCountGTE applies the GTE predicate on the "feat_count" field.
+func FeatCountGTE(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldFeatCount, v))
+}
+
+// FeatCountLT applies the LT predicate on the "feat_count" field.
+func FeatCountLT(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldFeatCount, v))
+}
+
+// FeatCountLTE applies the LTE predicate on the "feat_count" field.
+func FeatCountLTE(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldFeatCount, v))
+}
+
+// FeatCountIsNil applies the IsNil predicate on the "feat_count" field.
+func FeatCountIsNil() predicate.Repository {
+	return predicate.Repository(sql.FieldIsNull(FieldFeatCount))
+}
+
+// FeatCountNotNil applies the NotNil predicate on the "feat_count" field.
+func FeatCountNotNil() predicate.Repository {
+	return predicate.Repository(sql.FieldNotNull(FieldFeatCount))
+}
+
+// FixCountEQ applies the EQ predicate on the "fix_count" field.
+func FixCountEQ(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldFixCount, v))
+}
+
+// FixCountNEQ applies the NEQ predicate on the "fix_count" field.
+func FixCountNEQ(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldFixCount, v))
+}
+
+// FixCountIn applies the In predicate on the "fix_count" field.
+func FixCountIn(vs ...int) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldFixCount, vs...))
+}
+
+// FixCountNotIn applies the NotIn predicate on the "fix_count" field.
+func FixCountNotIn(vs ...int) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldFixCount, vs...))
+}
+
+// FixCountGT applies the GT predicate on the "fix_count" field.
+func FixCountGT(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldFixCount, v))
+}
+
+// FixCountGTE applies the GTE predicate on the "fix_count" field.
+func FixCountGTE(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldFixCount, v))
+}
+
+// FixCountLT applies the LT predicate on the "fix_count" field.
+func FixCountLT(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldFixCount, v))
+}
+
+// FixCountLTE applies the LTE predicate on the "fix_count" field.
+func FixCountLTE(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldFixCount, v))
+}
+
+// FixCountIsNil applies the IsNil predicate on the "fix_count" field.
+func FixCountIsNil() predicate.Repository {
+	return predicate.Repository(sql.FieldIsNull(FieldFixCount))
+}
+
+// FixCountNotNil applies the NotNil predicate on the "fix_count" field.
+func FixCountNotNil() predicate.Repository {
+	return predicate.Repository(sql.FieldNotNull(FieldFixCount))
+}
+
+// DocsCountEQ applies the EQ predicate on the "docs_count" field.
+func DocsCountEQ(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldDocsCount, v))
+}
+
+// DocsCountNEQ applies the NEQ predicate on the "docs_count" field.
+func DocsCountNEQ(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldDocsCount, v))
+}
+
+// DocsCountIn applies the In predicate on the "docs_count" field.
+func DocsCountIn(vs ...int) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldDocsCount, vs...))
+}
+
+// DocsCountNotIn applies the NotIn predicate on the "docs_count" field.
+func DocsCountNotIn(vs ...int) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldDocsCount, vs...))
+}
+
+// DocsCountGT applies the GT predicate on the "docs_count" field.
+func DocsCountGT(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldDocsCount, v))
+}
+
+// DocsCountGTE applies the GTE predicate on the "docs_count" field.
+func DocsCountGTE(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldDocsCount, v))
+}
+
+// DocsCountLT applies the LT predicate on the "docs_count" field.
+func DocsCountLT(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldDocsCount, v))
+}
+
+// DocsCountLTE applies the LTE predicate on the "docs_count" field.
+func DocsCountLTE(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldDocsCount, v))
+}
+
+// DocsCountIsNil applies the IsNil predicate on the "docs_count" field.
+func DocsCountIsNil() predicate.Repository {
+	return predicate.Repository(sql.FieldIsNull(FieldDocsCount))
+}
+
+// DocsCountNotNil applies the NotNil predicate on the "docs_count" field.
+func DocsCountNotNil() predicate.Repository {
+	return predicate.Repository(sql.FieldNotNull(FieldDocsCount))
+}
+
+// ChoreCountEQ applies the EQ predicate on the "chore_count" field.
+func ChoreCountEQ(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldChoreCount, v))
+}
+
+// ChoreCountNEQ applies the NEQ predicate on the "chore_count" field.
+func ChoreCountNEQ(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldChoreCount, v))
+}
+
+// ChoreCountIn applies the In predicate on the "chore_count" field.
+func ChoreCountIn(vs ...int) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldChoreCount, vs...))
+}
+
+// ChoreCountNotIn applies the NotIn predicate on the "chore_count" field.
+func ChoreCountNotIn(vs ...int) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldChoreCount, vs...))
+}
+
+// ChoreCountGT applies the GT predicate on the "chore_count" field.
+func ChoreCountGT(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldChoreCount, v))
+}
+
+// ChoreCountGTE applies the GTE predicate on the "chore_count" field.
+func ChoreCountGTE(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldChoreCount, v))
+}
+
+// ChoreCountLT applies the LT predicate on the "chore_count" field.
+func ChoreCountLT(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldChoreCount, v))
+}
+
+// ChoreCountLTE applies the LTE predicate on the "chore_count" field.
+func ChoreCountLTE(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldChoreCount, v))
+}
+
+// ChoreCountIsNil applies the IsNil predicate on the "chore_count" field.
+func ChoreCountIsNil() predicate.Repository {
+	return predicate.Repository(sql.FieldIsNull(FieldChoreCount))
+}
+
+// ChoreCountNotNil applies the NotNil predicate on the "chore_count" field.
+func ChoreCountNotNil() predicate.Repository {
+	return predicate.Repository(sql.FieldNotNull(FieldChoreCount))
+}
+
+// OtherCommitCountEQ applies the EQ predicate on the "other_commit_count" field.
+func OtherCommitCountEQ(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldOtherCommitCount, v))
+}
+
+// OtherCommitCountNEQ applies the NEQ predicate on the "other_commit_count" field.
+func OtherCommitCountNEQ(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldOtherCommitCount, v))
+}
+
+// OtherCommitCountIn applies the In predicate on the "other_commit_count" field.
+func OtherCommitCountIn(vs ...int) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldOtherCommitCount, vs...))
+}
+
+// OtherCommitCountNotIn applies the NotIn predicate on the "other_commit_count" field.
+func OtherCommitCountNotIn(vs ...int) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldOtherCommitCount, vs...))
+}
+
+// OtherCommitCountGT applies the GT predicate on the "other_commit_count" field.
+func OtherCommitCountGT(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldOtherCommitCount, v))
+}
+
+// OtherCommitCountGTE applies the GTE predicate on the "other_commit_count" field.
+func OtherCommitCountGTE(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldOtherCommitCount, v))
+}
+
+// OtherCommitCountLT applies the LT predicate on the "other_commit_count" field.
+func OtherCommitCountLT(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldOtherCommitCount, v))
+}
+
+// OtherCommitCountLTE applies the LTE predicate on the "other_commit_count" field.
+func OtherCommitCountLTE(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldOtherCommitCount, v))
+}
+
+// OtherCommitCountIsNil applies the IsNil predicate on the "other_commit_count" field.
+func OtherCommitCountIsNil() predicate.Repository {
+	return predicate.Repository(sql.FieldIsNull(FieldOtherCommitCount))
+}
+
+// OtherCommitCountNotNil applies the NotNil predicate on the "other_commit_count" field.
+func OtherCommitCountNotNil() predicate.Repository {
+	return predicate.Repository(sql.FieldNotNull(FieldOtherCommitCount))
+}
+
+// ReleaseCountEQ applies the EQ predicate on the "release_count" field.
+func ReleaseCountEQ(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldReleaseCount, v))
+}
+
+// ReleaseCountNEQ applies the NEQ predicate on the "release_count" field.
+func ReleaseCountNEQ(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldReleaseCount, v))
+}
+
+// ReleaseCountIn applies the In predicate on the "release_count" field.
+func ReleaseCountIn(vs ...int) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldReleaseCount, vs...))
+}
+
+// ReleaseCountNotIn applies the NotIn predicate on the "release_count" field.
+func ReleaseCountNotIn(vs ...int) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldReleaseCount, vs...))
+}
+
+// ReleaseCountGT applies the GT predicate on the "release_count" field.
+func ReleaseCountGT(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldReleaseCount, v))
+}
+
+// ReleaseCountGTE applies the GTE predicate on the "release_count" field.
+func ReleaseCountGTE(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldReleaseCount, v))
+}
+
+// ReleaseCountLT applies the LT predicate on the "release_count" field.
+func ReleaseCountLT(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldReleaseCount, v))
+}
+
+// ReleaseCountLTE applies the LTE predicate on the "release_count" field.
+func ReleaseCountLTE(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldReleaseCount, v))
+}
+
+// ReleaseCountIsNil applies the IsNil predicate on the "release_count" field.
+func ReleaseCountIsNil() predicate.Repository {
+	return predicate.Repository(sql.FieldIsNull(FieldReleaseCount))
+}
+
+// ReleaseCountNotNil applies the NotNil predicate on the "release_count" field.
+func ReleaseCountNotNil() predicate.Repository {
+	return predicate.Repository(sql.FieldNotNull(FieldReleaseCount))
+}
+
+// AvgLeadTimeHoursEQ applies the EQ predicate on the "avg_lead_time_hours" field.
+func AvgLeadTimeHoursEQ(v float64) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldAvgLeadTimeHours, v))
+}
+
+// AvgLeadTimeHoursNEQ applies the NEQ predicate on the "avg_lead_time_hours" field.
+func AvgLeadTimeHoursNEQ(v float64) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldAvgLeadTimeHours, v))
+}
+
+// AvgLeadTimeHoursIn applies the In predicate on the "avg_lead_time_hours" field.
+func AvgLeadTimeHoursIn(vs ...float64) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldAvgLeadTimeHours, vs...))
+}
+
+// AvgLeadTimeHoursNotIn applies the NotIn predicate on the "avg_lead_time_hours" field.
+func AvgLeadTimeHoursNotIn(vs ...float64) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldAvgLeadTimeHours, vs...))
+}
+
+// AvgLeadTimeHoursGT applies the GT predicate on the "avg_lead_time_hours" field.
+func AvgLeadTimeHoursGT(v float64) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldAvgLeadTimeHours, v))
+}
+
+// AvgLeadTimeHoursGTE applies the GTE predicate on the "avg_lead_time_hours" field.
+func AvgLeadTimeHoursGTE(v float64) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldAvgLeadTimeHours, v))
+}
+
+// AvgLeadTimeHoursLT applies the LT predicate on the "avg_lead_time_hours" field.
+func AvgLeadTimeHoursLT(v float64) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldAvgLeadTimeHours, v))
+}
+
+// AvgLeadTimeHoursLTE applies the LTE predicate on the "avg_lead_time_hours" field.
+func AvgLeadTimeHoursLTE(v float64) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldAvgLeadTimeHours, v))
+}
+
+// AvgLeadTimeHoursIsNil applies the IsNil predicate on the "avg_lead_time_hours" field.
+func AvgLeadTimeHoursIsNil() predicate.Repository {
+	return predicate.Repository(sql.FieldIsNull(FieldAvgLeadTimeHours))
+}
+
+// AvgLeadTimeHoursNotNil applies the NotNil predicate on the "avg_lead_time_hours" field.
+func AvgLeadTimeHoursNotNil() predicate.Repository {
+	return predicate.Repository(sql.FieldNotNull(FieldAvgLeadTimeHours))
+}
+
+// WorkflowSuccessCountEQ applies the EQ predicate on the "workflow_success_count" field.
+func WorkflowSuccessCountEQ(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldWorkflowSuccessCount, v))
+}
+
+// WorkflowSuccessCountNEQ applies the NEQ predicate on the "workflow_success_count" field.
+func WorkflowSuccessCountNEQ(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldWorkflowSuccessCount, v))
+}
+
+// WorkflowSuccessCountIn applies the In predicate on the "workflow_success_count" field.
+func WorkflowSuccessCountIn(vs ...int) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldWorkflowSuccessCount, vs...))
+}
+
+// WorkflowSuccessCountNotIn applies the NotIn predicate on the "workflow_success_count" field.
+func WorkflowSuccessCountNotIn(vs ...int) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldWorkflowSuccessCount, vs...))
+}
+
+// WorkflowSuccessCountGT applies the GT predicate on the "workflow_success_count" field.
+func WorkflowSuccessCountGT(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldWorkflowSuccessCount, v))
+}
+
+// WorkflowSuccessCountGTE applies the GTE predicate on the "workflow_success_count" field.
+func WorkflowSuccessCountGTE(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldWorkflowSuccessCount, v))
+}
+
+// WorkflowSuccessCountLT applies the LT predicate on the "workflow_success_count" field.
+func WorkflowSuccessCountLT(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldWorkflowSuccessCount, v))
+}
+
+// WorkflowSuccessCountLTE applies the LTE predicate on the "workflow_success_count" field.
+func WorkflowSuccessCountLTE(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldWorkflowSuccessCount, v))
+}
+
+// WorkflowSuccessCountIsNil applies the IsNil predicate on the "workflow_success_count" field.
+func WorkflowSuccessCountIsNil() predicate.Repository {
+	return predicate.Repository(sql.FieldIsNull(FieldWorkflowSuccessCount))
+}
+
+// WorkflowSuccessCountNotNil applies the NotNil predicate on the "workflow_success_count" field.
+func WorkflowSuccessCountNotNil() predicate.Repository {
+	return predicate.Repository(sql.FieldNotNull(FieldWorkflowSuccessCount))
+}
+
+// WorkflowFailureCountEQ applies the EQ predicate on the "workflow_failure_count" field.
+func WorkflowFailureCountEQ(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldWorkflowFailureCount, v))
+}
+
+// WorkflowFailureCountNEQ applies the NEQ predicate on the "workflow_failure_count" field.
+func WorkflowFailureCountNEQ(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldWorkflowFailureCount, v))
+}
+
+// WorkflowFailureCountIn applies the In predicate on the "workflow_failure_count" field.
+func WorkflowFailureCountIn(vs ...int) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldWorkflowFailureCount, vs...))
+}
+
+// WorkflowFailureCountNotIn applies the NotIn predicate on the "workflow_failure_count" field.
+func WorkflowFailureCountNotIn(vs ...int) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldWorkflowFailureCount, vs...))
+}
+
+// WorkflowFailureCountGT applies the GT predicate on the "workflow_failure_count" field.
+func WorkflowFailureCountGT(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldWorkflowFailureCount, v))
+}
+
+// WorkflowFailureCountGTE applies the GTE predicate on the "workflow_failure_count" field.
+func WorkflowFailureCountGTE(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldWorkflowFailureCount, v))
+}
+
+// WorkflowFailureCountLT applies the LT predicate on the "workflow_failure_count" field.
+func WorkflowFailureCountLT(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldWorkflowFailureCount, v))
+}
+
+// WorkflowFailureCountLTE applies the LTE predicate on the "workflow_failure_count" field.
+func WorkflowFailureCountLTE(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldWorkflowFailureCount, v))
+}
+
+// WorkflowFailureCountIsNil applies the IsNil predicate on the "workflow_failure_count" field.
+func WorkflowFailureCountIsNil() predicate.Repository {
+	return predicate.Repository(sql.FieldIsNull(FieldWorkflowFailureCount))
+}
+
+// WorkflowFailureCountNotNil applies the NotNil predicate on the "workflow_failure_count" field.
+func WorkflowFailureCountNotNil() predicate.Repository {
+	return predicate.Repository(sql.FieldNotNull(FieldWorkflowFailureCount))
 }
 
 // SyncedAtEQ applies the EQ predicate on the "synced_at" field.

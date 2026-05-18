@@ -32,36 +32,56 @@ const (
 // RepositoryMutation represents an operation that mutates the Repository nodes in the graph.
 type RepositoryMutation struct {
 	config
-	op                    Op
-	typ                   string
-	id                    *int
-	github_id             *int64
-	addgithub_id          *int64
-	owner                 *string
-	name                  *string
-	full_name             *string
-	description           *string
-	html_url              *string
-	language              *string
-	default_branch        *string
-	latest_commit_sha     *string
-	latest_commit_message *string
-	latest_commit_date    *time.Time
-	latest_release_tag    *string
-	latest_release_name   *string
-	latest_release_date   *time.Time
-	workflow_status       *string
-	workflow_run_id       *int64
-	addworkflow_run_id    *int64
-	synced_at             *time.Time
-	created_at            *time.Time
-	updated_at            *time.Time
-	clearedFields         map[string]struct{}
-	user                  *int
-	cleareduser           bool
-	done                  bool
-	oldValue              func(context.Context) (*Repository, error)
-	predicates            []predicate.Repository
+	op                        Op
+	typ                       string
+	id                        *int
+	github_id                 *int64
+	addgithub_id              *int64
+	owner                     *string
+	name                      *string
+	full_name                 *string
+	description               *string
+	html_url                  *string
+	language                  *string
+	default_branch            *string
+	latest_commit_sha         *string
+	latest_commit_message     *string
+	latest_commit_date        *time.Time
+	latest_release_tag        *string
+	latest_release_name       *string
+	latest_release_date       *time.Time
+	workflow_status           *string
+	workflow_run_id           *int64
+	addworkflow_run_id        *int64
+	total_commits_fetched     *int
+	addtotal_commits_fetched  *int
+	feat_count                *int
+	addfeat_count             *int
+	fix_count                 *int
+	addfix_count              *int
+	docs_count                *int
+	adddocs_count             *int
+	chore_count               *int
+	addchore_count            *int
+	other_commit_count        *int
+	addother_commit_count     *int
+	release_count             *int
+	addrelease_count          *int
+	avg_lead_time_hours       *float64
+	addavg_lead_time_hours    *float64
+	workflow_success_count    *int
+	addworkflow_success_count *int
+	workflow_failure_count    *int
+	addworkflow_failure_count *int
+	synced_at                 *time.Time
+	created_at                *time.Time
+	updated_at                *time.Time
+	clearedFields             map[string]struct{}
+	user                      *int
+	cleareduser               bool
+	done                      bool
+	oldValue                  func(context.Context) (*Repository, error)
+	predicates                []predicate.Repository
 }
 
 var _ ent.Mutation = (*RepositoryMutation)(nil)
@@ -909,6 +929,706 @@ func (m *RepositoryMutation) ResetWorkflowRunID() {
 	delete(m.clearedFields, repository.FieldWorkflowRunID)
 }
 
+// SetTotalCommitsFetched sets the "total_commits_fetched" field.
+func (m *RepositoryMutation) SetTotalCommitsFetched(i int) {
+	m.total_commits_fetched = &i
+	m.addtotal_commits_fetched = nil
+}
+
+// TotalCommitsFetched returns the value of the "total_commits_fetched" field in the mutation.
+func (m *RepositoryMutation) TotalCommitsFetched() (r int, exists bool) {
+	v := m.total_commits_fetched
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTotalCommitsFetched returns the old "total_commits_fetched" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldTotalCommitsFetched(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTotalCommitsFetched is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTotalCommitsFetched requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTotalCommitsFetched: %w", err)
+	}
+	return oldValue.TotalCommitsFetched, nil
+}
+
+// AddTotalCommitsFetched adds i to the "total_commits_fetched" field.
+func (m *RepositoryMutation) AddTotalCommitsFetched(i int) {
+	if m.addtotal_commits_fetched != nil {
+		*m.addtotal_commits_fetched += i
+	} else {
+		m.addtotal_commits_fetched = &i
+	}
+}
+
+// AddedTotalCommitsFetched returns the value that was added to the "total_commits_fetched" field in this mutation.
+func (m *RepositoryMutation) AddedTotalCommitsFetched() (r int, exists bool) {
+	v := m.addtotal_commits_fetched
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearTotalCommitsFetched clears the value of the "total_commits_fetched" field.
+func (m *RepositoryMutation) ClearTotalCommitsFetched() {
+	m.total_commits_fetched = nil
+	m.addtotal_commits_fetched = nil
+	m.clearedFields[repository.FieldTotalCommitsFetched] = struct{}{}
+}
+
+// TotalCommitsFetchedCleared returns if the "total_commits_fetched" field was cleared in this mutation.
+func (m *RepositoryMutation) TotalCommitsFetchedCleared() bool {
+	_, ok := m.clearedFields[repository.FieldTotalCommitsFetched]
+	return ok
+}
+
+// ResetTotalCommitsFetched resets all changes to the "total_commits_fetched" field.
+func (m *RepositoryMutation) ResetTotalCommitsFetched() {
+	m.total_commits_fetched = nil
+	m.addtotal_commits_fetched = nil
+	delete(m.clearedFields, repository.FieldTotalCommitsFetched)
+}
+
+// SetFeatCount sets the "feat_count" field.
+func (m *RepositoryMutation) SetFeatCount(i int) {
+	m.feat_count = &i
+	m.addfeat_count = nil
+}
+
+// FeatCount returns the value of the "feat_count" field in the mutation.
+func (m *RepositoryMutation) FeatCount() (r int, exists bool) {
+	v := m.feat_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFeatCount returns the old "feat_count" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldFeatCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFeatCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFeatCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFeatCount: %w", err)
+	}
+	return oldValue.FeatCount, nil
+}
+
+// AddFeatCount adds i to the "feat_count" field.
+func (m *RepositoryMutation) AddFeatCount(i int) {
+	if m.addfeat_count != nil {
+		*m.addfeat_count += i
+	} else {
+		m.addfeat_count = &i
+	}
+}
+
+// AddedFeatCount returns the value that was added to the "feat_count" field in this mutation.
+func (m *RepositoryMutation) AddedFeatCount() (r int, exists bool) {
+	v := m.addfeat_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearFeatCount clears the value of the "feat_count" field.
+func (m *RepositoryMutation) ClearFeatCount() {
+	m.feat_count = nil
+	m.addfeat_count = nil
+	m.clearedFields[repository.FieldFeatCount] = struct{}{}
+}
+
+// FeatCountCleared returns if the "feat_count" field was cleared in this mutation.
+func (m *RepositoryMutation) FeatCountCleared() bool {
+	_, ok := m.clearedFields[repository.FieldFeatCount]
+	return ok
+}
+
+// ResetFeatCount resets all changes to the "feat_count" field.
+func (m *RepositoryMutation) ResetFeatCount() {
+	m.feat_count = nil
+	m.addfeat_count = nil
+	delete(m.clearedFields, repository.FieldFeatCount)
+}
+
+// SetFixCount sets the "fix_count" field.
+func (m *RepositoryMutation) SetFixCount(i int) {
+	m.fix_count = &i
+	m.addfix_count = nil
+}
+
+// FixCount returns the value of the "fix_count" field in the mutation.
+func (m *RepositoryMutation) FixCount() (r int, exists bool) {
+	v := m.fix_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFixCount returns the old "fix_count" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldFixCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFixCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFixCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFixCount: %w", err)
+	}
+	return oldValue.FixCount, nil
+}
+
+// AddFixCount adds i to the "fix_count" field.
+func (m *RepositoryMutation) AddFixCount(i int) {
+	if m.addfix_count != nil {
+		*m.addfix_count += i
+	} else {
+		m.addfix_count = &i
+	}
+}
+
+// AddedFixCount returns the value that was added to the "fix_count" field in this mutation.
+func (m *RepositoryMutation) AddedFixCount() (r int, exists bool) {
+	v := m.addfix_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearFixCount clears the value of the "fix_count" field.
+func (m *RepositoryMutation) ClearFixCount() {
+	m.fix_count = nil
+	m.addfix_count = nil
+	m.clearedFields[repository.FieldFixCount] = struct{}{}
+}
+
+// FixCountCleared returns if the "fix_count" field was cleared in this mutation.
+func (m *RepositoryMutation) FixCountCleared() bool {
+	_, ok := m.clearedFields[repository.FieldFixCount]
+	return ok
+}
+
+// ResetFixCount resets all changes to the "fix_count" field.
+func (m *RepositoryMutation) ResetFixCount() {
+	m.fix_count = nil
+	m.addfix_count = nil
+	delete(m.clearedFields, repository.FieldFixCount)
+}
+
+// SetDocsCount sets the "docs_count" field.
+func (m *RepositoryMutation) SetDocsCount(i int) {
+	m.docs_count = &i
+	m.adddocs_count = nil
+}
+
+// DocsCount returns the value of the "docs_count" field in the mutation.
+func (m *RepositoryMutation) DocsCount() (r int, exists bool) {
+	v := m.docs_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDocsCount returns the old "docs_count" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldDocsCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDocsCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDocsCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDocsCount: %w", err)
+	}
+	return oldValue.DocsCount, nil
+}
+
+// AddDocsCount adds i to the "docs_count" field.
+func (m *RepositoryMutation) AddDocsCount(i int) {
+	if m.adddocs_count != nil {
+		*m.adddocs_count += i
+	} else {
+		m.adddocs_count = &i
+	}
+}
+
+// AddedDocsCount returns the value that was added to the "docs_count" field in this mutation.
+func (m *RepositoryMutation) AddedDocsCount() (r int, exists bool) {
+	v := m.adddocs_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDocsCount clears the value of the "docs_count" field.
+func (m *RepositoryMutation) ClearDocsCount() {
+	m.docs_count = nil
+	m.adddocs_count = nil
+	m.clearedFields[repository.FieldDocsCount] = struct{}{}
+}
+
+// DocsCountCleared returns if the "docs_count" field was cleared in this mutation.
+func (m *RepositoryMutation) DocsCountCleared() bool {
+	_, ok := m.clearedFields[repository.FieldDocsCount]
+	return ok
+}
+
+// ResetDocsCount resets all changes to the "docs_count" field.
+func (m *RepositoryMutation) ResetDocsCount() {
+	m.docs_count = nil
+	m.adddocs_count = nil
+	delete(m.clearedFields, repository.FieldDocsCount)
+}
+
+// SetChoreCount sets the "chore_count" field.
+func (m *RepositoryMutation) SetChoreCount(i int) {
+	m.chore_count = &i
+	m.addchore_count = nil
+}
+
+// ChoreCount returns the value of the "chore_count" field in the mutation.
+func (m *RepositoryMutation) ChoreCount() (r int, exists bool) {
+	v := m.chore_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldChoreCount returns the old "chore_count" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldChoreCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldChoreCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldChoreCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldChoreCount: %w", err)
+	}
+	return oldValue.ChoreCount, nil
+}
+
+// AddChoreCount adds i to the "chore_count" field.
+func (m *RepositoryMutation) AddChoreCount(i int) {
+	if m.addchore_count != nil {
+		*m.addchore_count += i
+	} else {
+		m.addchore_count = &i
+	}
+}
+
+// AddedChoreCount returns the value that was added to the "chore_count" field in this mutation.
+func (m *RepositoryMutation) AddedChoreCount() (r int, exists bool) {
+	v := m.addchore_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearChoreCount clears the value of the "chore_count" field.
+func (m *RepositoryMutation) ClearChoreCount() {
+	m.chore_count = nil
+	m.addchore_count = nil
+	m.clearedFields[repository.FieldChoreCount] = struct{}{}
+}
+
+// ChoreCountCleared returns if the "chore_count" field was cleared in this mutation.
+func (m *RepositoryMutation) ChoreCountCleared() bool {
+	_, ok := m.clearedFields[repository.FieldChoreCount]
+	return ok
+}
+
+// ResetChoreCount resets all changes to the "chore_count" field.
+func (m *RepositoryMutation) ResetChoreCount() {
+	m.chore_count = nil
+	m.addchore_count = nil
+	delete(m.clearedFields, repository.FieldChoreCount)
+}
+
+// SetOtherCommitCount sets the "other_commit_count" field.
+func (m *RepositoryMutation) SetOtherCommitCount(i int) {
+	m.other_commit_count = &i
+	m.addother_commit_count = nil
+}
+
+// OtherCommitCount returns the value of the "other_commit_count" field in the mutation.
+func (m *RepositoryMutation) OtherCommitCount() (r int, exists bool) {
+	v := m.other_commit_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOtherCommitCount returns the old "other_commit_count" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldOtherCommitCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOtherCommitCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOtherCommitCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOtherCommitCount: %w", err)
+	}
+	return oldValue.OtherCommitCount, nil
+}
+
+// AddOtherCommitCount adds i to the "other_commit_count" field.
+func (m *RepositoryMutation) AddOtherCommitCount(i int) {
+	if m.addother_commit_count != nil {
+		*m.addother_commit_count += i
+	} else {
+		m.addother_commit_count = &i
+	}
+}
+
+// AddedOtherCommitCount returns the value that was added to the "other_commit_count" field in this mutation.
+func (m *RepositoryMutation) AddedOtherCommitCount() (r int, exists bool) {
+	v := m.addother_commit_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearOtherCommitCount clears the value of the "other_commit_count" field.
+func (m *RepositoryMutation) ClearOtherCommitCount() {
+	m.other_commit_count = nil
+	m.addother_commit_count = nil
+	m.clearedFields[repository.FieldOtherCommitCount] = struct{}{}
+}
+
+// OtherCommitCountCleared returns if the "other_commit_count" field was cleared in this mutation.
+func (m *RepositoryMutation) OtherCommitCountCleared() bool {
+	_, ok := m.clearedFields[repository.FieldOtherCommitCount]
+	return ok
+}
+
+// ResetOtherCommitCount resets all changes to the "other_commit_count" field.
+func (m *RepositoryMutation) ResetOtherCommitCount() {
+	m.other_commit_count = nil
+	m.addother_commit_count = nil
+	delete(m.clearedFields, repository.FieldOtherCommitCount)
+}
+
+// SetReleaseCount sets the "release_count" field.
+func (m *RepositoryMutation) SetReleaseCount(i int) {
+	m.release_count = &i
+	m.addrelease_count = nil
+}
+
+// ReleaseCount returns the value of the "release_count" field in the mutation.
+func (m *RepositoryMutation) ReleaseCount() (r int, exists bool) {
+	v := m.release_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReleaseCount returns the old "release_count" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldReleaseCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReleaseCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReleaseCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReleaseCount: %w", err)
+	}
+	return oldValue.ReleaseCount, nil
+}
+
+// AddReleaseCount adds i to the "release_count" field.
+func (m *RepositoryMutation) AddReleaseCount(i int) {
+	if m.addrelease_count != nil {
+		*m.addrelease_count += i
+	} else {
+		m.addrelease_count = &i
+	}
+}
+
+// AddedReleaseCount returns the value that was added to the "release_count" field in this mutation.
+func (m *RepositoryMutation) AddedReleaseCount() (r int, exists bool) {
+	v := m.addrelease_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearReleaseCount clears the value of the "release_count" field.
+func (m *RepositoryMutation) ClearReleaseCount() {
+	m.release_count = nil
+	m.addrelease_count = nil
+	m.clearedFields[repository.FieldReleaseCount] = struct{}{}
+}
+
+// ReleaseCountCleared returns if the "release_count" field was cleared in this mutation.
+func (m *RepositoryMutation) ReleaseCountCleared() bool {
+	_, ok := m.clearedFields[repository.FieldReleaseCount]
+	return ok
+}
+
+// ResetReleaseCount resets all changes to the "release_count" field.
+func (m *RepositoryMutation) ResetReleaseCount() {
+	m.release_count = nil
+	m.addrelease_count = nil
+	delete(m.clearedFields, repository.FieldReleaseCount)
+}
+
+// SetAvgLeadTimeHours sets the "avg_lead_time_hours" field.
+func (m *RepositoryMutation) SetAvgLeadTimeHours(f float64) {
+	m.avg_lead_time_hours = &f
+	m.addavg_lead_time_hours = nil
+}
+
+// AvgLeadTimeHours returns the value of the "avg_lead_time_hours" field in the mutation.
+func (m *RepositoryMutation) AvgLeadTimeHours() (r float64, exists bool) {
+	v := m.avg_lead_time_hours
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAvgLeadTimeHours returns the old "avg_lead_time_hours" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldAvgLeadTimeHours(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAvgLeadTimeHours is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAvgLeadTimeHours requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAvgLeadTimeHours: %w", err)
+	}
+	return oldValue.AvgLeadTimeHours, nil
+}
+
+// AddAvgLeadTimeHours adds f to the "avg_lead_time_hours" field.
+func (m *RepositoryMutation) AddAvgLeadTimeHours(f float64) {
+	if m.addavg_lead_time_hours != nil {
+		*m.addavg_lead_time_hours += f
+	} else {
+		m.addavg_lead_time_hours = &f
+	}
+}
+
+// AddedAvgLeadTimeHours returns the value that was added to the "avg_lead_time_hours" field in this mutation.
+func (m *RepositoryMutation) AddedAvgLeadTimeHours() (r float64, exists bool) {
+	v := m.addavg_lead_time_hours
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearAvgLeadTimeHours clears the value of the "avg_lead_time_hours" field.
+func (m *RepositoryMutation) ClearAvgLeadTimeHours() {
+	m.avg_lead_time_hours = nil
+	m.addavg_lead_time_hours = nil
+	m.clearedFields[repository.FieldAvgLeadTimeHours] = struct{}{}
+}
+
+// AvgLeadTimeHoursCleared returns if the "avg_lead_time_hours" field was cleared in this mutation.
+func (m *RepositoryMutation) AvgLeadTimeHoursCleared() bool {
+	_, ok := m.clearedFields[repository.FieldAvgLeadTimeHours]
+	return ok
+}
+
+// ResetAvgLeadTimeHours resets all changes to the "avg_lead_time_hours" field.
+func (m *RepositoryMutation) ResetAvgLeadTimeHours() {
+	m.avg_lead_time_hours = nil
+	m.addavg_lead_time_hours = nil
+	delete(m.clearedFields, repository.FieldAvgLeadTimeHours)
+}
+
+// SetWorkflowSuccessCount sets the "workflow_success_count" field.
+func (m *RepositoryMutation) SetWorkflowSuccessCount(i int) {
+	m.workflow_success_count = &i
+	m.addworkflow_success_count = nil
+}
+
+// WorkflowSuccessCount returns the value of the "workflow_success_count" field in the mutation.
+func (m *RepositoryMutation) WorkflowSuccessCount() (r int, exists bool) {
+	v := m.workflow_success_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWorkflowSuccessCount returns the old "workflow_success_count" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldWorkflowSuccessCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWorkflowSuccessCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWorkflowSuccessCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWorkflowSuccessCount: %w", err)
+	}
+	return oldValue.WorkflowSuccessCount, nil
+}
+
+// AddWorkflowSuccessCount adds i to the "workflow_success_count" field.
+func (m *RepositoryMutation) AddWorkflowSuccessCount(i int) {
+	if m.addworkflow_success_count != nil {
+		*m.addworkflow_success_count += i
+	} else {
+		m.addworkflow_success_count = &i
+	}
+}
+
+// AddedWorkflowSuccessCount returns the value that was added to the "workflow_success_count" field in this mutation.
+func (m *RepositoryMutation) AddedWorkflowSuccessCount() (r int, exists bool) {
+	v := m.addworkflow_success_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearWorkflowSuccessCount clears the value of the "workflow_success_count" field.
+func (m *RepositoryMutation) ClearWorkflowSuccessCount() {
+	m.workflow_success_count = nil
+	m.addworkflow_success_count = nil
+	m.clearedFields[repository.FieldWorkflowSuccessCount] = struct{}{}
+}
+
+// WorkflowSuccessCountCleared returns if the "workflow_success_count" field was cleared in this mutation.
+func (m *RepositoryMutation) WorkflowSuccessCountCleared() bool {
+	_, ok := m.clearedFields[repository.FieldWorkflowSuccessCount]
+	return ok
+}
+
+// ResetWorkflowSuccessCount resets all changes to the "workflow_success_count" field.
+func (m *RepositoryMutation) ResetWorkflowSuccessCount() {
+	m.workflow_success_count = nil
+	m.addworkflow_success_count = nil
+	delete(m.clearedFields, repository.FieldWorkflowSuccessCount)
+}
+
+// SetWorkflowFailureCount sets the "workflow_failure_count" field.
+func (m *RepositoryMutation) SetWorkflowFailureCount(i int) {
+	m.workflow_failure_count = &i
+	m.addworkflow_failure_count = nil
+}
+
+// WorkflowFailureCount returns the value of the "workflow_failure_count" field in the mutation.
+func (m *RepositoryMutation) WorkflowFailureCount() (r int, exists bool) {
+	v := m.workflow_failure_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWorkflowFailureCount returns the old "workflow_failure_count" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldWorkflowFailureCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWorkflowFailureCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWorkflowFailureCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWorkflowFailureCount: %w", err)
+	}
+	return oldValue.WorkflowFailureCount, nil
+}
+
+// AddWorkflowFailureCount adds i to the "workflow_failure_count" field.
+func (m *RepositoryMutation) AddWorkflowFailureCount(i int) {
+	if m.addworkflow_failure_count != nil {
+		*m.addworkflow_failure_count += i
+	} else {
+		m.addworkflow_failure_count = &i
+	}
+}
+
+// AddedWorkflowFailureCount returns the value that was added to the "workflow_failure_count" field in this mutation.
+func (m *RepositoryMutation) AddedWorkflowFailureCount() (r int, exists bool) {
+	v := m.addworkflow_failure_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearWorkflowFailureCount clears the value of the "workflow_failure_count" field.
+func (m *RepositoryMutation) ClearWorkflowFailureCount() {
+	m.workflow_failure_count = nil
+	m.addworkflow_failure_count = nil
+	m.clearedFields[repository.FieldWorkflowFailureCount] = struct{}{}
+}
+
+// WorkflowFailureCountCleared returns if the "workflow_failure_count" field was cleared in this mutation.
+func (m *RepositoryMutation) WorkflowFailureCountCleared() bool {
+	_, ok := m.clearedFields[repository.FieldWorkflowFailureCount]
+	return ok
+}
+
+// ResetWorkflowFailureCount resets all changes to the "workflow_failure_count" field.
+func (m *RepositoryMutation) ResetWorkflowFailureCount() {
+	m.workflow_failure_count = nil
+	m.addworkflow_failure_count = nil
+	delete(m.clearedFields, repository.FieldWorkflowFailureCount)
+}
+
 // SetSyncedAt sets the "synced_at" field.
 func (m *RepositoryMutation) SetSyncedAt(t time.Time) {
 	m.synced_at = &t
@@ -1103,7 +1823,7 @@ func (m *RepositoryMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RepositoryMutation) Fields() []string {
-	fields := make([]string, 0, 19)
+	fields := make([]string, 0, 29)
 	if m.github_id != nil {
 		fields = append(fields, repository.FieldGithubID)
 	}
@@ -1151,6 +1871,36 @@ func (m *RepositoryMutation) Fields() []string {
 	}
 	if m.workflow_run_id != nil {
 		fields = append(fields, repository.FieldWorkflowRunID)
+	}
+	if m.total_commits_fetched != nil {
+		fields = append(fields, repository.FieldTotalCommitsFetched)
+	}
+	if m.feat_count != nil {
+		fields = append(fields, repository.FieldFeatCount)
+	}
+	if m.fix_count != nil {
+		fields = append(fields, repository.FieldFixCount)
+	}
+	if m.docs_count != nil {
+		fields = append(fields, repository.FieldDocsCount)
+	}
+	if m.chore_count != nil {
+		fields = append(fields, repository.FieldChoreCount)
+	}
+	if m.other_commit_count != nil {
+		fields = append(fields, repository.FieldOtherCommitCount)
+	}
+	if m.release_count != nil {
+		fields = append(fields, repository.FieldReleaseCount)
+	}
+	if m.avg_lead_time_hours != nil {
+		fields = append(fields, repository.FieldAvgLeadTimeHours)
+	}
+	if m.workflow_success_count != nil {
+		fields = append(fields, repository.FieldWorkflowSuccessCount)
+	}
+	if m.workflow_failure_count != nil {
+		fields = append(fields, repository.FieldWorkflowFailureCount)
 	}
 	if m.synced_at != nil {
 		fields = append(fields, repository.FieldSyncedAt)
@@ -1201,6 +1951,26 @@ func (m *RepositoryMutation) Field(name string) (ent.Value, bool) {
 		return m.WorkflowStatus()
 	case repository.FieldWorkflowRunID:
 		return m.WorkflowRunID()
+	case repository.FieldTotalCommitsFetched:
+		return m.TotalCommitsFetched()
+	case repository.FieldFeatCount:
+		return m.FeatCount()
+	case repository.FieldFixCount:
+		return m.FixCount()
+	case repository.FieldDocsCount:
+		return m.DocsCount()
+	case repository.FieldChoreCount:
+		return m.ChoreCount()
+	case repository.FieldOtherCommitCount:
+		return m.OtherCommitCount()
+	case repository.FieldReleaseCount:
+		return m.ReleaseCount()
+	case repository.FieldAvgLeadTimeHours:
+		return m.AvgLeadTimeHours()
+	case repository.FieldWorkflowSuccessCount:
+		return m.WorkflowSuccessCount()
+	case repository.FieldWorkflowFailureCount:
+		return m.WorkflowFailureCount()
 	case repository.FieldSyncedAt:
 		return m.SyncedAt()
 	case repository.FieldCreatedAt:
@@ -1248,6 +2018,26 @@ func (m *RepositoryMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldWorkflowStatus(ctx)
 	case repository.FieldWorkflowRunID:
 		return m.OldWorkflowRunID(ctx)
+	case repository.FieldTotalCommitsFetched:
+		return m.OldTotalCommitsFetched(ctx)
+	case repository.FieldFeatCount:
+		return m.OldFeatCount(ctx)
+	case repository.FieldFixCount:
+		return m.OldFixCount(ctx)
+	case repository.FieldDocsCount:
+		return m.OldDocsCount(ctx)
+	case repository.FieldChoreCount:
+		return m.OldChoreCount(ctx)
+	case repository.FieldOtherCommitCount:
+		return m.OldOtherCommitCount(ctx)
+	case repository.FieldReleaseCount:
+		return m.OldReleaseCount(ctx)
+	case repository.FieldAvgLeadTimeHours:
+		return m.OldAvgLeadTimeHours(ctx)
+	case repository.FieldWorkflowSuccessCount:
+		return m.OldWorkflowSuccessCount(ctx)
+	case repository.FieldWorkflowFailureCount:
+		return m.OldWorkflowFailureCount(ctx)
 	case repository.FieldSyncedAt:
 		return m.OldSyncedAt(ctx)
 	case repository.FieldCreatedAt:
@@ -1375,6 +2165,76 @@ func (m *RepositoryMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetWorkflowRunID(v)
 		return nil
+	case repository.FieldTotalCommitsFetched:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTotalCommitsFetched(v)
+		return nil
+	case repository.FieldFeatCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFeatCount(v)
+		return nil
+	case repository.FieldFixCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFixCount(v)
+		return nil
+	case repository.FieldDocsCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDocsCount(v)
+		return nil
+	case repository.FieldChoreCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetChoreCount(v)
+		return nil
+	case repository.FieldOtherCommitCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOtherCommitCount(v)
+		return nil
+	case repository.FieldReleaseCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReleaseCount(v)
+		return nil
+	case repository.FieldAvgLeadTimeHours:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAvgLeadTimeHours(v)
+		return nil
+	case repository.FieldWorkflowSuccessCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWorkflowSuccessCount(v)
+		return nil
+	case repository.FieldWorkflowFailureCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWorkflowFailureCount(v)
+		return nil
 	case repository.FieldSyncedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -1410,6 +2270,36 @@ func (m *RepositoryMutation) AddedFields() []string {
 	if m.addworkflow_run_id != nil {
 		fields = append(fields, repository.FieldWorkflowRunID)
 	}
+	if m.addtotal_commits_fetched != nil {
+		fields = append(fields, repository.FieldTotalCommitsFetched)
+	}
+	if m.addfeat_count != nil {
+		fields = append(fields, repository.FieldFeatCount)
+	}
+	if m.addfix_count != nil {
+		fields = append(fields, repository.FieldFixCount)
+	}
+	if m.adddocs_count != nil {
+		fields = append(fields, repository.FieldDocsCount)
+	}
+	if m.addchore_count != nil {
+		fields = append(fields, repository.FieldChoreCount)
+	}
+	if m.addother_commit_count != nil {
+		fields = append(fields, repository.FieldOtherCommitCount)
+	}
+	if m.addrelease_count != nil {
+		fields = append(fields, repository.FieldReleaseCount)
+	}
+	if m.addavg_lead_time_hours != nil {
+		fields = append(fields, repository.FieldAvgLeadTimeHours)
+	}
+	if m.addworkflow_success_count != nil {
+		fields = append(fields, repository.FieldWorkflowSuccessCount)
+	}
+	if m.addworkflow_failure_count != nil {
+		fields = append(fields, repository.FieldWorkflowFailureCount)
+	}
 	return fields
 }
 
@@ -1422,6 +2312,26 @@ func (m *RepositoryMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedGithubID()
 	case repository.FieldWorkflowRunID:
 		return m.AddedWorkflowRunID()
+	case repository.FieldTotalCommitsFetched:
+		return m.AddedTotalCommitsFetched()
+	case repository.FieldFeatCount:
+		return m.AddedFeatCount()
+	case repository.FieldFixCount:
+		return m.AddedFixCount()
+	case repository.FieldDocsCount:
+		return m.AddedDocsCount()
+	case repository.FieldChoreCount:
+		return m.AddedChoreCount()
+	case repository.FieldOtherCommitCount:
+		return m.AddedOtherCommitCount()
+	case repository.FieldReleaseCount:
+		return m.AddedReleaseCount()
+	case repository.FieldAvgLeadTimeHours:
+		return m.AddedAvgLeadTimeHours()
+	case repository.FieldWorkflowSuccessCount:
+		return m.AddedWorkflowSuccessCount()
+	case repository.FieldWorkflowFailureCount:
+		return m.AddedWorkflowFailureCount()
 	}
 	return nil, false
 }
@@ -1444,6 +2354,76 @@ func (m *RepositoryMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddWorkflowRunID(v)
+		return nil
+	case repository.FieldTotalCommitsFetched:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTotalCommitsFetched(v)
+		return nil
+	case repository.FieldFeatCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddFeatCount(v)
+		return nil
+	case repository.FieldFixCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddFixCount(v)
+		return nil
+	case repository.FieldDocsCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDocsCount(v)
+		return nil
+	case repository.FieldChoreCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddChoreCount(v)
+		return nil
+	case repository.FieldOtherCommitCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOtherCommitCount(v)
+		return nil
+	case repository.FieldReleaseCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddReleaseCount(v)
+		return nil
+	case repository.FieldAvgLeadTimeHours:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddAvgLeadTimeHours(v)
+		return nil
+	case repository.FieldWorkflowSuccessCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWorkflowSuccessCount(v)
+		return nil
+	case repository.FieldWorkflowFailureCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWorkflowFailureCount(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Repository numeric field %s", name)
@@ -1482,6 +2462,36 @@ func (m *RepositoryMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(repository.FieldWorkflowRunID) {
 		fields = append(fields, repository.FieldWorkflowRunID)
+	}
+	if m.FieldCleared(repository.FieldTotalCommitsFetched) {
+		fields = append(fields, repository.FieldTotalCommitsFetched)
+	}
+	if m.FieldCleared(repository.FieldFeatCount) {
+		fields = append(fields, repository.FieldFeatCount)
+	}
+	if m.FieldCleared(repository.FieldFixCount) {
+		fields = append(fields, repository.FieldFixCount)
+	}
+	if m.FieldCleared(repository.FieldDocsCount) {
+		fields = append(fields, repository.FieldDocsCount)
+	}
+	if m.FieldCleared(repository.FieldChoreCount) {
+		fields = append(fields, repository.FieldChoreCount)
+	}
+	if m.FieldCleared(repository.FieldOtherCommitCount) {
+		fields = append(fields, repository.FieldOtherCommitCount)
+	}
+	if m.FieldCleared(repository.FieldReleaseCount) {
+		fields = append(fields, repository.FieldReleaseCount)
+	}
+	if m.FieldCleared(repository.FieldAvgLeadTimeHours) {
+		fields = append(fields, repository.FieldAvgLeadTimeHours)
+	}
+	if m.FieldCleared(repository.FieldWorkflowSuccessCount) {
+		fields = append(fields, repository.FieldWorkflowSuccessCount)
+	}
+	if m.FieldCleared(repository.FieldWorkflowFailureCount) {
+		fields = append(fields, repository.FieldWorkflowFailureCount)
 	}
 	if m.FieldCleared(repository.FieldSyncedAt) {
 		fields = append(fields, repository.FieldSyncedAt)
@@ -1529,6 +2539,36 @@ func (m *RepositoryMutation) ClearField(name string) error {
 		return nil
 	case repository.FieldWorkflowRunID:
 		m.ClearWorkflowRunID()
+		return nil
+	case repository.FieldTotalCommitsFetched:
+		m.ClearTotalCommitsFetched()
+		return nil
+	case repository.FieldFeatCount:
+		m.ClearFeatCount()
+		return nil
+	case repository.FieldFixCount:
+		m.ClearFixCount()
+		return nil
+	case repository.FieldDocsCount:
+		m.ClearDocsCount()
+		return nil
+	case repository.FieldChoreCount:
+		m.ClearChoreCount()
+		return nil
+	case repository.FieldOtherCommitCount:
+		m.ClearOtherCommitCount()
+		return nil
+	case repository.FieldReleaseCount:
+		m.ClearReleaseCount()
+		return nil
+	case repository.FieldAvgLeadTimeHours:
+		m.ClearAvgLeadTimeHours()
+		return nil
+	case repository.FieldWorkflowSuccessCount:
+		m.ClearWorkflowSuccessCount()
+		return nil
+	case repository.FieldWorkflowFailureCount:
+		m.ClearWorkflowFailureCount()
 		return nil
 	case repository.FieldSyncedAt:
 		m.ClearSyncedAt()
@@ -1588,6 +2628,36 @@ func (m *RepositoryMutation) ResetField(name string) error {
 		return nil
 	case repository.FieldWorkflowRunID:
 		m.ResetWorkflowRunID()
+		return nil
+	case repository.FieldTotalCommitsFetched:
+		m.ResetTotalCommitsFetched()
+		return nil
+	case repository.FieldFeatCount:
+		m.ResetFeatCount()
+		return nil
+	case repository.FieldFixCount:
+		m.ResetFixCount()
+		return nil
+	case repository.FieldDocsCount:
+		m.ResetDocsCount()
+		return nil
+	case repository.FieldChoreCount:
+		m.ResetChoreCount()
+		return nil
+	case repository.FieldOtherCommitCount:
+		m.ResetOtherCommitCount()
+		return nil
+	case repository.FieldReleaseCount:
+		m.ResetReleaseCount()
+		return nil
+	case repository.FieldAvgLeadTimeHours:
+		m.ResetAvgLeadTimeHours()
+		return nil
+	case repository.FieldWorkflowSuccessCount:
+		m.ResetWorkflowSuccessCount()
+		return nil
+	case repository.FieldWorkflowFailureCount:
+		m.ResetWorkflowFailureCount()
 		return nil
 	case repository.FieldSyncedAt:
 		m.ResetSyncedAt()

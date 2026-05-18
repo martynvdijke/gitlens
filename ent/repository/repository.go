@@ -46,6 +46,26 @@ const (
 	FieldWorkflowStatus = "workflow_status"
 	// FieldWorkflowRunID holds the string denoting the workflow_run_id field in the database.
 	FieldWorkflowRunID = "workflow_run_id"
+	// FieldTotalCommitsFetched holds the string denoting the total_commits_fetched field in the database.
+	FieldTotalCommitsFetched = "total_commits_fetched"
+	// FieldFeatCount holds the string denoting the feat_count field in the database.
+	FieldFeatCount = "feat_count"
+	// FieldFixCount holds the string denoting the fix_count field in the database.
+	FieldFixCount = "fix_count"
+	// FieldDocsCount holds the string denoting the docs_count field in the database.
+	FieldDocsCount = "docs_count"
+	// FieldChoreCount holds the string denoting the chore_count field in the database.
+	FieldChoreCount = "chore_count"
+	// FieldOtherCommitCount holds the string denoting the other_commit_count field in the database.
+	FieldOtherCommitCount = "other_commit_count"
+	// FieldReleaseCount holds the string denoting the release_count field in the database.
+	FieldReleaseCount = "release_count"
+	// FieldAvgLeadTimeHours holds the string denoting the avg_lead_time_hours field in the database.
+	FieldAvgLeadTimeHours = "avg_lead_time_hours"
+	// FieldWorkflowSuccessCount holds the string denoting the workflow_success_count field in the database.
+	FieldWorkflowSuccessCount = "workflow_success_count"
+	// FieldWorkflowFailureCount holds the string denoting the workflow_failure_count field in the database.
+	FieldWorkflowFailureCount = "workflow_failure_count"
 	// FieldSyncedAt holds the string denoting the synced_at field in the database.
 	FieldSyncedAt = "synced_at"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -84,6 +104,16 @@ var Columns = []string{
 	FieldLatestReleaseDate,
 	FieldWorkflowStatus,
 	FieldWorkflowRunID,
+	FieldTotalCommitsFetched,
+	FieldFeatCount,
+	FieldFixCount,
+	FieldDocsCount,
+	FieldChoreCount,
+	FieldOtherCommitCount,
+	FieldReleaseCount,
+	FieldAvgLeadTimeHours,
+	FieldWorkflowSuccessCount,
+	FieldWorkflowFailureCount,
 	FieldSyncedAt,
 	FieldCreatedAt,
 	FieldUpdatedAt,
@@ -207,6 +237,56 @@ func ByWorkflowStatus(opts ...sql.OrderTermOption) OrderOption {
 // ByWorkflowRunID orders the results by the workflow_run_id field.
 func ByWorkflowRunID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldWorkflowRunID, opts...).ToFunc()
+}
+
+// ByTotalCommitsFetched orders the results by the total_commits_fetched field.
+func ByTotalCommitsFetched(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTotalCommitsFetched, opts...).ToFunc()
+}
+
+// ByFeatCount orders the results by the feat_count field.
+func ByFeatCount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFeatCount, opts...).ToFunc()
+}
+
+// ByFixCount orders the results by the fix_count field.
+func ByFixCount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFixCount, opts...).ToFunc()
+}
+
+// ByDocsCount orders the results by the docs_count field.
+func ByDocsCount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDocsCount, opts...).ToFunc()
+}
+
+// ByChoreCount orders the results by the chore_count field.
+func ByChoreCount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldChoreCount, opts...).ToFunc()
+}
+
+// ByOtherCommitCount orders the results by the other_commit_count field.
+func ByOtherCommitCount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOtherCommitCount, opts...).ToFunc()
+}
+
+// ByReleaseCount orders the results by the release_count field.
+func ByReleaseCount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldReleaseCount, opts...).ToFunc()
+}
+
+// ByAvgLeadTimeHours orders the results by the avg_lead_time_hours field.
+func ByAvgLeadTimeHours(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAvgLeadTimeHours, opts...).ToFunc()
+}
+
+// ByWorkflowSuccessCount orders the results by the workflow_success_count field.
+func ByWorkflowSuccessCount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWorkflowSuccessCount, opts...).ToFunc()
+}
+
+// ByWorkflowFailureCount orders the results by the workflow_failure_count field.
+func ByWorkflowFailureCount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWorkflowFailureCount, opts...).ToFunc()
 }
 
 // BySyncedAt orders the results by the synced_at field.

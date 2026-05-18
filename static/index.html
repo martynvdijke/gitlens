@@ -50,6 +50,47 @@
         <span id="sync-spinner" class="htmx-indicator">Working...</span>
     </div>
 
+    {{if .Metrics.TotalRepos}}
+    <div class="metrics-row">
+        <div class="metric-card">
+            <div class="metric-value">{{.Metrics.TotalRepos}}</div>
+            <div class="metric-label">Repos Tracked</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">{{.Metrics.TotalReleases}}</div>
+            <div class="metric-label">Total Releases</div>
+            <div class="metric-sub">{{.Metrics.ReleasesPerRepo}} / repo</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">{{.Metrics.TotalCommits}}</div>
+            <div class="metric-label">Commits (last 50)</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">{{printf "%.1f" .Metrics.FeatPct}}%</div>
+            <div class="metric-label">Features</div>
+            <div class="metric-bar"><div class="metric-bar-fill feat" style="width:{{printf "%.0f" .Metrics.FeatPct}}%"></div></div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">{{printf "%.1f" .Metrics.FixPct}}%</div>
+            <div class="metric-label">Fixes</div>
+            <div class="metric-bar"><div class="metric-bar-fill fix" style="width:{{printf "%.0f" .Metrics.FixPct}}%"></div></div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">{{printf "%.1f" .Metrics.DocsPct}}%</div>
+            <div class="metric-label">Docs / Chore</div>
+            <div class="metric-bar"><div class="metric-bar-fill chore" style="width:{{printf "%.0f" .Metrics.DocsPct}}%"></div></div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">{{printf "%.1f" .Metrics.WorkflowPassRate}}%</div>
+            <div class="metric-label">Workflow Pass</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">{{printf "%.1f" .Metrics.AvgLeadTimeHours}}h</div>
+            <div class="metric-label">Avg Lead Time</div>
+        </div>
+    </div>
+    {{end}}
+
     {{template "repo_list" .}}
     {{end}}
 

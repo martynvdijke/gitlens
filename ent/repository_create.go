@@ -197,6 +197,146 @@ func (_c *RepositoryCreate) SetNillableWorkflowRunID(v *int64) *RepositoryCreate
 	return _c
 }
 
+// SetTotalCommitsFetched sets the "total_commits_fetched" field.
+func (_c *RepositoryCreate) SetTotalCommitsFetched(v int) *RepositoryCreate {
+	_c.mutation.SetTotalCommitsFetched(v)
+	return _c
+}
+
+// SetNillableTotalCommitsFetched sets the "total_commits_fetched" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillableTotalCommitsFetched(v *int) *RepositoryCreate {
+	if v != nil {
+		_c.SetTotalCommitsFetched(*v)
+	}
+	return _c
+}
+
+// SetFeatCount sets the "feat_count" field.
+func (_c *RepositoryCreate) SetFeatCount(v int) *RepositoryCreate {
+	_c.mutation.SetFeatCount(v)
+	return _c
+}
+
+// SetNillableFeatCount sets the "feat_count" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillableFeatCount(v *int) *RepositoryCreate {
+	if v != nil {
+		_c.SetFeatCount(*v)
+	}
+	return _c
+}
+
+// SetFixCount sets the "fix_count" field.
+func (_c *RepositoryCreate) SetFixCount(v int) *RepositoryCreate {
+	_c.mutation.SetFixCount(v)
+	return _c
+}
+
+// SetNillableFixCount sets the "fix_count" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillableFixCount(v *int) *RepositoryCreate {
+	if v != nil {
+		_c.SetFixCount(*v)
+	}
+	return _c
+}
+
+// SetDocsCount sets the "docs_count" field.
+func (_c *RepositoryCreate) SetDocsCount(v int) *RepositoryCreate {
+	_c.mutation.SetDocsCount(v)
+	return _c
+}
+
+// SetNillableDocsCount sets the "docs_count" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillableDocsCount(v *int) *RepositoryCreate {
+	if v != nil {
+		_c.SetDocsCount(*v)
+	}
+	return _c
+}
+
+// SetChoreCount sets the "chore_count" field.
+func (_c *RepositoryCreate) SetChoreCount(v int) *RepositoryCreate {
+	_c.mutation.SetChoreCount(v)
+	return _c
+}
+
+// SetNillableChoreCount sets the "chore_count" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillableChoreCount(v *int) *RepositoryCreate {
+	if v != nil {
+		_c.SetChoreCount(*v)
+	}
+	return _c
+}
+
+// SetOtherCommitCount sets the "other_commit_count" field.
+func (_c *RepositoryCreate) SetOtherCommitCount(v int) *RepositoryCreate {
+	_c.mutation.SetOtherCommitCount(v)
+	return _c
+}
+
+// SetNillableOtherCommitCount sets the "other_commit_count" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillableOtherCommitCount(v *int) *RepositoryCreate {
+	if v != nil {
+		_c.SetOtherCommitCount(*v)
+	}
+	return _c
+}
+
+// SetReleaseCount sets the "release_count" field.
+func (_c *RepositoryCreate) SetReleaseCount(v int) *RepositoryCreate {
+	_c.mutation.SetReleaseCount(v)
+	return _c
+}
+
+// SetNillableReleaseCount sets the "release_count" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillableReleaseCount(v *int) *RepositoryCreate {
+	if v != nil {
+		_c.SetReleaseCount(*v)
+	}
+	return _c
+}
+
+// SetAvgLeadTimeHours sets the "avg_lead_time_hours" field.
+func (_c *RepositoryCreate) SetAvgLeadTimeHours(v float64) *RepositoryCreate {
+	_c.mutation.SetAvgLeadTimeHours(v)
+	return _c
+}
+
+// SetNillableAvgLeadTimeHours sets the "avg_lead_time_hours" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillableAvgLeadTimeHours(v *float64) *RepositoryCreate {
+	if v != nil {
+		_c.SetAvgLeadTimeHours(*v)
+	}
+	return _c
+}
+
+// SetWorkflowSuccessCount sets the "workflow_success_count" field.
+func (_c *RepositoryCreate) SetWorkflowSuccessCount(v int) *RepositoryCreate {
+	_c.mutation.SetWorkflowSuccessCount(v)
+	return _c
+}
+
+// SetNillableWorkflowSuccessCount sets the "workflow_success_count" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillableWorkflowSuccessCount(v *int) *RepositoryCreate {
+	if v != nil {
+		_c.SetWorkflowSuccessCount(*v)
+	}
+	return _c
+}
+
+// SetWorkflowFailureCount sets the "workflow_failure_count" field.
+func (_c *RepositoryCreate) SetWorkflowFailureCount(v int) *RepositoryCreate {
+	_c.mutation.SetWorkflowFailureCount(v)
+	return _c
+}
+
+// SetNillableWorkflowFailureCount sets the "workflow_failure_count" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillableWorkflowFailureCount(v *int) *RepositoryCreate {
+	if v != nil {
+		_c.SetWorkflowFailureCount(*v)
+	}
+	return _c
+}
+
 // SetSyncedAt sets the "synced_at" field.
 func (_c *RepositoryCreate) SetSyncedAt(v time.Time) *RepositoryCreate {
 	_c.mutation.SetSyncedAt(v)
@@ -417,6 +557,46 @@ func (_c *RepositoryCreate) createSpec() (*Repository, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.WorkflowRunID(); ok {
 		_spec.SetField(repository.FieldWorkflowRunID, field.TypeInt64, value)
 		_node.WorkflowRunID = value
+	}
+	if value, ok := _c.mutation.TotalCommitsFetched(); ok {
+		_spec.SetField(repository.FieldTotalCommitsFetched, field.TypeInt, value)
+		_node.TotalCommitsFetched = value
+	}
+	if value, ok := _c.mutation.FeatCount(); ok {
+		_spec.SetField(repository.FieldFeatCount, field.TypeInt, value)
+		_node.FeatCount = value
+	}
+	if value, ok := _c.mutation.FixCount(); ok {
+		_spec.SetField(repository.FieldFixCount, field.TypeInt, value)
+		_node.FixCount = value
+	}
+	if value, ok := _c.mutation.DocsCount(); ok {
+		_spec.SetField(repository.FieldDocsCount, field.TypeInt, value)
+		_node.DocsCount = value
+	}
+	if value, ok := _c.mutation.ChoreCount(); ok {
+		_spec.SetField(repository.FieldChoreCount, field.TypeInt, value)
+		_node.ChoreCount = value
+	}
+	if value, ok := _c.mutation.OtherCommitCount(); ok {
+		_spec.SetField(repository.FieldOtherCommitCount, field.TypeInt, value)
+		_node.OtherCommitCount = value
+	}
+	if value, ok := _c.mutation.ReleaseCount(); ok {
+		_spec.SetField(repository.FieldReleaseCount, field.TypeInt, value)
+		_node.ReleaseCount = value
+	}
+	if value, ok := _c.mutation.AvgLeadTimeHours(); ok {
+		_spec.SetField(repository.FieldAvgLeadTimeHours, field.TypeFloat64, value)
+		_node.AvgLeadTimeHours = value
+	}
+	if value, ok := _c.mutation.WorkflowSuccessCount(); ok {
+		_spec.SetField(repository.FieldWorkflowSuccessCount, field.TypeInt, value)
+		_node.WorkflowSuccessCount = value
+	}
+	if value, ok := _c.mutation.WorkflowFailureCount(); ok {
+		_spec.SetField(repository.FieldWorkflowFailureCount, field.TypeInt, value)
+		_node.WorkflowFailureCount = value
 	}
 	if value, ok := _c.mutation.SyncedAt(); ok {
 		_spec.SetField(repository.FieldSyncedAt, field.TypeTime, value)

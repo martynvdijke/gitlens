@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -108,6 +109,9 @@ func main() {
 		},
 		"hasWorkflowRun": func(status string) bool {
 			return status != "" && status != "unknown"
+		},
+		"printf": func(format string, args ...interface{}) string {
+			return fmt.Sprintf(format, args...)
 		},
 	}).ParseFiles(
 		"static/index.html",

@@ -327,6 +327,276 @@ func (_u *RepositoryUpdate) ClearWorkflowRunID() *RepositoryUpdate {
 	return _u
 }
 
+// SetTotalCommitsFetched sets the "total_commits_fetched" field.
+func (_u *RepositoryUpdate) SetTotalCommitsFetched(v int) *RepositoryUpdate {
+	_u.mutation.ResetTotalCommitsFetched()
+	_u.mutation.SetTotalCommitsFetched(v)
+	return _u
+}
+
+// SetNillableTotalCommitsFetched sets the "total_commits_fetched" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillableTotalCommitsFetched(v *int) *RepositoryUpdate {
+	if v != nil {
+		_u.SetTotalCommitsFetched(*v)
+	}
+	return _u
+}
+
+// AddTotalCommitsFetched adds value to the "total_commits_fetched" field.
+func (_u *RepositoryUpdate) AddTotalCommitsFetched(v int) *RepositoryUpdate {
+	_u.mutation.AddTotalCommitsFetched(v)
+	return _u
+}
+
+// ClearTotalCommitsFetched clears the value of the "total_commits_fetched" field.
+func (_u *RepositoryUpdate) ClearTotalCommitsFetched() *RepositoryUpdate {
+	_u.mutation.ClearTotalCommitsFetched()
+	return _u
+}
+
+// SetFeatCount sets the "feat_count" field.
+func (_u *RepositoryUpdate) SetFeatCount(v int) *RepositoryUpdate {
+	_u.mutation.ResetFeatCount()
+	_u.mutation.SetFeatCount(v)
+	return _u
+}
+
+// SetNillableFeatCount sets the "feat_count" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillableFeatCount(v *int) *RepositoryUpdate {
+	if v != nil {
+		_u.SetFeatCount(*v)
+	}
+	return _u
+}
+
+// AddFeatCount adds value to the "feat_count" field.
+func (_u *RepositoryUpdate) AddFeatCount(v int) *RepositoryUpdate {
+	_u.mutation.AddFeatCount(v)
+	return _u
+}
+
+// ClearFeatCount clears the value of the "feat_count" field.
+func (_u *RepositoryUpdate) ClearFeatCount() *RepositoryUpdate {
+	_u.mutation.ClearFeatCount()
+	return _u
+}
+
+// SetFixCount sets the "fix_count" field.
+func (_u *RepositoryUpdate) SetFixCount(v int) *RepositoryUpdate {
+	_u.mutation.ResetFixCount()
+	_u.mutation.SetFixCount(v)
+	return _u
+}
+
+// SetNillableFixCount sets the "fix_count" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillableFixCount(v *int) *RepositoryUpdate {
+	if v != nil {
+		_u.SetFixCount(*v)
+	}
+	return _u
+}
+
+// AddFixCount adds value to the "fix_count" field.
+func (_u *RepositoryUpdate) AddFixCount(v int) *RepositoryUpdate {
+	_u.mutation.AddFixCount(v)
+	return _u
+}
+
+// ClearFixCount clears the value of the "fix_count" field.
+func (_u *RepositoryUpdate) ClearFixCount() *RepositoryUpdate {
+	_u.mutation.ClearFixCount()
+	return _u
+}
+
+// SetDocsCount sets the "docs_count" field.
+func (_u *RepositoryUpdate) SetDocsCount(v int) *RepositoryUpdate {
+	_u.mutation.ResetDocsCount()
+	_u.mutation.SetDocsCount(v)
+	return _u
+}
+
+// SetNillableDocsCount sets the "docs_count" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillableDocsCount(v *int) *RepositoryUpdate {
+	if v != nil {
+		_u.SetDocsCount(*v)
+	}
+	return _u
+}
+
+// AddDocsCount adds value to the "docs_count" field.
+func (_u *RepositoryUpdate) AddDocsCount(v int) *RepositoryUpdate {
+	_u.mutation.AddDocsCount(v)
+	return _u
+}
+
+// ClearDocsCount clears the value of the "docs_count" field.
+func (_u *RepositoryUpdate) ClearDocsCount() *RepositoryUpdate {
+	_u.mutation.ClearDocsCount()
+	return _u
+}
+
+// SetChoreCount sets the "chore_count" field.
+func (_u *RepositoryUpdate) SetChoreCount(v int) *RepositoryUpdate {
+	_u.mutation.ResetChoreCount()
+	_u.mutation.SetChoreCount(v)
+	return _u
+}
+
+// SetNillableChoreCount sets the "chore_count" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillableChoreCount(v *int) *RepositoryUpdate {
+	if v != nil {
+		_u.SetChoreCount(*v)
+	}
+	return _u
+}
+
+// AddChoreCount adds value to the "chore_count" field.
+func (_u *RepositoryUpdate) AddChoreCount(v int) *RepositoryUpdate {
+	_u.mutation.AddChoreCount(v)
+	return _u
+}
+
+// ClearChoreCount clears the value of the "chore_count" field.
+func (_u *RepositoryUpdate) ClearChoreCount() *RepositoryUpdate {
+	_u.mutation.ClearChoreCount()
+	return _u
+}
+
+// SetOtherCommitCount sets the "other_commit_count" field.
+func (_u *RepositoryUpdate) SetOtherCommitCount(v int) *RepositoryUpdate {
+	_u.mutation.ResetOtherCommitCount()
+	_u.mutation.SetOtherCommitCount(v)
+	return _u
+}
+
+// SetNillableOtherCommitCount sets the "other_commit_count" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillableOtherCommitCount(v *int) *RepositoryUpdate {
+	if v != nil {
+		_u.SetOtherCommitCount(*v)
+	}
+	return _u
+}
+
+// AddOtherCommitCount adds value to the "other_commit_count" field.
+func (_u *RepositoryUpdate) AddOtherCommitCount(v int) *RepositoryUpdate {
+	_u.mutation.AddOtherCommitCount(v)
+	return _u
+}
+
+// ClearOtherCommitCount clears the value of the "other_commit_count" field.
+func (_u *RepositoryUpdate) ClearOtherCommitCount() *RepositoryUpdate {
+	_u.mutation.ClearOtherCommitCount()
+	return _u
+}
+
+// SetReleaseCount sets the "release_count" field.
+func (_u *RepositoryUpdate) SetReleaseCount(v int) *RepositoryUpdate {
+	_u.mutation.ResetReleaseCount()
+	_u.mutation.SetReleaseCount(v)
+	return _u
+}
+
+// SetNillableReleaseCount sets the "release_count" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillableReleaseCount(v *int) *RepositoryUpdate {
+	if v != nil {
+		_u.SetReleaseCount(*v)
+	}
+	return _u
+}
+
+// AddReleaseCount adds value to the "release_count" field.
+func (_u *RepositoryUpdate) AddReleaseCount(v int) *RepositoryUpdate {
+	_u.mutation.AddReleaseCount(v)
+	return _u
+}
+
+// ClearReleaseCount clears the value of the "release_count" field.
+func (_u *RepositoryUpdate) ClearReleaseCount() *RepositoryUpdate {
+	_u.mutation.ClearReleaseCount()
+	return _u
+}
+
+// SetAvgLeadTimeHours sets the "avg_lead_time_hours" field.
+func (_u *RepositoryUpdate) SetAvgLeadTimeHours(v float64) *RepositoryUpdate {
+	_u.mutation.ResetAvgLeadTimeHours()
+	_u.mutation.SetAvgLeadTimeHours(v)
+	return _u
+}
+
+// SetNillableAvgLeadTimeHours sets the "avg_lead_time_hours" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillableAvgLeadTimeHours(v *float64) *RepositoryUpdate {
+	if v != nil {
+		_u.SetAvgLeadTimeHours(*v)
+	}
+	return _u
+}
+
+// AddAvgLeadTimeHours adds value to the "avg_lead_time_hours" field.
+func (_u *RepositoryUpdate) AddAvgLeadTimeHours(v float64) *RepositoryUpdate {
+	_u.mutation.AddAvgLeadTimeHours(v)
+	return _u
+}
+
+// ClearAvgLeadTimeHours clears the value of the "avg_lead_time_hours" field.
+func (_u *RepositoryUpdate) ClearAvgLeadTimeHours() *RepositoryUpdate {
+	_u.mutation.ClearAvgLeadTimeHours()
+	return _u
+}
+
+// SetWorkflowSuccessCount sets the "workflow_success_count" field.
+func (_u *RepositoryUpdate) SetWorkflowSuccessCount(v int) *RepositoryUpdate {
+	_u.mutation.ResetWorkflowSuccessCount()
+	_u.mutation.SetWorkflowSuccessCount(v)
+	return _u
+}
+
+// SetNillableWorkflowSuccessCount sets the "workflow_success_count" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillableWorkflowSuccessCount(v *int) *RepositoryUpdate {
+	if v != nil {
+		_u.SetWorkflowSuccessCount(*v)
+	}
+	return _u
+}
+
+// AddWorkflowSuccessCount adds value to the "workflow_success_count" field.
+func (_u *RepositoryUpdate) AddWorkflowSuccessCount(v int) *RepositoryUpdate {
+	_u.mutation.AddWorkflowSuccessCount(v)
+	return _u
+}
+
+// ClearWorkflowSuccessCount clears the value of the "workflow_success_count" field.
+func (_u *RepositoryUpdate) ClearWorkflowSuccessCount() *RepositoryUpdate {
+	_u.mutation.ClearWorkflowSuccessCount()
+	return _u
+}
+
+// SetWorkflowFailureCount sets the "workflow_failure_count" field.
+func (_u *RepositoryUpdate) SetWorkflowFailureCount(v int) *RepositoryUpdate {
+	_u.mutation.ResetWorkflowFailureCount()
+	_u.mutation.SetWorkflowFailureCount(v)
+	return _u
+}
+
+// SetNillableWorkflowFailureCount sets the "workflow_failure_count" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillableWorkflowFailureCount(v *int) *RepositoryUpdate {
+	if v != nil {
+		_u.SetWorkflowFailureCount(*v)
+	}
+	return _u
+}
+
+// AddWorkflowFailureCount adds value to the "workflow_failure_count" field.
+func (_u *RepositoryUpdate) AddWorkflowFailureCount(v int) *RepositoryUpdate {
+	_u.mutation.AddWorkflowFailureCount(v)
+	return _u
+}
+
+// ClearWorkflowFailureCount clears the value of the "workflow_failure_count" field.
+func (_u *RepositoryUpdate) ClearWorkflowFailureCount() *RepositoryUpdate {
+	_u.mutation.ClearWorkflowFailureCount()
+	return _u
+}
+
 // SetSyncedAt sets the "synced_at" field.
 func (_u *RepositoryUpdate) SetSyncedAt(v time.Time) *RepositoryUpdate {
 	_u.mutation.SetSyncedAt(v)
@@ -528,6 +798,96 @@ func (_u *RepositoryUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 	}
 	if _u.mutation.WorkflowRunIDCleared() {
 		_spec.ClearField(repository.FieldWorkflowRunID, field.TypeInt64)
+	}
+	if value, ok := _u.mutation.TotalCommitsFetched(); ok {
+		_spec.SetField(repository.FieldTotalCommitsFetched, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedTotalCommitsFetched(); ok {
+		_spec.AddField(repository.FieldTotalCommitsFetched, field.TypeInt, value)
+	}
+	if _u.mutation.TotalCommitsFetchedCleared() {
+		_spec.ClearField(repository.FieldTotalCommitsFetched, field.TypeInt)
+	}
+	if value, ok := _u.mutation.FeatCount(); ok {
+		_spec.SetField(repository.FieldFeatCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedFeatCount(); ok {
+		_spec.AddField(repository.FieldFeatCount, field.TypeInt, value)
+	}
+	if _u.mutation.FeatCountCleared() {
+		_spec.ClearField(repository.FieldFeatCount, field.TypeInt)
+	}
+	if value, ok := _u.mutation.FixCount(); ok {
+		_spec.SetField(repository.FieldFixCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedFixCount(); ok {
+		_spec.AddField(repository.FieldFixCount, field.TypeInt, value)
+	}
+	if _u.mutation.FixCountCleared() {
+		_spec.ClearField(repository.FieldFixCount, field.TypeInt)
+	}
+	if value, ok := _u.mutation.DocsCount(); ok {
+		_spec.SetField(repository.FieldDocsCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedDocsCount(); ok {
+		_spec.AddField(repository.FieldDocsCount, field.TypeInt, value)
+	}
+	if _u.mutation.DocsCountCleared() {
+		_spec.ClearField(repository.FieldDocsCount, field.TypeInt)
+	}
+	if value, ok := _u.mutation.ChoreCount(); ok {
+		_spec.SetField(repository.FieldChoreCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedChoreCount(); ok {
+		_spec.AddField(repository.FieldChoreCount, field.TypeInt, value)
+	}
+	if _u.mutation.ChoreCountCleared() {
+		_spec.ClearField(repository.FieldChoreCount, field.TypeInt)
+	}
+	if value, ok := _u.mutation.OtherCommitCount(); ok {
+		_spec.SetField(repository.FieldOtherCommitCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedOtherCommitCount(); ok {
+		_spec.AddField(repository.FieldOtherCommitCount, field.TypeInt, value)
+	}
+	if _u.mutation.OtherCommitCountCleared() {
+		_spec.ClearField(repository.FieldOtherCommitCount, field.TypeInt)
+	}
+	if value, ok := _u.mutation.ReleaseCount(); ok {
+		_spec.SetField(repository.FieldReleaseCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedReleaseCount(); ok {
+		_spec.AddField(repository.FieldReleaseCount, field.TypeInt, value)
+	}
+	if _u.mutation.ReleaseCountCleared() {
+		_spec.ClearField(repository.FieldReleaseCount, field.TypeInt)
+	}
+	if value, ok := _u.mutation.AvgLeadTimeHours(); ok {
+		_spec.SetField(repository.FieldAvgLeadTimeHours, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedAvgLeadTimeHours(); ok {
+		_spec.AddField(repository.FieldAvgLeadTimeHours, field.TypeFloat64, value)
+	}
+	if _u.mutation.AvgLeadTimeHoursCleared() {
+		_spec.ClearField(repository.FieldAvgLeadTimeHours, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.WorkflowSuccessCount(); ok {
+		_spec.SetField(repository.FieldWorkflowSuccessCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedWorkflowSuccessCount(); ok {
+		_spec.AddField(repository.FieldWorkflowSuccessCount, field.TypeInt, value)
+	}
+	if _u.mutation.WorkflowSuccessCountCleared() {
+		_spec.ClearField(repository.FieldWorkflowSuccessCount, field.TypeInt)
+	}
+	if value, ok := _u.mutation.WorkflowFailureCount(); ok {
+		_spec.SetField(repository.FieldWorkflowFailureCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedWorkflowFailureCount(); ok {
+		_spec.AddField(repository.FieldWorkflowFailureCount, field.TypeInt, value)
+	}
+	if _u.mutation.WorkflowFailureCountCleared() {
+		_spec.ClearField(repository.FieldWorkflowFailureCount, field.TypeInt)
 	}
 	if value, ok := _u.mutation.SyncedAt(); ok {
 		_spec.SetField(repository.FieldSyncedAt, field.TypeTime, value)
@@ -888,6 +1248,276 @@ func (_u *RepositoryUpdateOne) ClearWorkflowRunID() *RepositoryUpdateOne {
 	return _u
 }
 
+// SetTotalCommitsFetched sets the "total_commits_fetched" field.
+func (_u *RepositoryUpdateOne) SetTotalCommitsFetched(v int) *RepositoryUpdateOne {
+	_u.mutation.ResetTotalCommitsFetched()
+	_u.mutation.SetTotalCommitsFetched(v)
+	return _u
+}
+
+// SetNillableTotalCommitsFetched sets the "total_commits_fetched" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillableTotalCommitsFetched(v *int) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetTotalCommitsFetched(*v)
+	}
+	return _u
+}
+
+// AddTotalCommitsFetched adds value to the "total_commits_fetched" field.
+func (_u *RepositoryUpdateOne) AddTotalCommitsFetched(v int) *RepositoryUpdateOne {
+	_u.mutation.AddTotalCommitsFetched(v)
+	return _u
+}
+
+// ClearTotalCommitsFetched clears the value of the "total_commits_fetched" field.
+func (_u *RepositoryUpdateOne) ClearTotalCommitsFetched() *RepositoryUpdateOne {
+	_u.mutation.ClearTotalCommitsFetched()
+	return _u
+}
+
+// SetFeatCount sets the "feat_count" field.
+func (_u *RepositoryUpdateOne) SetFeatCount(v int) *RepositoryUpdateOne {
+	_u.mutation.ResetFeatCount()
+	_u.mutation.SetFeatCount(v)
+	return _u
+}
+
+// SetNillableFeatCount sets the "feat_count" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillableFeatCount(v *int) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetFeatCount(*v)
+	}
+	return _u
+}
+
+// AddFeatCount adds value to the "feat_count" field.
+func (_u *RepositoryUpdateOne) AddFeatCount(v int) *RepositoryUpdateOne {
+	_u.mutation.AddFeatCount(v)
+	return _u
+}
+
+// ClearFeatCount clears the value of the "feat_count" field.
+func (_u *RepositoryUpdateOne) ClearFeatCount() *RepositoryUpdateOne {
+	_u.mutation.ClearFeatCount()
+	return _u
+}
+
+// SetFixCount sets the "fix_count" field.
+func (_u *RepositoryUpdateOne) SetFixCount(v int) *RepositoryUpdateOne {
+	_u.mutation.ResetFixCount()
+	_u.mutation.SetFixCount(v)
+	return _u
+}
+
+// SetNillableFixCount sets the "fix_count" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillableFixCount(v *int) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetFixCount(*v)
+	}
+	return _u
+}
+
+// AddFixCount adds value to the "fix_count" field.
+func (_u *RepositoryUpdateOne) AddFixCount(v int) *RepositoryUpdateOne {
+	_u.mutation.AddFixCount(v)
+	return _u
+}
+
+// ClearFixCount clears the value of the "fix_count" field.
+func (_u *RepositoryUpdateOne) ClearFixCount() *RepositoryUpdateOne {
+	_u.mutation.ClearFixCount()
+	return _u
+}
+
+// SetDocsCount sets the "docs_count" field.
+func (_u *RepositoryUpdateOne) SetDocsCount(v int) *RepositoryUpdateOne {
+	_u.mutation.ResetDocsCount()
+	_u.mutation.SetDocsCount(v)
+	return _u
+}
+
+// SetNillableDocsCount sets the "docs_count" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillableDocsCount(v *int) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetDocsCount(*v)
+	}
+	return _u
+}
+
+// AddDocsCount adds value to the "docs_count" field.
+func (_u *RepositoryUpdateOne) AddDocsCount(v int) *RepositoryUpdateOne {
+	_u.mutation.AddDocsCount(v)
+	return _u
+}
+
+// ClearDocsCount clears the value of the "docs_count" field.
+func (_u *RepositoryUpdateOne) ClearDocsCount() *RepositoryUpdateOne {
+	_u.mutation.ClearDocsCount()
+	return _u
+}
+
+// SetChoreCount sets the "chore_count" field.
+func (_u *RepositoryUpdateOne) SetChoreCount(v int) *RepositoryUpdateOne {
+	_u.mutation.ResetChoreCount()
+	_u.mutation.SetChoreCount(v)
+	return _u
+}
+
+// SetNillableChoreCount sets the "chore_count" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillableChoreCount(v *int) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetChoreCount(*v)
+	}
+	return _u
+}
+
+// AddChoreCount adds value to the "chore_count" field.
+func (_u *RepositoryUpdateOne) AddChoreCount(v int) *RepositoryUpdateOne {
+	_u.mutation.AddChoreCount(v)
+	return _u
+}
+
+// ClearChoreCount clears the value of the "chore_count" field.
+func (_u *RepositoryUpdateOne) ClearChoreCount() *RepositoryUpdateOne {
+	_u.mutation.ClearChoreCount()
+	return _u
+}
+
+// SetOtherCommitCount sets the "other_commit_count" field.
+func (_u *RepositoryUpdateOne) SetOtherCommitCount(v int) *RepositoryUpdateOne {
+	_u.mutation.ResetOtherCommitCount()
+	_u.mutation.SetOtherCommitCount(v)
+	return _u
+}
+
+// SetNillableOtherCommitCount sets the "other_commit_count" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillableOtherCommitCount(v *int) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetOtherCommitCount(*v)
+	}
+	return _u
+}
+
+// AddOtherCommitCount adds value to the "other_commit_count" field.
+func (_u *RepositoryUpdateOne) AddOtherCommitCount(v int) *RepositoryUpdateOne {
+	_u.mutation.AddOtherCommitCount(v)
+	return _u
+}
+
+// ClearOtherCommitCount clears the value of the "other_commit_count" field.
+func (_u *RepositoryUpdateOne) ClearOtherCommitCount() *RepositoryUpdateOne {
+	_u.mutation.ClearOtherCommitCount()
+	return _u
+}
+
+// SetReleaseCount sets the "release_count" field.
+func (_u *RepositoryUpdateOne) SetReleaseCount(v int) *RepositoryUpdateOne {
+	_u.mutation.ResetReleaseCount()
+	_u.mutation.SetReleaseCount(v)
+	return _u
+}
+
+// SetNillableReleaseCount sets the "release_count" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillableReleaseCount(v *int) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetReleaseCount(*v)
+	}
+	return _u
+}
+
+// AddReleaseCount adds value to the "release_count" field.
+func (_u *RepositoryUpdateOne) AddReleaseCount(v int) *RepositoryUpdateOne {
+	_u.mutation.AddReleaseCount(v)
+	return _u
+}
+
+// ClearReleaseCount clears the value of the "release_count" field.
+func (_u *RepositoryUpdateOne) ClearReleaseCount() *RepositoryUpdateOne {
+	_u.mutation.ClearReleaseCount()
+	return _u
+}
+
+// SetAvgLeadTimeHours sets the "avg_lead_time_hours" field.
+func (_u *RepositoryUpdateOne) SetAvgLeadTimeHours(v float64) *RepositoryUpdateOne {
+	_u.mutation.ResetAvgLeadTimeHours()
+	_u.mutation.SetAvgLeadTimeHours(v)
+	return _u
+}
+
+// SetNillableAvgLeadTimeHours sets the "avg_lead_time_hours" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillableAvgLeadTimeHours(v *float64) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetAvgLeadTimeHours(*v)
+	}
+	return _u
+}
+
+// AddAvgLeadTimeHours adds value to the "avg_lead_time_hours" field.
+func (_u *RepositoryUpdateOne) AddAvgLeadTimeHours(v float64) *RepositoryUpdateOne {
+	_u.mutation.AddAvgLeadTimeHours(v)
+	return _u
+}
+
+// ClearAvgLeadTimeHours clears the value of the "avg_lead_time_hours" field.
+func (_u *RepositoryUpdateOne) ClearAvgLeadTimeHours() *RepositoryUpdateOne {
+	_u.mutation.ClearAvgLeadTimeHours()
+	return _u
+}
+
+// SetWorkflowSuccessCount sets the "workflow_success_count" field.
+func (_u *RepositoryUpdateOne) SetWorkflowSuccessCount(v int) *RepositoryUpdateOne {
+	_u.mutation.ResetWorkflowSuccessCount()
+	_u.mutation.SetWorkflowSuccessCount(v)
+	return _u
+}
+
+// SetNillableWorkflowSuccessCount sets the "workflow_success_count" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillableWorkflowSuccessCount(v *int) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetWorkflowSuccessCount(*v)
+	}
+	return _u
+}
+
+// AddWorkflowSuccessCount adds value to the "workflow_success_count" field.
+func (_u *RepositoryUpdateOne) AddWorkflowSuccessCount(v int) *RepositoryUpdateOne {
+	_u.mutation.AddWorkflowSuccessCount(v)
+	return _u
+}
+
+// ClearWorkflowSuccessCount clears the value of the "workflow_success_count" field.
+func (_u *RepositoryUpdateOne) ClearWorkflowSuccessCount() *RepositoryUpdateOne {
+	_u.mutation.ClearWorkflowSuccessCount()
+	return _u
+}
+
+// SetWorkflowFailureCount sets the "workflow_failure_count" field.
+func (_u *RepositoryUpdateOne) SetWorkflowFailureCount(v int) *RepositoryUpdateOne {
+	_u.mutation.ResetWorkflowFailureCount()
+	_u.mutation.SetWorkflowFailureCount(v)
+	return _u
+}
+
+// SetNillableWorkflowFailureCount sets the "workflow_failure_count" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillableWorkflowFailureCount(v *int) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetWorkflowFailureCount(*v)
+	}
+	return _u
+}
+
+// AddWorkflowFailureCount adds value to the "workflow_failure_count" field.
+func (_u *RepositoryUpdateOne) AddWorkflowFailureCount(v int) *RepositoryUpdateOne {
+	_u.mutation.AddWorkflowFailureCount(v)
+	return _u
+}
+
+// ClearWorkflowFailureCount clears the value of the "workflow_failure_count" field.
+func (_u *RepositoryUpdateOne) ClearWorkflowFailureCount() *RepositoryUpdateOne {
+	_u.mutation.ClearWorkflowFailureCount()
+	return _u
+}
+
 // SetSyncedAt sets the "synced_at" field.
 func (_u *RepositoryUpdateOne) SetSyncedAt(v time.Time) *RepositoryUpdateOne {
 	_u.mutation.SetSyncedAt(v)
@@ -1119,6 +1749,96 @@ func (_u *RepositoryUpdateOne) sqlSave(ctx context.Context) (_node *Repository, 
 	}
 	if _u.mutation.WorkflowRunIDCleared() {
 		_spec.ClearField(repository.FieldWorkflowRunID, field.TypeInt64)
+	}
+	if value, ok := _u.mutation.TotalCommitsFetched(); ok {
+		_spec.SetField(repository.FieldTotalCommitsFetched, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedTotalCommitsFetched(); ok {
+		_spec.AddField(repository.FieldTotalCommitsFetched, field.TypeInt, value)
+	}
+	if _u.mutation.TotalCommitsFetchedCleared() {
+		_spec.ClearField(repository.FieldTotalCommitsFetched, field.TypeInt)
+	}
+	if value, ok := _u.mutation.FeatCount(); ok {
+		_spec.SetField(repository.FieldFeatCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedFeatCount(); ok {
+		_spec.AddField(repository.FieldFeatCount, field.TypeInt, value)
+	}
+	if _u.mutation.FeatCountCleared() {
+		_spec.ClearField(repository.FieldFeatCount, field.TypeInt)
+	}
+	if value, ok := _u.mutation.FixCount(); ok {
+		_spec.SetField(repository.FieldFixCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedFixCount(); ok {
+		_spec.AddField(repository.FieldFixCount, field.TypeInt, value)
+	}
+	if _u.mutation.FixCountCleared() {
+		_spec.ClearField(repository.FieldFixCount, field.TypeInt)
+	}
+	if value, ok := _u.mutation.DocsCount(); ok {
+		_spec.SetField(repository.FieldDocsCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedDocsCount(); ok {
+		_spec.AddField(repository.FieldDocsCount, field.TypeInt, value)
+	}
+	if _u.mutation.DocsCountCleared() {
+		_spec.ClearField(repository.FieldDocsCount, field.TypeInt)
+	}
+	if value, ok := _u.mutation.ChoreCount(); ok {
+		_spec.SetField(repository.FieldChoreCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedChoreCount(); ok {
+		_spec.AddField(repository.FieldChoreCount, field.TypeInt, value)
+	}
+	if _u.mutation.ChoreCountCleared() {
+		_spec.ClearField(repository.FieldChoreCount, field.TypeInt)
+	}
+	if value, ok := _u.mutation.OtherCommitCount(); ok {
+		_spec.SetField(repository.FieldOtherCommitCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedOtherCommitCount(); ok {
+		_spec.AddField(repository.FieldOtherCommitCount, field.TypeInt, value)
+	}
+	if _u.mutation.OtherCommitCountCleared() {
+		_spec.ClearField(repository.FieldOtherCommitCount, field.TypeInt)
+	}
+	if value, ok := _u.mutation.ReleaseCount(); ok {
+		_spec.SetField(repository.FieldReleaseCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedReleaseCount(); ok {
+		_spec.AddField(repository.FieldReleaseCount, field.TypeInt, value)
+	}
+	if _u.mutation.ReleaseCountCleared() {
+		_spec.ClearField(repository.FieldReleaseCount, field.TypeInt)
+	}
+	if value, ok := _u.mutation.AvgLeadTimeHours(); ok {
+		_spec.SetField(repository.FieldAvgLeadTimeHours, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedAvgLeadTimeHours(); ok {
+		_spec.AddField(repository.FieldAvgLeadTimeHours, field.TypeFloat64, value)
+	}
+	if _u.mutation.AvgLeadTimeHoursCleared() {
+		_spec.ClearField(repository.FieldAvgLeadTimeHours, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.WorkflowSuccessCount(); ok {
+		_spec.SetField(repository.FieldWorkflowSuccessCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedWorkflowSuccessCount(); ok {
+		_spec.AddField(repository.FieldWorkflowSuccessCount, field.TypeInt, value)
+	}
+	if _u.mutation.WorkflowSuccessCountCleared() {
+		_spec.ClearField(repository.FieldWorkflowSuccessCount, field.TypeInt)
+	}
+	if value, ok := _u.mutation.WorkflowFailureCount(); ok {
+		_spec.SetField(repository.FieldWorkflowFailureCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedWorkflowFailureCount(); ok {
+		_spec.AddField(repository.FieldWorkflowFailureCount, field.TypeInt, value)
+	}
+	if _u.mutation.WorkflowFailureCountCleared() {
+		_spec.ClearField(repository.FieldWorkflowFailureCount, field.TypeInt)
 	}
 	if value, ok := _u.mutation.SyncedAt(); ok {
 		_spec.SetField(repository.FieldSyncedAt, field.TypeTime, value)

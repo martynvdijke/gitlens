@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"math"
 	"net/http"
 	"strconv"
 
@@ -14,6 +15,26 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type DORAMetrics struct {
+	TotalRepos          int
+	TotalReleases       int
+	TotalCommits        int
+	FeatCount           int
+	FixCount            int
+	DocsCount           int
+	ChoreCount          int
+	OtherCount          int
+	WorkflowSuccesses   int
+	WorkflowFailures    int
+	WorkflowPassRate    float64
+	AvgLeadTimeHours    float64
+	FeatPct             float64
+	FixPct              float64
+	DocsPct             float64
+	ChorePct            float64
+	ReleasesPerRepo     float64
+}
+
 type DashboardHandler struct {
 	client *ent.Client
 	store  *mw.SessionStore
@@ -23,6 +44,50 @@ type DashboardHandler struct {
 
 func NewDashboardHandler(client *ent.Client, store *mw.SessionStore, gh *github.Client, syncer *sync.Syncer) *DashboardHandler {
 	return &DashboardHandler{client: client, store: store, gh: gh, syncer: syncer}
+}
+
+func computeMetrics(repos []*ent.Repository) *DORAMetrics {
+	m := &DORAMetrics{
+		TotalRepos: len(repos),
+	}
+	var leadSamples, leadSum float64
+	for _, r := range repos {
+		m.TotalReleases += r.ReleaseCount
+		m.TotalCommits += r.TotalCommitsFetched
+		m.FeatCount += r.FeatCount
+		m.FixCount += r.FixCount
+		m.DocsCount += r.DocsCount
+		m.ChoreCount += r.ChoreCount
+		m.OtherCount += r.OtherCommitCount
+		m.WorkflowSuccesses += r.WorkflowSuccessCount
+		m.WorkflowFailures += r.WorkflowFailureCount
+		if r.AvgLeadTimeHours > 0 {
+			leadSum += r.AvgLeadTimeHours
+			leadSamples++
+		}
+	}
+	totalCommits := m.FeatCount + m.FixCount + m.DocsCount + m.ChoreCount + m.OtherCount
+	if totalCommits > 0 {
+		m.FeatPct = roundPct(float64(m.FeatCount) / float64(totalCommits) * 100)
+		m.FixPct = roundPct(float64(m.FixCount) / float64(totalCommits) * 100)
+		m.DocsPct = roundPct(float64(m.DocsCount) / float64(totalCommits) * 100)
+		m.ChorePct = roundPct(float64(m.ChoreCount) / float64(totalCommits) * 100)
+	}
+	totalWorkflows := m.WorkflowSuccesses + m.WorkflowFailures
+	if totalWorkflows > 0 {
+		m.WorkflowPassRate = roundPct(float64(m.WorkflowSuccesses) / float64(totalWorkflows) * 100)
+	}
+	if leadSamples > 0 {
+		m.AvgLeadTimeHours = math.Round(leadSum/leadSamples*10) / 10
+	}
+	if m.TotalRepos > 0 {
+		m.ReleasesPerRepo = math.Round(float64(m.TotalReleases)/float64(m.TotalRepos)*10) / 10
+	}
+	return m
+}
+
+func roundPct(v float64) float64 {
+	return math.Round(v*10) / 10
 }
 
 func (h *DashboardHandler) Index(c *gin.Context) {
@@ -44,8 +109,9 @@ func (h *DashboardHandler) Index(c *gin.Context) {
 	}
 
 	c.HTML(http.StatusOK, "index.html", gin.H{
-		"User":  u,
-		"Repos": repos,
+		"User":    u,
+		"Repos":   repos,
+		"Metrics": computeMetrics(repos),
 	})
 }
 
@@ -58,8 +124,9 @@ func (h *DashboardHandler) Dashboard(c *gin.Context) {
 		All(c.Request.Context())
 
 	c.HTML(http.StatusOK, "dashboard", gin.H{
-		"User":  u,
-		"Repos": repos,
+		"User":    u,
+		"Repos":   repos,
+		"Metrics": computeMetrics(repos),
 	})
 }
 
