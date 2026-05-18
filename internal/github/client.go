@@ -14,6 +14,8 @@ type Client struct {
 	clientID     string
 	clientSecret string
 	httpClient   *http.Client
+	tokenURL     string
+	apiURL       string
 }
 
 func NewClient(clientID, clientSecret string) *Client {
@@ -23,6 +25,8 @@ func NewClient(clientID, clientSecret string) *Client {
 		httpClient: &http.Client{
 			Timeout: 30 * time.Second,
 		},
+		tokenURL: "https://github.com/login/oauth/access_token",
+		apiURL:   "https://api.github.com",
 	}
 }
 
@@ -136,7 +140,7 @@ func (c *Client) GetAccessToken(code string) (string, error) {
 		"client_secret": {c.clientSecret},
 		"code":          {code},
 	}
-	req, err := http.NewRequest("POST", "https://github.com/login/oauth/access_token", strings.NewReader(form.Encode()))
+	req, err := http.NewRequest("POST", c.tokenURL, strings.NewReader(form.Encode()))
 	if err != nil {
 		return "", fmt.Errorf("creating token request: %w", err)
 	}
@@ -166,7 +170,7 @@ func (c *Client) GetAccessToken(code string) (string, error) {
 }
 
 func (c *Client) GetUser(token string) (*User, error) {
-	resp, err := c.doRequest("GET", "https://api.github.com/user", token, nil)
+	resp, err := c.doRequest("GET", c.apiURL+"/user", token, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -188,7 +192,7 @@ func (c *Client) ListRepositories(token string) ([]*Repository, error) {
 	var allRepos []*Repository
 	page := 1
 	for {
-		url := fmt.Sprintf("https://api.github.com/user/repos?per_page=100&page=%d&sort=updated", page)
+		url := fmt.Sprintf("%s/user/repos?per_page=100&page=%d&sort=updated", c.apiURL, page)
 		resp, err := c.doRequest("GET", url, token, nil)
 		if err != nil {
 			return nil, err
@@ -223,7 +227,7 @@ func (c *Client) ListRepositories(token string) ([]*Repository, error) {
 }
 
 func (c *Client) GetLatestCommit(token, owner, repo, branch string) (*Commit, error) {
-	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/commits?per_page=1&sha=%s", owner, repo, branch)
+	url := fmt.Sprintf("%s/repos/%s/%s/commits?per_page=1&sha=%s", c.apiURL, owner, repo, branch)
 	resp, err := c.doRequest("GET", url, token, nil)
 	if err != nil {
 		return nil, err
@@ -247,7 +251,7 @@ func (c *Client) GetLatestCommit(token, owner, repo, branch string) (*Commit, er
 }
 
 func (c *Client) GetLatestRelease(token, owner, repo string) (*Release, error) {
-	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", owner, repo)
+	url := fmt.Sprintf("%s/repos/%s/%s/releases/latest", c.apiURL, owner, repo)
 	resp, err := c.doRequest("GET", url, token, nil)
 	if err != nil {
 		return nil, err
@@ -268,7 +272,7 @@ func (c *Client) GetLatestRelease(token, owner, repo string) (*Release, error) {
 }
 
 func (c *Client) GetWorkflowStatus(token, owner, repo, branch string) (*WorkflowRun, error) {
-	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/actions/runs?per_page=1&branch=%s&status=completed", owner, repo, branch)
+	url := fmt.Sprintf("%s/repos/%s/%s/actions/runs?per_page=1&branch=%s&status=completed", c.apiURL, owner, repo, branch)
 	resp, err := c.doRequest("GET", url, token, nil)
 	if err != nil {
 		return nil, err
