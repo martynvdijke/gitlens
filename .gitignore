@@ -1,7 +1,11 @@
 gitoverviewer
+gitlens
 gitoverviewer.db
+gitlens.db
 gitoverviewer.db-wal
+gitlens.db-wal
 gitoverviewer.db-shm
+gitlens.db-shm
 static/js/
 node_modules/*
 test-results/*
