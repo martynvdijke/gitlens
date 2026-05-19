@@ -17,7 +17,7 @@ func TestGetAccessToken(t *testing.T) {
 	defer srv.Close()
 
 	c := NewClient("client_id", "client_secret")
-	c.tokenURL = srv.URL
+	c.TokenURL = srv.URL
 
 	token, err := c.GetAccessToken("code123")
 	if err != nil {
@@ -36,7 +36,7 @@ func TestGetAccessTokenError(t *testing.T) {
 	defer srv.Close()
 
 	c := NewClient("client_id", "client_secret")
-	c.tokenURL = srv.URL
+	c.TokenURL = srv.URL
 
 	_, err := c.GetAccessToken("bad_code")
 	if err == nil {
@@ -55,7 +55,7 @@ func TestGetUser(t *testing.T) {
 	defer srv.Close()
 
 	c := NewClient("", "")
-	c.apiURL = srv.URL
+	c.APIURL = srv.URL
 
 	u, err := c.GetUser("test_token")
 	if err != nil {
@@ -83,7 +83,7 @@ func TestListRepositories(t *testing.T) {
 	defer srv.Close()
 
 	c := NewClient("", "")
-	c.apiURL = srv.URL
+	c.APIURL = srv.URL
 
 	repos, err := c.ListRepositories("test_token")
 	if err != nil {
@@ -113,7 +113,7 @@ func TestGetLatestCommit(t *testing.T) {
 	defer srv.Close()
 
 	c := NewClient("", "")
-	c.apiURL = srv.URL
+	c.APIURL = srv.URL
 
 	commit, err := c.GetLatestCommit("token", "user", "repo", "main")
 	if err != nil {
@@ -138,7 +138,7 @@ func TestGetLatestRelease(t *testing.T) {
 	defer srv.Close()
 
 	c := NewClient("", "")
-	c.apiURL = srv.URL
+	c.APIURL = srv.URL
 
 	release, err := c.GetLatestRelease("token", "user", "repo")
 	if err != nil {
@@ -157,7 +157,7 @@ func TestGetWorkflowStatus(t *testing.T) {
 	defer srv.Close()
 
 	c := NewClient("", "")
-	c.apiURL = srv.URL
+	c.APIURL = srv.URL
 
 	run, err := c.GetWorkflowStatus("token", "user", "repo", "main")
 	if err != nil {
@@ -176,7 +176,7 @@ func TestGetLatestCommit_Empty(t *testing.T) {
 	defer srv.Close()
 
 	c := NewClient("", "")
-	c.apiURL = srv.URL
+	c.APIURL = srv.URL
 
 	_, err := c.GetLatestCommit("token", "user", "repo", "main")
 	if err == nil {
@@ -191,7 +191,7 @@ func TestGetLatestRelease_NotFound(t *testing.T) {
 	defer srv.Close()
 
 	c := NewClient("", "")
-	c.apiURL = srv.URL
+	c.APIURL = srv.URL
 
 	_, err := c.GetLatestRelease("token", "user", "repo")
 	if err == nil {
@@ -207,7 +207,7 @@ func TestGetWorkflowStatus_NoRuns(t *testing.T) {
 	defer srv.Close()
 
 	c := NewClient("", "")
-	c.apiURL = srv.URL
+	c.APIURL = srv.URL
 
 	_, err := c.GetWorkflowStatus("token", "user", "repo", "main")
 	if err == nil {
@@ -231,7 +231,7 @@ func TestTruncateNewlineInCommitMessage(t *testing.T) {
 	defer srv.Close()
 
 	c := NewClient("", "")
-	c.apiURL = srv.URL
+	c.APIURL = srv.URL
 
 	commit, err := c.GetLatestCommit("token", "user", "repo", "main")
 	if err != nil {
@@ -326,7 +326,7 @@ func TestGetCommits(t *testing.T) {
 	defer srv.Close()
 
 	c := NewClient("", "")
-	c.apiURL = srv.URL
+	c.APIURL = srv.URL
 
 	commits, err := c.GetCommits("token", "user", "repo", "main", 3)
 	if err != nil {
@@ -357,7 +357,7 @@ func TestListReleases(t *testing.T) {
 	defer srv.Close()
 
 	c := NewClient("", "")
-	c.apiURL = srv.URL
+	c.APIURL = srv.URL
 
 	releases, err := c.ListReleases("token", "user", "repo")
 	if err != nil {
@@ -382,7 +382,7 @@ func TestGetWorkflowRuns(t *testing.T) {
 	defer srv.Close()
 
 	c := NewClient("", "")
-	c.apiURL = srv.URL
+	c.APIURL = srv.URL
 
 	runs, err := c.GetWorkflowRuns("token", "user", "repo", "main", 2)
 	if err != nil {
@@ -404,7 +404,7 @@ func TestListReleases_Empty(t *testing.T) {
 	defer srv.Close()
 
 	c := NewClient("", "")
-	c.apiURL = srv.URL
+	c.APIURL = srv.URL
 
 	releases, err := c.ListReleases("token", "user", "repo")
 	if err != nil {

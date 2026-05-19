@@ -27,6 +27,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	redirectURL := os.Getenv("GITHUB_REDIRECT_URL")
 	if redirectURL == "" {
 		redirectURL = "http://localhost:6270/auth/github/callback"
+		log.Println("WARNING: GITHUB_REDIRECT_URL not set, using default: " + redirectURL + ". Set this env var to your deployed callback URL (e.g. https://yourdomain.com/auth/github/callback)")
 	}
 	clientID := os.Getenv("GITHUB_CLIENT_ID")
 	url := "https://github.com/login/oauth/authorize?client_id=" + clientID + "&redirect_uri=" + redirectURL + "&scope=repo,read:user"

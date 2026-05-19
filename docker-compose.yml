@@ -1,13 +1,17 @@
 version: '3.8'
 
 services:
-  gitoverviewer:
-    image: ghcr.io/martynvdijke/gitoverviewer:latest
+  gitlens:
+    image: ghcr.io/martynvdijke/gitlens:latest
+    container_name: gitlens
+    ports:
+      - "6270:6270"
+    env_file:
+      - .env
     volumes:
-      - gitoverviewer-data:/app
-      - gitoverviewer-db:/db
-    container_name: gitoverviewer
+      - gitlens-data:/app
+      - gitlens-db:/db
 
 volumes:
-  gitoverviewer-data:
-  gitoverviewer-db:
+  gitlens-data:
+  gitlens-db:

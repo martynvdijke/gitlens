@@ -14,8 +14,8 @@ type Client struct {
 	clientID     string
 	clientSecret string
 	httpClient   *http.Client
-	tokenURL     string
-	apiURL       string
+	TokenURL     string
+	APIURL       string
 }
 
 func NewClient(clientID, clientSecret string) *Client {
@@ -25,8 +25,8 @@ func NewClient(clientID, clientSecret string) *Client {
 		httpClient: &http.Client{
 			Timeout: 30 * time.Second,
 		},
-		tokenURL: "https://github.com/login/oauth/access_token",
-		apiURL:   "https://api.github.com",
+		TokenURL: "https://github.com/login/oauth/access_token",
+		APIURL:   "https://api.github.com",
 	}
 }
 
@@ -140,7 +140,7 @@ func (c *Client) GetAccessToken(code string) (string, error) {
 		"client_secret": {c.clientSecret},
 		"code":          {code},
 	}
-	req, err := http.NewRequest("POST", c.tokenURL, strings.NewReader(form.Encode()))
+	req, err := http.NewRequest("POST", c.TokenURL, strings.NewReader(form.Encode()))
 	if err != nil {
 		return "", fmt.Errorf("creating token request: %w", err)
 	}
@@ -170,7 +170,7 @@ func (c *Client) GetAccessToken(code string) (string, error) {
 }
 
 func (c *Client) GetUser(token string) (*User, error) {
-	resp, err := c.doRequest("GET", c.apiURL+"/user", token, nil)
+	resp, err := c.doRequest("GET", c.APIURL+"/user", token, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +192,7 @@ func (c *Client) ListRepositories(token string) ([]*Repository, error) {
 	var allRepos []*Repository
 	page := 1
 	for {
-		url := fmt.Sprintf("%s/user/repos?per_page=100&page=%d&sort=updated", c.apiURL, page)
+		url := fmt.Sprintf("%s/user/repos?per_page=100&page=%d&sort=updated", c.APIURL, page)
 		resp, err := c.doRequest("GET", url, token, nil)
 		if err != nil {
 			return nil, err
@@ -227,7 +227,7 @@ func (c *Client) ListRepositories(token string) ([]*Repository, error) {
 }
 
 func (c *Client) GetLatestCommit(token, owner, repo, branch string) (*Commit, error) {
-	url := fmt.Sprintf("%s/repos/%s/%s/commits?per_page=1&sha=%s", c.apiURL, owner, repo, branch)
+	url := fmt.Sprintf("%s/repos/%s/%s/commits?per_page=1&sha=%s", c.APIURL, owner, repo, branch)
 	resp, err := c.doRequest("GET", url, token, nil)
 	if err != nil {
 		return nil, err
@@ -251,7 +251,7 @@ func (c *Client) GetLatestCommit(token, owner, repo, branch string) (*Commit, er
 }
 
 func (c *Client) GetCommits(token, owner, repo, branch string, perPage int) ([]*Commit, error) {
-	url := fmt.Sprintf("%s/repos/%s/%s/commits?per_page=%d&sha=%s", c.apiURL, owner, repo, perPage, branch)
+	url := fmt.Sprintf("%s/repos/%s/%s/commits?per_page=%d&sha=%s", c.APIURL, owner, repo, perPage, branch)
 	resp, err := c.doRequest("GET", url, token, nil)
 	if err != nil {
 		return nil, err
@@ -302,7 +302,7 @@ func ParseCommitType(msg string) string {
 }
 
 func (c *Client) GetLatestRelease(token, owner, repo string) (*Release, error) {
-	url := fmt.Sprintf("%s/repos/%s/%s/releases/latest", c.apiURL, owner, repo)
+	url := fmt.Sprintf("%s/repos/%s/%s/releases/latest", c.APIURL, owner, repo)
 	resp, err := c.doRequest("GET", url, token, nil)
 	if err != nil {
 		return nil, err
@@ -326,7 +326,7 @@ func (c *Client) ListReleases(token, owner, repo string) ([]*Release, error) {
 	var all []*Release
 	page := 1
 	for {
-		url := fmt.Sprintf("%s/repos/%s/%s/releases?per_page=100&page=%d", c.apiURL, owner, repo, page)
+		url := fmt.Sprintf("%s/repos/%s/%s/releases?per_page=100&page=%d", c.APIURL, owner, repo, page)
 		resp, err := c.doRequest("GET", url, token, nil)
 		if err != nil {
 			return all, err
@@ -352,7 +352,7 @@ func (c *Client) ListReleases(token, owner, repo string) ([]*Release, error) {
 }
 
 func (c *Client) GetWorkflowRuns(token, owner, repo, branch string, perPage int) ([]*WorkflowRun, error) {
-	url := fmt.Sprintf("%s/repos/%s/%s/actions/runs?per_page=%d&branch=%s", c.apiURL, owner, repo, perPage, branch)
+	url := fmt.Sprintf("%s/repos/%s/%s/actions/runs?per_page=%d&branch=%s", c.APIURL, owner, repo, perPage, branch)
 	resp, err := c.doRequest("GET", url, token, nil)
 	if err != nil {
 		return nil, err
@@ -371,7 +371,7 @@ func (c *Client) GetWorkflowRuns(token, owner, repo, branch string, perPage int)
 }
 
 func (c *Client) GetWorkflowStatus(token, owner, repo, branch string) (*WorkflowRun, error) {
-	url := fmt.Sprintf("%s/repos/%s/%s/actions/runs?per_page=1&branch=%s&status=completed", c.apiURL, owner, repo, branch)
+	url := fmt.Sprintf("%s/repos/%s/%s/actions/runs?per_page=1&branch=%s&status=completed", c.APIURL, owner, repo, branch)
 	resp, err := c.doRequest("GET", url, token, nil)
 	if err != nil {
 		return nil, err
