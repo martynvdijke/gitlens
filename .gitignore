@@ -2,5 +2,9 @@ gitoverviewer
 gitoverviewer.db
 gitoverviewer.db-wal
 gitoverviewer.db-shm
+static/js/
+node_modules/*
+test-results/*
+playwright-report/*
 tmp/
 .env

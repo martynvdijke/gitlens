@@ -1,0 +1,28 @@
+{
+  "name": "gitoverviewer",
+  "version": "0.1.0",
+  "description": "A Go-based web application for monitoring and visualizing Git repository activity across multiple repositories.",
+  "main": "index.js",
+  "scripts": {
+    "test": "go test ./...",
+    "test:e2e": "npx playwright test",
+    "build:ts": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/martynvdijke/gitoverviewer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/martynvdijke/gitoverviewer/issues"
+  },
+  "homepage": "https://github.com/martynvdijke/gitoverviewer#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^25.6.0",
+    "typescript": "^6.0.3"
+  }
+}

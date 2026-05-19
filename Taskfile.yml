@@ -1,15 +1,23 @@
-version: "3"
+version: '3'
 
 tasks:
   default:
-    desc: Build the project
+    desc: List available tasks
     cmds:
-      - task: build
+      - task --list
 
-  build:
-    desc: Build the binary
+  install:
+    desc: Install all dependencies (Go, NPM, Playwright)
     cmds:
-      - go build -o gitoverviewer .
+      - go mod download
+      - npm install
+      - npx playwright install --with-deps chromium
+      - task: build:ts
+
+  fmt:
+    desc: Format code (Go)
+    cmds:
+      - go fmt ./...
 
   generate:
     desc: Generate ent code
@@ -21,20 +29,66 @@ tasks:
     cmds:
       - go mod tidy
 
-  dev:
-    desc: Run in development mode with air
+  test:
+    desc: Run Go unit tests
     cmds:
-      - air
+      - go test -tags "sqlite_fts5" -v ./...
+
+  test:e2e:
+    desc: Run Playwright end-to-end tests
+    cmds:
+      - rm -f gitoverviewer.db gitoverviewer.db-wal gitoverviewer.db-shm
+      - npx playwright test
+
+  build:ts:
+    desc: Compile TypeScript to JavaScript
+    cmds:
+      - npm run build:ts
+
+  build:
+    desc: Build the Go binary
+    cmds:
+      - task: build:ts
+      - go build -o gitoverviewer .
+
+  pre-push:
+    desc: Run all checks before pushing
+    cmds:
+      - task: fmt
+      - task: generate
+      - task: tidy
+      - task: test
+      - task: build:ts
+      - task: build
 
   run:
-    desc: Run the server
+    desc: Run the application locally
     cmds:
       - go run .
 
+  dev:
+    desc: Run with hot-reload (Air)
+    cmds:
+      - air
+
+  docker:build:
+    desc: Build Docker image
+    cmds:
+      - docker build . -t gitoverviewer:local
+
   clean:
-    desc: Clean build artifacts
+    desc: Clean build artifacts and local database
     cmds:
       - rm -f gitoverviewer
       - rm -f gitoverviewer.db
       - rm -f gitoverviewer.db-wal
       - rm -f gitoverviewer.db-shm
+      - rm -rf playwright-report
+      - rm -rf test-results
+
+  all:
+    desc: Run format, test, and build
+    cmds:
+      - task: fmt
+      - task: test
+      - task: build

@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  gitoverviewer:
+    image: ghcr.io/martynvdijke/gitoverviewer:latest
+    volumes:
+      - gitoverviewer-data:/app
+      - gitoverviewer-db:/db
+    container_name: gitoverviewer
+
+volumes:
+  gitoverviewer-data:
+  gitoverviewer-db:
