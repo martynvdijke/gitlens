@@ -71,16 +71,16 @@ jobs:
 
       - name: Build the Docker image
         if: steps.semantic.outputs.new_release_published == 'true'
-        run: docker build . --file Dockerfile --tag martynvandijke/traces:latest --tag ghcr.io/martynvdijke/traces:latest
+        run: docker build . --file Dockerfile --tag martynvandijke/gitlens:latest --tag ghcr.io/martynvdijke/gitlens:latest
         
       - name: Push Docker image
         if: steps.semantic.outputs.new_release_published == 'true'
         run: |
           VERSION=${{ steps.semantic.outputs.new_release_version }}
-          docker tag martynvandijke/traces:latest martynvandijke/traces:$VERSION
-          docker tag ghcr.io/martynvdijke/traces:latest ghcr.io/martynvdijke/traces:$VERSION
+          docker tag martynvandijke/gitlens:latest martynvandijke/gitlens:$VERSION
+          docker tag ghcr.io/martynvdijke/gitlens:latest ghcr.io/martynvdijke/gitlens:$VERSION
           
-          docker push martynvandijke/traces:latest
-          docker push martynvandijke/traces:$VERSION
-          docker push ghcr.io/martynvdijke/traces:latest
-          docker push ghcr.io/martynvdijke/traces:$VERSION
+          docker push martynvandijke/gitlens:latest
+          docker push martynvandijke/gitlens:$VERSION
+          docker push ghcr.io/martynvdijke/gitlens:latest
+          docker push ghcr.io/martynvdijke/gitlens:$VERSION
