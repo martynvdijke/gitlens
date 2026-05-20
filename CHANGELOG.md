@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/martynvdijke/gitlens/compare/v1.0.0...v1.0.1) (2026-05-20)
+
+
+### Bug Fixes
+
+* ensure Gotify notification always fires on release workflow ([5dfa529](https://github.com/martynvdijke/gitlens/commit/5dfa529a7a86209ff5578715c4127cb850734184))
+
 # 1.0.0 (2026-05-20)
 
 
