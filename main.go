@@ -14,14 +14,14 @@ import (
 
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
-	"gitoverviewer/ent"
-	"gitoverviewer/ent/repository"
-	"gitoverviewer/ent/user"
-	"gitoverviewer/internal/github"
-	"gitoverviewer/internal/handlers"
-	"gitoverviewer/internal/middleware"
-	"gitoverviewer/internal/sync"
-	"gitoverviewer/internal/ws"
+	"gitlens/ent"
+	"gitlens/ent/repository"
+	"gitlens/ent/user"
+	"gitlens/internal/github"
+	"gitlens/internal/handlers"
+	"gitlens/internal/middleware"
+	"gitlens/internal/sync"
+	"gitlens/internal/ws"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
@@ -30,7 +30,7 @@ import (
 func main() {
 	dbPath := os.Getenv("DB_PATH")
 	if dbPath == "" {
-		dbPath = "gitoverviewer.db"
+		dbPath = "gitlens.db"
 	}
 	db, err := sql.Open("sqlite3", "file:"+dbPath+"?mode=wal&_fk=1")
 	if err != nil {

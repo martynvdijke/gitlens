@@ -22,7 +22,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: './gitoverviewer',
+    command: './gitlens',
     url: 'http://localhost:6270',
     reuseExistingServer: !process.env.CI,
   },

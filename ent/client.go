@@ -9,10 +9,10 @@ import (
 	"log"
 	"reflect"
 
-	"gitoverviewer/ent/migrate"
+	"gitlens/ent/migrate"
 
-	"gitoverviewer/ent/repository"
-	"gitoverviewer/ent/user"
+	"gitlens/ent/repository"
+	"gitlens/ent/user"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"

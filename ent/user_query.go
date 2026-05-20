@@ -6,9 +6,9 @@ import (
 	"context"
 	"database/sql/driver"
 	"fmt"
-	"gitoverviewer/ent/predicate"
-	"gitoverviewer/ent/repository"
-	"gitoverviewer/ent/user"
+	"gitlens/ent/predicate"
+	"gitlens/ent/repository"
+	"gitlens/ent/user"
 	"math"
 
 	"entgo.io/ent"

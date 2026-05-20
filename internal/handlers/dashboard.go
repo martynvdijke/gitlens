@@ -5,12 +5,12 @@ import (
 	"net/http"
 	"strconv"
 
-	"gitoverviewer/ent"
-	"gitoverviewer/ent/repository"
-	"gitoverviewer/ent/user"
-	"gitoverviewer/internal/github"
-	mw "gitoverviewer/internal/middleware"
-	"gitoverviewer/internal/sync"
+	"gitlens/ent"
+	"gitlens/ent/repository"
+	"gitlens/ent/user"
+	"gitlens/internal/github"
+	mw "gitlens/internal/middleware"
+	"gitlens/internal/sync"
 
 	"github.com/gin-gonic/gin"
 )
@@ -94,7 +94,7 @@ func (h *DashboardHandler) Index(c *gin.Context) {
 	var u *ent.User
 	var repos []*ent.Repository
 
-	sessionID, err := c.Cookie("gitoverviewer_session")
+	sessionID, err := c.Cookie("gitlens_session")
 	if err == nil {
 		userID, ok := h.store.Get(sessionID)
 		if ok {

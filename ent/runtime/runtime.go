@@ -2,7 +2,7 @@
 
 package runtime
 
-// The schema-stitching logic is generated in gitoverviewer/ent/runtime.go
+// The schema-stitching logic is generated in gitlens/ent/runtime.go
 
 const (
 	Version = "v0.14.6"                                         // Version of ent codegen.

@@ -37,7 +37,7 @@ tasks:
   test:e2e:
     desc: Run Playwright end-to-end tests
     cmds:
-      - rm -f gitoverviewer.db gitoverviewer.db-wal gitoverviewer.db-shm
+      - rm -f gitlens.db gitlens.db-wal gitlens.db-shm
       - npx playwright test
 
   build:ts:
@@ -49,7 +49,7 @@ tasks:
     desc: Build the Go binary
     cmds:
       - task: build:ts
-      - go build -o gitoverviewer .
+      - go build -o gitlens .
 
   pre-push:
     desc: Run all checks before pushing
@@ -74,15 +74,15 @@ tasks:
   docker:build:
     desc: Build Docker image
     cmds:
-      - docker build . -t gitoverviewer:local
+      - docker build . -t gitlens:local
 
   clean:
     desc: Clean build artifacts and local database
     cmds:
-      - rm -f gitoverviewer
-      - rm -f gitoverviewer.db
-      - rm -f gitoverviewer.db-wal
-      - rm -f gitoverviewer.db-shm
+      - rm -f gitlens
+      - rm -f gitlens.db
+      - rm -f gitlens.db-wal
+      - rm -f gitlens.db-shm
       - rm -rf playwright-report
       - rm -rf test-results
 

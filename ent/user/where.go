@@ -3,7 +3,7 @@
 package user
 
 import (
-	"gitoverviewer/ent/predicate"
+	"gitlens/ent/predicate"
 	"time"
 
 	"entgo.io/ent/dialect/sql"

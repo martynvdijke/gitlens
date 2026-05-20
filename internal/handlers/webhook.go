@@ -10,9 +10,9 @@ import (
 	"log"
 	"net/http"
 
-	"gitoverviewer/ent"
-	"gitoverviewer/ent/repository"
-	"gitoverviewer/internal/sync"
+	"gitlens/ent"
+	"gitlens/ent/repository"
+	"gitlens/internal/sync"
 
 	"github.com/gin-gonic/gin"
 )

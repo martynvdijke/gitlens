@@ -5,11 +5,11 @@ package enttest
 import (
 	"context"
 
-	"gitoverviewer/ent"
+	"gitlens/ent"
 	// required by schema hooks.
-	_ "gitoverviewer/ent/runtime"
+	_ "gitlens/ent/runtime"
 
-	"gitoverviewer/ent/migrate"
+	"gitlens/ent/migrate"
 
 	"entgo.io/ent/dialect/sql/schema"
 )

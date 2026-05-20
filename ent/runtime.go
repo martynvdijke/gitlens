@@ -3,9 +3,9 @@
 package ent
 
 import (
-	"gitoverviewer/ent/repository"
-	"gitoverviewer/ent/schema"
-	"gitoverviewer/ent/user"
+	"gitlens/ent/repository"
+	"gitlens/ent/schema"
+	"gitlens/ent/user"
 	"time"
 )
 

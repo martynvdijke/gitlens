@@ -6,9 +6,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"gitoverviewer/ent/predicate"
-	"gitoverviewer/ent/repository"
-	"gitoverviewer/ent/user"
+	"gitlens/ent/predicate"
+	"gitlens/ent/repository"
+	"gitlens/ent/user"
 	"sync"
 	"time"
 

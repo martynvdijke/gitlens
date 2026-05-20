@@ -55,7 +55,7 @@ jobs:
         run: npx playwright install --with-deps chromium firefox
 
       - name: Build server binary
-        run: CGO_ENABLED=1 go build -o villum-server .
+        run: CGO_ENABLED=1 go build -o gitlens .
 
       - name: Run Playwright tests
         run: npm run test:e2e

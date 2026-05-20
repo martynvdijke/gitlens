@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	sessionCookieName = "gitoverviewer_session"
+	sessionCookieName = "gitlens_session"
 	sessionMaxAge     = 7 * 24 * time.Hour
 )
 

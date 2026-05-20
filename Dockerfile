@@ -18,7 +18,7 @@ RUN go mod download
 COPY . .
 COPY --from=ts-builder /app/static/js ./static/js
 
-RUN CGO_ENABLED=1 GOOS=linux go build -o gitoverviewer .
+RUN CGO_ENABLED=1 GOOS=linux go build -o gitlens .
 
 FROM alpine:latest
 RUN apk add --no-cache sqlite-libs ca-certificates
@@ -27,11 +27,11 @@ WORKDIR /app
 
 ENV DOCKER=true
 
-COPY --from=builder /app/gitoverviewer .
+COPY --from=builder /app/gitlens .
 COPY --from=builder /app/static ./static
 
 RUN mkdir -p /db /app/media && chmod 777 /db /app/media
 
 EXPOSE 6270
 
-CMD ["./gitoverviewer"]
+CMD ["./gitlens"]

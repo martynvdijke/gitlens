@@ -1,4 +1,4 @@
-module gitoverviewer
+module gitlens
 
 go 1.26.3
 

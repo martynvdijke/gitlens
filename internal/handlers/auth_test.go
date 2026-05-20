@@ -8,10 +8,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"gitoverviewer/ent"
-	"gitoverviewer/ent/enttest"
-	"gitoverviewer/internal/github"
-	"gitoverviewer/internal/middleware"
+	"gitlens/ent"
+	"gitlens/ent/enttest"
+	"gitlens/internal/github"
+	"gitlens/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
@@ -138,7 +138,7 @@ func TestCallback_Success(t *testing.T) {
 	cookies := w.Result().Cookies()
 	var sessionCookie string
 	for _, cookie := range cookies {
-		if cookie.Name == "gitoverviewer_session" {
+		if cookie.Name == "gitlens_session" {
 			sessionCookie = cookie.Value
 			break
 		}
@@ -204,7 +204,7 @@ func TestLogout(t *testing.T) {
 	sessionID := store.Set(42)
 
 	w := serveTestRequest(handler.Logout, "POST", "/test/logout",
-		&http.Cookie{Name: "gitoverviewer_session", Value: sessionID})
+		&http.Cookie{Name: "gitlens_session", Value: sessionID})
 
 	if w.Code != http.StatusFound {
 		t.Fatalf("expected 302, got %d", w.Code)
@@ -220,7 +220,7 @@ func TestLogout(t *testing.T) {
 	cookies := w.Result().Cookies()
 	var sessionCookie *http.Cookie
 	for _, cookie := range cookies {
-		if cookie.Name == "gitoverviewer_session" {
+		if cookie.Name == "gitlens_session" {
 			sessionCookie = cookie
 			break
 		}
@@ -284,7 +284,7 @@ func TestCallback_WithAccessTokenInResponse(t *testing.T) {
 
 	var sessionID string
 	for _, cookie := range w.Result().Cookies() {
-		if cookie.Name == "gitoverviewer_session" {
+		if cookie.Name == "gitlens_session" {
 			sessionID = cookie.Value
 			break
 		}

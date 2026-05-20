@@ -2,8 +2,8 @@ root = "."
 tmp_dir = "tmp"
 
 [build]
-  bin = "./tmp/gitoverviewer"
-  cmd = "go build -o ./tmp/gitoverviewer ."
+  bin = "./tmp/gitlens"
+  cmd = "go build -o ./tmp/gitlens ."
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", "ent"]
   exclude_file = []

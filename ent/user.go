@@ -4,7 +4,7 @@ package ent
 
 import (
 	"fmt"
-	"gitoverviewer/ent/user"
+	"gitlens/ent/user"
 	"strings"
 	"time"
 

@@ -4,8 +4,8 @@ package ent
 
 import (
 	"fmt"
-	"gitoverviewer/ent/repository"
-	"gitoverviewer/ent/user"
+	"gitlens/ent/repository"
+	"gitlens/ent/user"
 	"strings"
 	"time"
 

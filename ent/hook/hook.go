@@ -5,7 +5,7 @@ package hook
 import (
 	"context"
 	"fmt"
-	"gitoverviewer/ent"
+	"gitlens/ent"
 )
 
 // The RepositoryFunc type is an adapter to allow the use of ordinary

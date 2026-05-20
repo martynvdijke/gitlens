@@ -6,8 +6,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"gitoverviewer/ent/repository"
-	"gitoverviewer/ent/user"
+	"gitlens/ent/repository"
+	"gitlens/ent/user"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"

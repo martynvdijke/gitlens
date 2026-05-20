@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"os"
 
-	"gitoverviewer/ent"
-	"gitoverviewer/ent/user"
-	"gitoverviewer/internal/github"
-	"gitoverviewer/internal/middleware"
+	"gitlens/ent"
+	"gitlens/ent/user"
+	"gitlens/internal/github"
+	"gitlens/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -93,7 +93,7 @@ func (h *AuthHandler) Callback(c *gin.Context) {
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {
-	sessionID, _ := c.Cookie("gitoverviewer_session")
+	sessionID, _ := c.Cookie("gitlens_session")
 	if sessionID != "" {
 		h.store.Delete(sessionID)
 	}

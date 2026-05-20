@@ -1,4 +1,4 @@
-# GitOverviewer
+# GitLens
 
 A Go-based web application for monitoring and visualizing GitHub repository activity across multiple repositories at a glance. Tracks commits, releases, workflow status, and DORA metrics.
 
@@ -53,7 +53,7 @@ Create a new OAuth App at https://github.com/settings/developers with:
 export GITHUB_CLIENT_ID=your_client_id
 export GITHUB_CLIENT_SECRET=your_client_secret
 export GITHUB_REDIRECT_URL=http://localhost:6270/auth/github/callback
-export DB_PATH=gitoverviewer.db
+export DB_PATH=gitlens.db
 export PORT=6270
 ```
 
@@ -78,7 +78,7 @@ Open http://localhost:6270 and log in with GitHub.
 | Environment Variable | Default | Description |
 |---|---|---|
 | `PORT` | `6270` | HTTP listen port |
-| `DB_PATH` | `gitoverviewer.db` | SQLite database path |
+| `DB_PATH` | `gitlens.db` | SQLite database path |
 | `GITHUB_CLIENT_ID` | — | GitHub OAuth App client ID |
 | `GITHUB_CLIENT_SECRET` | — | GitHub OAuth App client secret |
 | `GITHUB_REDIRECT_URL` | `http://localhost:6270/auth/github/callback` | OAuth callback URL |

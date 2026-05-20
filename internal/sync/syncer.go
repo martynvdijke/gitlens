@@ -7,11 +7,11 @@ import (
 	"log"
 	"time"
 
-	"gitoverviewer/ent"
-	"gitoverviewer/ent/repository"
-	"gitoverviewer/ent/user"
-	"gitoverviewer/internal/github"
-	"gitoverviewer/internal/ws"
+	"gitlens/ent"
+	"gitlens/ent/repository"
+	"gitlens/ent/user"
+	"gitlens/internal/github"
+	"gitlens/internal/ws"
 )
 
 type Syncer struct {

@@ -4,8 +4,8 @@ package ent
 
 import (
 	"context"
-	"gitoverviewer/ent/predicate"
-	"gitoverviewer/ent/user"
+	"gitlens/ent/predicate"
+	"gitlens/ent/user"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"

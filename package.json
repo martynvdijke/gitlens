@@ -1,5 +1,5 @@
 {
-  "name": "gitoverviewer",
+  "name": "gitlens",
   "version": "0.1.0",
   "description": "A Go-based web application for monitoring and visualizing Git repository activity across multiple repositories.",
   "main": "index.js",
@@ -10,16 +10,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/martynvdijke/gitoverviewer.git"
+    "url": "git+https://github.com/martynvdijke/gitlens.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/martynvdijke/gitoverviewer/issues"
+    "url": "https://github.com/martynvdijke/gitlens/issues"
   },
-  "homepage": "https://github.com/martynvdijke/gitoverviewer#readme",
+  "homepage": "https://github.com/martynvdijke/gitlens#readme",
   "devDependencies": {
     "@playwright/test": "^1.59.1",
     "@types/node": "^25.6.0",
