@@ -38,24 +38,38 @@ ent.Client (ORM)       --> SQLite
 - C compiler (for CGO SQLite driver)
 - A [GitHub OAuth App](https://github.com/settings/developers)
 
-## Quick Start
+## Setup
 
 ### 1. Register a GitHub OAuth App
 
-Create a new OAuth App at https://github.com/settings/developers with:
+Go to https://github.com/settings/developers and create a new OAuth App:
 
-- **Homepage URL:** `http://localhost:6270`
-- **Authorization callback URL:** `http://localhost:6270/auth/github/callback`
+| Field | Value |
+|---|---|
+| **Application name** | `GitLens (dev)` (or any name you like) |
+| **Homepage URL** | `http://localhost:6270` |
+| **Authorization callback URL** | `http://localhost:6270/auth/github/callback` |
+
+After creation, you will receive a **Client ID** and a **Client Secret**. Save these — you'll need them in the next step.
+
+> **For production:** Replace `localhost:6270` with your actual domain in all URLs above, and set `GITHUB_REDIRECT_URL` accordingly.
 
 ### 2. Configure environment variables
 
+Copy the example env file and fill in your credentials:
+
 ```bash
-export GITHUB_CLIENT_ID=your_client_id
-export GITHUB_CLIENT_SECRET=your_client_secret
-export GITHUB_REDIRECT_URL=http://localhost:6270/auth/github/callback
-export DB_PATH=gitlens.db
-export PORT=6270
+cp .env.example .env
 ```
+
+Edit `.env` and set at minimum:
+
+```env
+GITHUB_CLIENT_ID=your_client_id_here
+GITHUB_CLIENT_SECRET=your_client_secret_here
+```
+
+For local development the defaults for `PORT`, `DB_PATH`, and `GITHUB_REDIRECT_URL` are fine. See the [configuration table](#configuration) below for all options.
 
 ### 3. Install dependencies
 
@@ -75,22 +89,36 @@ Open http://localhost:6270 and log in with GitHub.
 
 ## Configuration
 
+All configuration is done via environment variables. For local development, place them in a `.env` file (see `.env.example`).
+
 | Environment Variable | Default | Description |
 |---|---|---|
 | `PORT` | `6270` | HTTP listen port |
 | `DB_PATH` | `gitlens.db` | SQLite database path |
-| `GITHUB_CLIENT_ID` | — | GitHub OAuth App client ID |
-| `GITHUB_CLIENT_SECRET` | — | GitHub OAuth App client secret |
-| `GITHUB_REDIRECT_URL` | `http://localhost:6270/auth/github/callback` | OAuth callback URL |
-| `GITHUB_WEBHOOK_SECRET` | — | HMAC-SHA256 secret for webhook verification |
+| `GITHUB_CLIENT_ID` | — | GitHub OAuth App client ID **(required)** |
+| `GITHUB_CLIENT_SECRET` | — | GitHub OAuth App client secret **(required)** |
+| `GITHUB_REDIRECT_URL` | `http://localhost:6270/auth/github/callback` | OAuth callback URL (must match your OAuth App settings) |
+| `GITHUB_WEBHOOK_SECRET` | — | HMAC-SHA256 secret for webhook payload verification |
 
 ## Docker
+
+### Local build
 
 ```bash
 docker compose up --build
 ```
 
-The Docker Compose setup mounts volumes for persistent database and data storage. The app is available on port 6270.
+The Docker Compose setup reads `.env` automatically (via the `env_file` directive) and mounts volumes for persistent database and data storage. The app is available on port 6270.
+
+Make sure you have created a `.env` file with your `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` before running.
+
+### Using the published image
+
+```bash
+docker run -p 6270:6270 --env-file .env ghcr.io/martynvdijke/gitlens:latest
+```
+
+Pulling from `ghcr.io` requires authentication if the package is private. See [GitHub Packages docs](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry) for setup.
 
 ## Development
 
