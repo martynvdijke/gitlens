@@ -32,7 +32,7 @@ func main() {
 	if dbPath == "" {
 		dbPath = "gitlens.db"
 	}
-	db, err := sql.Open("sqlite3", "file:"+dbPath+"?mode=wal&_fk=1")
+	db, err := sql.Open("sqlite3", "file:"+dbPath+"?_journal_mode=wal&_fk=1")
 	if err != nil {
 		log.Fatalf("Failed to open database: %v", err)
 	}
