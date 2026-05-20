@@ -31,8 +31,8 @@ test.describe('Static assets', () => {
   });
 
   test('serves favicon or returns 404 gracefully', async ({ page }) => {
-    const response = await page.goto('/static/favicon.ico');
-    expect(response?.status()).toBe(200);
+    const response = await page.request.get('/static/favicon.ico');
+    expect([200, 404]).toContain(response.status());
   });
 });
 
@@ -46,8 +46,12 @@ test.describe('Navigation', () => {
 
   test('login link redirects to GitHub auth', async ({ page }) => {
     await page.goto('/');
-    await page.click('.btn-github');
-    await expect(page).toHaveURL(/github\.com\/login\/oauth\/authorize/);
+    const [response] = await Promise.all([
+      page.waitForResponse(resp => resp.url().includes('/auth/github')),
+      page.click('.btn-github'),
+    ]);
+    expect(response.status()).toBe(302);
+    expect(response.headers()['location']).toMatch(/github\.com\/login\/oauth\/authorize/);
   });
 });
 
