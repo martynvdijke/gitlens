@@ -145,6 +145,7 @@ func main() {
 	dashHandler := handlers.NewDashboardHandler(client, sessionStore, ghClient, syncer)
 	settingsHandler := handlers.NewSettingsHandler(client, sessionStore, ghClient, syncer)
 	chartHandler := handlers.NewChartHandler(client)
+	badgeHandler := handlers.NewBadgeHandler(client)
 	webhookHandler := handlers.NewWebhookHandler(client, syncer, os.Getenv("GITHUB_WEBHOOK_SECRET"))
 
 	r := gin.Default()
@@ -158,6 +159,7 @@ func main() {
 
 	r.GET("/", dashHandler.Index)
 
+	r.GET("/badge/:owner/:repo", badgeHandler.Badge)
 	r.POST("/webhook/github", webhookHandler.HandlePush)
 
 	authed := r.Group("/")
