@@ -120,10 +120,20 @@ func (h *DashboardHandler) Index(c *gin.Context) {
 func (h *DashboardHandler) Dashboard(c *gin.Context) {
 	userID := c.GetInt64("user_id")
 	u, _ := h.client.User.Get(c.Request.Context(), int(userID))
-	repos, _ := h.client.Repository.Query().
+
+	q := c.Query("q")
+	query := h.client.Repository.Query().
 		Where(repository.HasUserWith(user.ID(int(userID)))).
-		Order(ent.Desc(repository.FieldUpdatedAt)).
-		All(c.Request.Context())
+		Order(ent.Desc(repository.FieldUpdatedAt))
+	if q != "" {
+		query = query.Where(
+			repository.Or(
+				repository.FullNameContainsFold(q),
+				repository.NameContainsFold(q),
+			),
+		)
+	}
+	repos, _ := query.All(c.Request.Context())
 
 	c.HTML(http.StatusOK, "dashboard", gin.H{
 		"User":    u,
@@ -134,15 +144,25 @@ func (h *DashboardHandler) Dashboard(c *gin.Context) {
 
 func (h *DashboardHandler) ListRepos(c *gin.Context) {
 	userID := c.GetInt64("user_id")
-	repos, err := h.client.Repository.Query().
+	q := c.Query("q")
+
+	query := h.client.Repository.Query().
 		Where(repository.HasUserWith(user.ID(int(userID)))).
-		Order(ent.Desc(repository.FieldUpdatedAt)).
-		All(c.Request.Context())
+		Order(ent.Desc(repository.FieldUpdatedAt))
+	if q != "" {
+		query = query.Where(
+			repository.Or(
+				repository.FullNameContainsFold(q),
+				repository.NameContainsFold(q),
+			),
+		)
+	}
+	repos, err := query.All(c.Request.Context())
 	if err != nil {
 		c.HTML(http.StatusInternalServerError, "repo_list", gin.H{"Error": "Failed to fetch repositories"})
 		return
 	}
-	c.HTML(http.StatusOK, "repo_list", gin.H{"Repos": repos})
+	c.HTML(http.StatusOK, "repo_list", gin.H{"Repos": repos, "Query": q})
 }
 
 func (h *DashboardHandler) SyncRepo(c *gin.Context) {

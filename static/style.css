@@ -251,6 +251,41 @@ main {
     display: inline;
 }
 
+.search-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 8px 12px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    transition: border-color 0.2s;
+}
+
+.search-bar:focus-within {
+    border-color: #58a6ff;
+}
+
+.search-icon {
+    flex-shrink: 0;
+    color: #8b949e;
+}
+
+.search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #e6edf3;
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
+}
+
+.search-input::placeholder {
+    color: #6e7681;
+}
+
 .repo-grid {
     display: grid;
     gap: 16px;

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"gitlens/ent"
 	"gitlens/ent/enttest"
@@ -37,7 +38,35 @@ func serveTestRequest(handler gin.HandlerFunc, method, path string, cookies ...*
 	engine := gin.New()
 	engine.SetHTMLTemplate(template.Must(template.New("index.html").Parse(`<html>{{.Error}}</html>`)))
 	engine.GET("/test/:action", handler)
+	engine.GET("/test/:action/repos", handler)
 	engine.POST("/test/:action", handler)
+	req := httptest.NewRequest(method, path, nil)
+	for _, cookie := range cookies {
+		req.AddCookie(cookie)
+	}
+	engine.ServeHTTP(w, req)
+	return w
+}
+
+func serveTestRequestPath(handler gin.HandlerFunc, method, path string, cookies ...*http.Cookie) *httptest.ResponseRecorder {
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	engine := gin.New()
+	engine.SetHTMLTemplate(template.Must(template.New("").Funcs(template.FuncMap{
+		"shortSHA":           func(s string) string { return s },
+		"formatTime":         func(t time.Time) string { return "" },
+		"truncate":           func(s string, n int) string { return s },
+		"workflowIcon":       func(status string) string { return "" },
+		"workflowLabel":      func(status string) string { return "" },
+		"hasWorkflowRun":     func(status string) bool { return false },
+		"printf":             func(format string, args ...interface{}) string { return "" },
+		"releaseIcon":        func(conclusion string) string { return "" },
+		"releaseLabel":       func(conclusion string) string { return "" },
+		"hasReleaseConclusion": func(s string) bool { return false },
+	}).Parse(`<html>{{.}}</html>`)))
+	if handler != nil {
+		engine.GET("/repos", handler)
+	}
 	req := httptest.NewRequest(method, path, nil)
 	for _, cookie := range cookies {
 		req.AddCookie(cookie)
