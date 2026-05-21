@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"encoding/json"
+	"log"
 	"math"
 	"net/http"
 	"strconv"
@@ -221,4 +223,141 @@ func (h *DashboardHandler) ImportAllRepos(c *gin.Context) {
 		All(ctx)
 
 	c.HTML(http.StatusOK, "repo_list", gin.H{"Repos": repos})
+}
+
+func (h *DashboardHandler) ListPullRequests(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	repoID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.String(http.StatusBadRequest, "Invalid repo ID")
+		return
+	}
+
+	ctx := c.Request.Context()
+	r, err := h.client.Repository.Query().
+		Where(
+			repository.ID(repoID),
+			repository.HasUserWith(user.ID(int(userID))),
+		).
+		Only(ctx)
+	if err != nil {
+		c.String(http.StatusNotFound, "Repository not found")
+		return
+	}
+
+	type prSummary struct {
+		Number    int    `json:"n"`
+		Title     string `json:"t"`
+		Author    string `json:"a"`
+		CreatedAt string `json:"c"`
+		HTMLURL   string `json:"h"`
+		HeadRef   string `json:"hr"`
+		BaseRef   string `json:"br"`
+	}
+	var prs []prSummary
+	if r.PullRequests != "" {
+		json.Unmarshal([]byte(r.PullRequests), &prs)
+	}
+
+	c.HTML(http.StatusOK, "pr_list", gin.H{
+		"Repo":  r,
+		"PRs":   prs,
+		"Count": len(prs),
+	})
+}
+
+func (h *DashboardHandler) MergePR(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	repoID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.String(http.StatusBadRequest, "Invalid repo ID")
+		return
+	}
+	prNumber, err := strconv.Atoi(c.Param("number"))
+	if err != nil {
+		c.String(http.StatusBadRequest, "Invalid PR number")
+		return
+	}
+
+	ctx := c.Request.Context()
+	r, err := h.client.Repository.Query().
+		Where(
+			repository.ID(repoID),
+			repository.HasUserWith(user.ID(int(userID))),
+		).
+		Only(ctx)
+	if err != nil {
+		c.String(http.StatusNotFound, "Repository not found")
+		return
+	}
+
+	u, err := h.client.User.Get(ctx, int(userID))
+	if err != nil {
+		c.String(http.StatusInternalServerError, "User not found")
+		return
+	}
+
+	merged, msg, err := h.gh.MergePullRequest(u.AccessToken, r.Owner, r.Name, prNumber)
+	if err != nil {
+		log.Printf("Error merging PR #%d for %s: %v", prNumber, r.FullName, err)
+		c.String(http.StatusInternalServerError, "Failed to merge PR: %v", err)
+		return
+	}
+	if !merged {
+		c.String(http.StatusConflict, "Merge failed: %s", msg)
+		return
+	}
+
+	r = h.syncer.SyncOne(ctx, r)
+	c.HTML(http.StatusOK, "repo_card", r)
+}
+
+func (h *DashboardHandler) MergeAllPRs(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	repoID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.String(http.StatusBadRequest, "Invalid repo ID")
+		return
+	}
+
+	ctx := c.Request.Context()
+	r, err := h.client.Repository.Query().
+		Where(
+			repository.ID(repoID),
+			repository.HasUserWith(user.ID(int(userID))),
+		).
+		Only(ctx)
+	if err != nil {
+		c.String(http.StatusNotFound, "Repository not found")
+		return
+	}
+
+	u, err := h.client.User.Get(ctx, int(userID))
+	if err != nil {
+		c.String(http.StatusInternalServerError, "User not found")
+		return
+	}
+
+	prs, err := h.gh.ListPullRequests(u.AccessToken, r.Owner, r.Name)
+	if err != nil {
+		log.Printf("Error listing PRs for merge-all on %s: %v", r.FullName, err)
+		c.String(http.StatusInternalServerError, "Failed to list pull requests")
+		return
+	}
+
+	var failed []int
+	for _, pr := range prs {
+		merged, _, err := h.gh.MergePullRequest(u.AccessToken, r.Owner, r.Name, pr.Number)
+		if err != nil || !merged {
+			failed = append(failed, pr.Number)
+		}
+	}
+
+	r = h.syncer.SyncOne(ctx, r)
+
+	if len(failed) > 0 {
+		c.String(http.StatusOK, "Merged %d PR(s). Failed: %v", len(prs)-len(failed), failed)
+	} else {
+		c.String(http.StatusOK, "All %d PR(s) merged successfully!", len(prs))
+	}
 }

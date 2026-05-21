@@ -37,6 +37,9 @@ var (
 		{Name: "avg_lead_time_hours", Type: field.TypeFloat64, Nullable: true},
 		{Name: "workflow_success_count", Type: field.TypeInt, Nullable: true},
 		{Name: "workflow_failure_count", Type: field.TypeInt, Nullable: true},
+		{Name: "open_pr_count", Type: field.TypeInt, Nullable: true},
+		{Name: "pull_requests", Type: field.TypeString, Nullable: true},
+		{Name: "latest_release_conclusion", Type: field.TypeString, Nullable: true, Default: "unknown"},
 		{Name: "synced_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
@@ -50,7 +53,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "repositories_users_repositories",
-				Columns:    []*schema.Column{RepositoriesColumns[30]},
+				Columns:    []*schema.Column{RepositoriesColumns[33]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

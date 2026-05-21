@@ -70,6 +70,12 @@ type Repository struct {
 	WorkflowSuccessCount int `json:"workflow_success_count,omitempty"`
 	// WorkflowFailureCount holds the value of the "workflow_failure_count" field.
 	WorkflowFailureCount int `json:"workflow_failure_count,omitempty"`
+	// OpenPrCount holds the value of the "open_pr_count" field.
+	OpenPrCount int `json:"open_pr_count,omitempty"`
+	// PullRequests holds the value of the "pull_requests" field.
+	PullRequests string `json:"pull_requests,omitempty"`
+	// LatestReleaseConclusion holds the value of the "latest_release_conclusion" field.
+	LatestReleaseConclusion string `json:"latest_release_conclusion,omitempty"`
 	// SyncedAt holds the value of the "synced_at" field.
 	SyncedAt time.Time `json:"synced_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -110,9 +116,9 @@ func (*Repository) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case repository.FieldAvgLeadTimeHours:
 			values[i] = new(sql.NullFloat64)
-		case repository.FieldID, repository.FieldGithubID, repository.FieldWorkflowRunID, repository.FieldTotalCommitsFetched, repository.FieldFeatCount, repository.FieldFixCount, repository.FieldDocsCount, repository.FieldChoreCount, repository.FieldOtherCommitCount, repository.FieldReleaseCount, repository.FieldWorkflowSuccessCount, repository.FieldWorkflowFailureCount:
+		case repository.FieldID, repository.FieldGithubID, repository.FieldWorkflowRunID, repository.FieldTotalCommitsFetched, repository.FieldFeatCount, repository.FieldFixCount, repository.FieldDocsCount, repository.FieldChoreCount, repository.FieldOtherCommitCount, repository.FieldReleaseCount, repository.FieldWorkflowSuccessCount, repository.FieldWorkflowFailureCount, repository.FieldOpenPrCount:
 			values[i] = new(sql.NullInt64)
-		case repository.FieldOwner, repository.FieldName, repository.FieldFullName, repository.FieldDescription, repository.FieldHTMLURL, repository.FieldLanguage, repository.FieldDefaultBranch, repository.FieldLatestCommitSha, repository.FieldLatestCommitMessage, repository.FieldLatestReleaseTag, repository.FieldLatestReleaseName, repository.FieldWorkflowStatus:
+		case repository.FieldOwner, repository.FieldName, repository.FieldFullName, repository.FieldDescription, repository.FieldHTMLURL, repository.FieldLanguage, repository.FieldDefaultBranch, repository.FieldLatestCommitSha, repository.FieldLatestCommitMessage, repository.FieldLatestReleaseTag, repository.FieldLatestReleaseName, repository.FieldWorkflowStatus, repository.FieldPullRequests, repository.FieldLatestReleaseConclusion:
 			values[i] = new(sql.NullString)
 		case repository.FieldLatestCommitDate, repository.FieldLatestReleaseDate, repository.FieldSyncedAt, repository.FieldCreatedAt, repository.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -295,6 +301,24 @@ func (_m *Repository) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.WorkflowFailureCount = int(value.Int64)
 			}
+		case repository.FieldOpenPrCount:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field open_pr_count", values[i])
+			} else if value.Valid {
+				_m.OpenPrCount = int(value.Int64)
+			}
+		case repository.FieldPullRequests:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field pull_requests", values[i])
+			} else if value.Valid {
+				_m.PullRequests = value.String
+			}
+		case repository.FieldLatestReleaseConclusion:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field latest_release_conclusion", values[i])
+			} else if value.Valid {
+				_m.LatestReleaseConclusion = value.String
+			}
 		case repository.FieldSyncedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field synced_at", values[i])
@@ -438,6 +462,15 @@ func (_m *Repository) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("workflow_failure_count=")
 	builder.WriteString(fmt.Sprintf("%v", _m.WorkflowFailureCount))
+	builder.WriteString(", ")
+	builder.WriteString("open_pr_count=")
+	builder.WriteString(fmt.Sprintf("%v", _m.OpenPrCount))
+	builder.WriteString(", ")
+	builder.WriteString("pull_requests=")
+	builder.WriteString(_m.PullRequests)
+	builder.WriteString(", ")
+	builder.WriteString("latest_release_conclusion=")
+	builder.WriteString(_m.LatestReleaseConclusion)
 	builder.WriteString(", ")
 	builder.WriteString("synced_at=")
 	builder.WriteString(_m.SyncedAt.Format(time.ANSIC))

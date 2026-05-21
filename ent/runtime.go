@@ -19,12 +19,16 @@ func init() {
 	repositoryDescWorkflowStatus := repositoryFields[14].Descriptor()
 	// repository.DefaultWorkflowStatus holds the default value on creation for the workflow_status field.
 	repository.DefaultWorkflowStatus = repositoryDescWorkflowStatus.Default.(string)
+	// repositoryDescLatestReleaseConclusion is the schema descriptor for latest_release_conclusion field.
+	repositoryDescLatestReleaseConclusion := repositoryFields[28].Descriptor()
+	// repository.DefaultLatestReleaseConclusion holds the default value on creation for the latest_release_conclusion field.
+	repository.DefaultLatestReleaseConclusion = repositoryDescLatestReleaseConclusion.Default.(string)
 	// repositoryDescCreatedAt is the schema descriptor for created_at field.
-	repositoryDescCreatedAt := repositoryFields[27].Descriptor()
+	repositoryDescCreatedAt := repositoryFields[30].Descriptor()
 	// repository.DefaultCreatedAt holds the default value on creation for the created_at field.
 	repository.DefaultCreatedAt = repositoryDescCreatedAt.Default.(func() time.Time)
 	// repositoryDescUpdatedAt is the schema descriptor for updated_at field.
-	repositoryDescUpdatedAt := repositoryFields[28].Descriptor()
+	repositoryDescUpdatedAt := repositoryFields[31].Descriptor()
 	// repository.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	repository.DefaultUpdatedAt = repositoryDescUpdatedAt.Default.(func() time.Time)
 	// repository.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

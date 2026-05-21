@@ -185,6 +185,21 @@ func WorkflowFailureCount(v int) predicate.Repository {
 	return predicate.Repository(sql.FieldEQ(FieldWorkflowFailureCount, v))
 }
 
+// OpenPrCount applies equality check predicate on the "open_pr_count" field. It's identical to OpenPrCountEQ.
+func OpenPrCount(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldOpenPrCount, v))
+}
+
+// PullRequests applies equality check predicate on the "pull_requests" field. It's identical to PullRequestsEQ.
+func PullRequests(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldPullRequests, v))
+}
+
+// LatestReleaseConclusion applies equality check predicate on the "latest_release_conclusion" field. It's identical to LatestReleaseConclusionEQ.
+func LatestReleaseConclusion(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldLatestReleaseConclusion, v))
+}
+
 // SyncedAt applies equality check predicate on the "synced_at" field. It's identical to SyncedAtEQ.
 func SyncedAt(v time.Time) predicate.Repository {
 	return predicate.Repository(sql.FieldEQ(FieldSyncedAt, v))
@@ -1738,6 +1753,206 @@ func WorkflowFailureCountIsNil() predicate.Repository {
 // WorkflowFailureCountNotNil applies the NotNil predicate on the "workflow_failure_count" field.
 func WorkflowFailureCountNotNil() predicate.Repository {
 	return predicate.Repository(sql.FieldNotNull(FieldWorkflowFailureCount))
+}
+
+// OpenPrCountEQ applies the EQ predicate on the "open_pr_count" field.
+func OpenPrCountEQ(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldOpenPrCount, v))
+}
+
+// OpenPrCountNEQ applies the NEQ predicate on the "open_pr_count" field.
+func OpenPrCountNEQ(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldOpenPrCount, v))
+}
+
+// OpenPrCountIn applies the In predicate on the "open_pr_count" field.
+func OpenPrCountIn(vs ...int) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldOpenPrCount, vs...))
+}
+
+// OpenPrCountNotIn applies the NotIn predicate on the "open_pr_count" field.
+func OpenPrCountNotIn(vs ...int) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldOpenPrCount, vs...))
+}
+
+// OpenPrCountGT applies the GT predicate on the "open_pr_count" field.
+func OpenPrCountGT(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldOpenPrCount, v))
+}
+
+// OpenPrCountGTE applies the GTE predicate on the "open_pr_count" field.
+func OpenPrCountGTE(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldOpenPrCount, v))
+}
+
+// OpenPrCountLT applies the LT predicate on the "open_pr_count" field.
+func OpenPrCountLT(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldOpenPrCount, v))
+}
+
+// OpenPrCountLTE applies the LTE predicate on the "open_pr_count" field.
+func OpenPrCountLTE(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldOpenPrCount, v))
+}
+
+// OpenPrCountIsNil applies the IsNil predicate on the "open_pr_count" field.
+func OpenPrCountIsNil() predicate.Repository {
+	return predicate.Repository(sql.FieldIsNull(FieldOpenPrCount))
+}
+
+// OpenPrCountNotNil applies the NotNil predicate on the "open_pr_count" field.
+func OpenPrCountNotNil() predicate.Repository {
+	return predicate.Repository(sql.FieldNotNull(FieldOpenPrCount))
+}
+
+// PullRequestsEQ applies the EQ predicate on the "pull_requests" field.
+func PullRequestsEQ(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldPullRequests, v))
+}
+
+// PullRequestsNEQ applies the NEQ predicate on the "pull_requests" field.
+func PullRequestsNEQ(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldPullRequests, v))
+}
+
+// PullRequestsIn applies the In predicate on the "pull_requests" field.
+func PullRequestsIn(vs ...string) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldPullRequests, vs...))
+}
+
+// PullRequestsNotIn applies the NotIn predicate on the "pull_requests" field.
+func PullRequestsNotIn(vs ...string) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldPullRequests, vs...))
+}
+
+// PullRequestsGT applies the GT predicate on the "pull_requests" field.
+func PullRequestsGT(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldPullRequests, v))
+}
+
+// PullRequestsGTE applies the GTE predicate on the "pull_requests" field.
+func PullRequestsGTE(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldPullRequests, v))
+}
+
+// PullRequestsLT applies the LT predicate on the "pull_requests" field.
+func PullRequestsLT(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldPullRequests, v))
+}
+
+// PullRequestsLTE applies the LTE predicate on the "pull_requests" field.
+func PullRequestsLTE(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldPullRequests, v))
+}
+
+// PullRequestsContains applies the Contains predicate on the "pull_requests" field.
+func PullRequestsContains(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldContains(FieldPullRequests, v))
+}
+
+// PullRequestsHasPrefix applies the HasPrefix predicate on the "pull_requests" field.
+func PullRequestsHasPrefix(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldHasPrefix(FieldPullRequests, v))
+}
+
+// PullRequestsHasSuffix applies the HasSuffix predicate on the "pull_requests" field.
+func PullRequestsHasSuffix(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldHasSuffix(FieldPullRequests, v))
+}
+
+// PullRequestsIsNil applies the IsNil predicate on the "pull_requests" field.
+func PullRequestsIsNil() predicate.Repository {
+	return predicate.Repository(sql.FieldIsNull(FieldPullRequests))
+}
+
+// PullRequestsNotNil applies the NotNil predicate on the "pull_requests" field.
+func PullRequestsNotNil() predicate.Repository {
+	return predicate.Repository(sql.FieldNotNull(FieldPullRequests))
+}
+
+// PullRequestsEqualFold applies the EqualFold predicate on the "pull_requests" field.
+func PullRequestsEqualFold(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEqualFold(FieldPullRequests, v))
+}
+
+// PullRequestsContainsFold applies the ContainsFold predicate on the "pull_requests" field.
+func PullRequestsContainsFold(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldContainsFold(FieldPullRequests, v))
+}
+
+// LatestReleaseConclusionEQ applies the EQ predicate on the "latest_release_conclusion" field.
+func LatestReleaseConclusionEQ(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldLatestReleaseConclusion, v))
+}
+
+// LatestReleaseConclusionNEQ applies the NEQ predicate on the "latest_release_conclusion" field.
+func LatestReleaseConclusionNEQ(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldLatestReleaseConclusion, v))
+}
+
+// LatestReleaseConclusionIn applies the In predicate on the "latest_release_conclusion" field.
+func LatestReleaseConclusionIn(vs ...string) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldLatestReleaseConclusion, vs...))
+}
+
+// LatestReleaseConclusionNotIn applies the NotIn predicate on the "latest_release_conclusion" field.
+func LatestReleaseConclusionNotIn(vs ...string) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldLatestReleaseConclusion, vs...))
+}
+
+// LatestReleaseConclusionGT applies the GT predicate on the "latest_release_conclusion" field.
+func LatestReleaseConclusionGT(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldLatestReleaseConclusion, v))
+}
+
+// LatestReleaseConclusionGTE applies the GTE predicate on the "latest_release_conclusion" field.
+func LatestReleaseConclusionGTE(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldLatestReleaseConclusion, v))
+}
+
+// LatestReleaseConclusionLT applies the LT predicate on the "latest_release_conclusion" field.
+func LatestReleaseConclusionLT(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldLatestReleaseConclusion, v))
+}
+
+// LatestReleaseConclusionLTE applies the LTE predicate on the "latest_release_conclusion" field.
+func LatestReleaseConclusionLTE(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldLatestReleaseConclusion, v))
+}
+
+// LatestReleaseConclusionContains applies the Contains predicate on the "latest_release_conclusion" field.
+func LatestReleaseConclusionContains(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldContains(FieldLatestReleaseConclusion, v))
+}
+
+// LatestReleaseConclusionHasPrefix applies the HasPrefix predicate on the "latest_release_conclusion" field.
+func LatestReleaseConclusionHasPrefix(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldHasPrefix(FieldLatestReleaseConclusion, v))
+}
+
+// LatestReleaseConclusionHasSuffix applies the HasSuffix predicate on the "latest_release_conclusion" field.
+func LatestReleaseConclusionHasSuffix(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldHasSuffix(FieldLatestReleaseConclusion, v))
+}
+
+// LatestReleaseConclusionIsNil applies the IsNil predicate on the "latest_release_conclusion" field.
+func LatestReleaseConclusionIsNil() predicate.Repository {
+	return predicate.Repository(sql.FieldIsNull(FieldLatestReleaseConclusion))
+}
+
+// LatestReleaseConclusionNotNil applies the NotNil predicate on the "latest_release_conclusion" field.
+func LatestReleaseConclusionNotNil() predicate.Repository {
+	return predicate.Repository(sql.FieldNotNull(FieldLatestReleaseConclusion))
+}
+
+// LatestReleaseConclusionEqualFold applies the EqualFold predicate on the "latest_release_conclusion" field.
+func LatestReleaseConclusionEqualFold(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEqualFold(FieldLatestReleaseConclusion, v))
+}
+
+// LatestReleaseConclusionContainsFold applies the ContainsFold predicate on the "latest_release_conclusion" field.
+func LatestReleaseConclusionContainsFold(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldContainsFold(FieldLatestReleaseConclusion, v))
 }
 
 // SyncedAtEQ applies the EQ predicate on the "synced_at" field.

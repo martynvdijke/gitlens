@@ -3,6 +3,7 @@ package sync
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"html/template"
 	"log"
 	"time"
@@ -84,6 +85,7 @@ func (s *Syncer) SyncOne(ctx context.Context, repo *ent.Repository) *ent.Reposit
 	s.syncCommits(ctx, u, repo, updated)
 	s.syncRelease(ctx, u, repo, updated)
 	s.syncWorkflows(ctx, u, repo, updated)
+	s.syncPullRequests(ctx, u, repo, updated)
 
 	if !repo.LatestCommitDate.IsZero() && !repo.LatestReleaseDate.IsZero() {
 		leadHours := repo.LatestReleaseDate.Sub(repo.LatestCommitDate).Hours()
@@ -146,6 +148,57 @@ func (s *Syncer) syncRelease(ctx context.Context, u *ent.User, repo *ent.Reposit
 		updated.SetLatestReleaseTag(releases[0].TagName)
 		updated.SetLatestReleaseName(releases[0].Name)
 		updated.SetLatestReleaseDate(releases[0].PublishedAt)
+
+		// Check workflow runs without branch filter to catch tag-triggered runs
+		run, err := s.gh.GetWorkflowStatus(u.AccessToken, repo.Owner, repo.Name, "")
+		if err != nil {
+			run, err = s.gh.GetWorkflowStatus(u.AccessToken, repo.Owner, repo.Name, repo.DefaultBranch)
+		}
+		if err == nil {
+			updated.SetLatestReleaseConclusion(run.Conclusion)
+		} else {
+			updated.SetLatestReleaseConclusion("unknown")
+		}
+	}
+}
+
+func (s *Syncer) syncPullRequests(ctx context.Context, u *ent.User, repo *ent.Repository, updated *ent.RepositoryUpdateOne) {
+	prs, err := s.gh.ListPullRequests(u.AccessToken, repo.Owner, repo.Name)
+	if err != nil {
+		log.Printf("Error fetching pull requests for %s: %v", repo.FullName, err)
+		return
+	}
+
+	updated.SetOpenPrCount(len(prs))
+
+	if len(prs) > 0 {
+		type prSummary struct {
+			Number    int    `json:"n"`
+			Title     string `json:"t"`
+			Author    string `json:"a"`
+			CreatedAt string `json:"c"`
+			HTMLURL   string `json:"h"`
+			HeadRef   string `json:"hr"`
+			BaseRef   string `json:"br"`
+		}
+		var summaries []prSummary
+		for _, pr := range prs {
+			summaries = append(summaries, prSummary{
+				Number:    pr.Number,
+				Title:     pr.Title,
+				Author:    pr.Author,
+				CreatedAt: pr.CreatedAt.Format(time.RFC3339),
+				HTMLURL:   pr.HTMLURL,
+				HeadRef:   pr.HeadRef,
+				BaseRef:   pr.BaseRef,
+			})
+		}
+		data, err := json.Marshal(summaries)
+		if err == nil {
+			updated.SetPullRequests(string(data))
+		}
+	} else {
+		updated.SetPullRequests("[]")
 	}
 }
 

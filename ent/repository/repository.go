@@ -66,6 +66,12 @@ const (
 	FieldWorkflowSuccessCount = "workflow_success_count"
 	// FieldWorkflowFailureCount holds the string denoting the workflow_failure_count field in the database.
 	FieldWorkflowFailureCount = "workflow_failure_count"
+	// FieldOpenPrCount holds the string denoting the open_pr_count field in the database.
+	FieldOpenPrCount = "open_pr_count"
+	// FieldPullRequests holds the string denoting the pull_requests field in the database.
+	FieldPullRequests = "pull_requests"
+	// FieldLatestReleaseConclusion holds the string denoting the latest_release_conclusion field in the database.
+	FieldLatestReleaseConclusion = "latest_release_conclusion"
 	// FieldSyncedAt holds the string denoting the synced_at field in the database.
 	FieldSyncedAt = "synced_at"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -114,6 +120,9 @@ var Columns = []string{
 	FieldAvgLeadTimeHours,
 	FieldWorkflowSuccessCount,
 	FieldWorkflowFailureCount,
+	FieldOpenPrCount,
+	FieldPullRequests,
+	FieldLatestReleaseConclusion,
 	FieldSyncedAt,
 	FieldCreatedAt,
 	FieldUpdatedAt,
@@ -143,6 +152,8 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultWorkflowStatus holds the default value on creation for the "workflow_status" field.
 	DefaultWorkflowStatus string
+	// DefaultLatestReleaseConclusion holds the default value on creation for the "latest_release_conclusion" field.
+	DefaultLatestReleaseConclusion string
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -287,6 +298,21 @@ func ByWorkflowSuccessCount(opts ...sql.OrderTermOption) OrderOption {
 // ByWorkflowFailureCount orders the results by the workflow_failure_count field.
 func ByWorkflowFailureCount(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldWorkflowFailureCount, opts...).ToFunc()
+}
+
+// ByOpenPrCount orders the results by the open_pr_count field.
+func ByOpenPrCount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOpenPrCount, opts...).ToFunc()
+}
+
+// ByPullRequests orders the results by the pull_requests field.
+func ByPullRequests(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPullRequests, opts...).ToFunc()
+}
+
+// ByLatestReleaseConclusion orders the results by the latest_release_conclusion field.
+func ByLatestReleaseConclusion(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLatestReleaseConclusion, opts...).ToFunc()
 }
 
 // BySyncedAt orders the results by the synced_at field.

@@ -113,6 +113,29 @@ func main() {
 		"printf": func(format string, args ...interface{}) string {
 			return fmt.Sprintf(format, args...)
 		},
+		"releaseIcon": func(conclusion string) string {
+			switch conclusion {
+			case "success":
+				return "\u2705"
+			case "failure":
+				return "\u274C"
+			default:
+				return "\u2753"
+			}
+		},
+		"releaseLabel": func(conclusion string) string {
+			switch conclusion {
+			case "success":
+				return "Passing"
+			case "failure":
+				return "Failing"
+			default:
+				return "Unknown"
+			}
+		},
+		"hasReleaseConclusion": func(s string) bool {
+			return s != "" && s != "unknown"
+		},
 	}).ParseFiles(
 		"static/index.html",
 	))
@@ -143,6 +166,9 @@ func main() {
 		authed.GET("/repos", dashHandler.ListRepos)
 		authed.POST("/repos/:id/sync", dashHandler.SyncRepo)
 		authed.POST("/repos/import-all", dashHandler.ImportAllRepos)
+		authed.GET("/repos/:id/prs", dashHandler.ListPullRequests)
+		authed.POST("/repos/:id/prs/:number/merge", dashHandler.MergePR)
+		authed.POST("/repos/:id/prs/merge-all", dashHandler.MergeAllPRs)
 
 		authed.GET("/settings", settingsHandler.Index)
 		authed.POST("/settings/interval", settingsHandler.UpdateInterval)

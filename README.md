@@ -4,7 +4,9 @@ A Go-based web application for monitoring and visualizing GitHub repository acti
 
 ## Features
 
-- **Multi-repo dashboard** — View commits, releases, and CI status for all your GitHub repos in one place
+- **Multi-repo dashboard** — View commits, releases, CI status, and pull requests for all your GitHub repos in one place
+- **Pull request management** — View open PRs, merge individually or merge all with one click
+- **Release status tracking** — See whether the latest release's CI passed or failed
 - **Automated syncing** — Per-user configurable sync intervals (1 min to 24 hours)
 - **DORA metrics** — Commit type breakdown (feat/fix/docs/chore), workflow pass rate, lead time, release frequency
 - **GitHub webhook** — Real-time updates on push events
@@ -190,6 +192,9 @@ task test:e2e
 | `/settings/interval` | POST | Update sync interval |
 | `/settings/repos/available` | GET | List available repos |
 | `/settings/repos/select` | POST | Import selected repos |
+| `/repos/{id}/prs` | GET | List pull requests for a repo |
+| `/repos/{id}/prs/{number}/merge` | POST | Merge a single pull request |
+| `/repos/{id}/prs/merge-all` | POST | Merge all open pull requests |
 | `/webhook/github` | POST | GitHub push webhook |
 | `/ws` | GET | WebSocket endpoint |
 

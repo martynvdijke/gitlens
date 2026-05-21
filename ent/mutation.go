@@ -73,6 +73,10 @@ type RepositoryMutation struct {
 	addworkflow_success_count *int
 	workflow_failure_count    *int
 	addworkflow_failure_count *int
+	open_pr_count             *int
+	addopen_pr_count          *int
+	pull_requests             *string
+	latest_release_conclusion *string
 	synced_at                 *time.Time
 	created_at                *time.Time
 	updated_at                *time.Time
@@ -1629,6 +1633,174 @@ func (m *RepositoryMutation) ResetWorkflowFailureCount() {
 	delete(m.clearedFields, repository.FieldWorkflowFailureCount)
 }
 
+// SetOpenPrCount sets the "open_pr_count" field.
+func (m *RepositoryMutation) SetOpenPrCount(i int) {
+	m.open_pr_count = &i
+	m.addopen_pr_count = nil
+}
+
+// OpenPrCount returns the value of the "open_pr_count" field in the mutation.
+func (m *RepositoryMutation) OpenPrCount() (r int, exists bool) {
+	v := m.open_pr_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOpenPrCount returns the old "open_pr_count" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldOpenPrCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOpenPrCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOpenPrCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOpenPrCount: %w", err)
+	}
+	return oldValue.OpenPrCount, nil
+}
+
+// AddOpenPrCount adds i to the "open_pr_count" field.
+func (m *RepositoryMutation) AddOpenPrCount(i int) {
+	if m.addopen_pr_count != nil {
+		*m.addopen_pr_count += i
+	} else {
+		m.addopen_pr_count = &i
+	}
+}
+
+// AddedOpenPrCount returns the value that was added to the "open_pr_count" field in this mutation.
+func (m *RepositoryMutation) AddedOpenPrCount() (r int, exists bool) {
+	v := m.addopen_pr_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearOpenPrCount clears the value of the "open_pr_count" field.
+func (m *RepositoryMutation) ClearOpenPrCount() {
+	m.open_pr_count = nil
+	m.addopen_pr_count = nil
+	m.clearedFields[repository.FieldOpenPrCount] = struct{}{}
+}
+
+// OpenPrCountCleared returns if the "open_pr_count" field was cleared in this mutation.
+func (m *RepositoryMutation) OpenPrCountCleared() bool {
+	_, ok := m.clearedFields[repository.FieldOpenPrCount]
+	return ok
+}
+
+// ResetOpenPrCount resets all changes to the "open_pr_count" field.
+func (m *RepositoryMutation) ResetOpenPrCount() {
+	m.open_pr_count = nil
+	m.addopen_pr_count = nil
+	delete(m.clearedFields, repository.FieldOpenPrCount)
+}
+
+// SetPullRequests sets the "pull_requests" field.
+func (m *RepositoryMutation) SetPullRequests(s string) {
+	m.pull_requests = &s
+}
+
+// PullRequests returns the value of the "pull_requests" field in the mutation.
+func (m *RepositoryMutation) PullRequests() (r string, exists bool) {
+	v := m.pull_requests
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPullRequests returns the old "pull_requests" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldPullRequests(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPullRequests is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPullRequests requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPullRequests: %w", err)
+	}
+	return oldValue.PullRequests, nil
+}
+
+// ClearPullRequests clears the value of the "pull_requests" field.
+func (m *RepositoryMutation) ClearPullRequests() {
+	m.pull_requests = nil
+	m.clearedFields[repository.FieldPullRequests] = struct{}{}
+}
+
+// PullRequestsCleared returns if the "pull_requests" field was cleared in this mutation.
+func (m *RepositoryMutation) PullRequestsCleared() bool {
+	_, ok := m.clearedFields[repository.FieldPullRequests]
+	return ok
+}
+
+// ResetPullRequests resets all changes to the "pull_requests" field.
+func (m *RepositoryMutation) ResetPullRequests() {
+	m.pull_requests = nil
+	delete(m.clearedFields, repository.FieldPullRequests)
+}
+
+// SetLatestReleaseConclusion sets the "latest_release_conclusion" field.
+func (m *RepositoryMutation) SetLatestReleaseConclusion(s string) {
+	m.latest_release_conclusion = &s
+}
+
+// LatestReleaseConclusion returns the value of the "latest_release_conclusion" field in the mutation.
+func (m *RepositoryMutation) LatestReleaseConclusion() (r string, exists bool) {
+	v := m.latest_release_conclusion
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLatestReleaseConclusion returns the old "latest_release_conclusion" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldLatestReleaseConclusion(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLatestReleaseConclusion is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLatestReleaseConclusion requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLatestReleaseConclusion: %w", err)
+	}
+	return oldValue.LatestReleaseConclusion, nil
+}
+
+// ClearLatestReleaseConclusion clears the value of the "latest_release_conclusion" field.
+func (m *RepositoryMutation) ClearLatestReleaseConclusion() {
+	m.latest_release_conclusion = nil
+	m.clearedFields[repository.FieldLatestReleaseConclusion] = struct{}{}
+}
+
+// LatestReleaseConclusionCleared returns if the "latest_release_conclusion" field was cleared in this mutation.
+func (m *RepositoryMutation) LatestReleaseConclusionCleared() bool {
+	_, ok := m.clearedFields[repository.FieldLatestReleaseConclusion]
+	return ok
+}
+
+// ResetLatestReleaseConclusion resets all changes to the "latest_release_conclusion" field.
+func (m *RepositoryMutation) ResetLatestReleaseConclusion() {
+	m.latest_release_conclusion = nil
+	delete(m.clearedFields, repository.FieldLatestReleaseConclusion)
+}
+
 // SetSyncedAt sets the "synced_at" field.
 func (m *RepositoryMutation) SetSyncedAt(t time.Time) {
 	m.synced_at = &t
@@ -1823,7 +1995,7 @@ func (m *RepositoryMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RepositoryMutation) Fields() []string {
-	fields := make([]string, 0, 29)
+	fields := make([]string, 0, 32)
 	if m.github_id != nil {
 		fields = append(fields, repository.FieldGithubID)
 	}
@@ -1902,6 +2074,15 @@ func (m *RepositoryMutation) Fields() []string {
 	if m.workflow_failure_count != nil {
 		fields = append(fields, repository.FieldWorkflowFailureCount)
 	}
+	if m.open_pr_count != nil {
+		fields = append(fields, repository.FieldOpenPrCount)
+	}
+	if m.pull_requests != nil {
+		fields = append(fields, repository.FieldPullRequests)
+	}
+	if m.latest_release_conclusion != nil {
+		fields = append(fields, repository.FieldLatestReleaseConclusion)
+	}
 	if m.synced_at != nil {
 		fields = append(fields, repository.FieldSyncedAt)
 	}
@@ -1971,6 +2152,12 @@ func (m *RepositoryMutation) Field(name string) (ent.Value, bool) {
 		return m.WorkflowSuccessCount()
 	case repository.FieldWorkflowFailureCount:
 		return m.WorkflowFailureCount()
+	case repository.FieldOpenPrCount:
+		return m.OpenPrCount()
+	case repository.FieldPullRequests:
+		return m.PullRequests()
+	case repository.FieldLatestReleaseConclusion:
+		return m.LatestReleaseConclusion()
 	case repository.FieldSyncedAt:
 		return m.SyncedAt()
 	case repository.FieldCreatedAt:
@@ -2038,6 +2225,12 @@ func (m *RepositoryMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldWorkflowSuccessCount(ctx)
 	case repository.FieldWorkflowFailureCount:
 		return m.OldWorkflowFailureCount(ctx)
+	case repository.FieldOpenPrCount:
+		return m.OldOpenPrCount(ctx)
+	case repository.FieldPullRequests:
+		return m.OldPullRequests(ctx)
+	case repository.FieldLatestReleaseConclusion:
+		return m.OldLatestReleaseConclusion(ctx)
 	case repository.FieldSyncedAt:
 		return m.OldSyncedAt(ctx)
 	case repository.FieldCreatedAt:
@@ -2235,6 +2428,27 @@ func (m *RepositoryMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetWorkflowFailureCount(v)
 		return nil
+	case repository.FieldOpenPrCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOpenPrCount(v)
+		return nil
+	case repository.FieldPullRequests:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPullRequests(v)
+		return nil
+	case repository.FieldLatestReleaseConclusion:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLatestReleaseConclusion(v)
+		return nil
 	case repository.FieldSyncedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -2300,6 +2514,9 @@ func (m *RepositoryMutation) AddedFields() []string {
 	if m.addworkflow_failure_count != nil {
 		fields = append(fields, repository.FieldWorkflowFailureCount)
 	}
+	if m.addopen_pr_count != nil {
+		fields = append(fields, repository.FieldOpenPrCount)
+	}
 	return fields
 }
 
@@ -2332,6 +2549,8 @@ func (m *RepositoryMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedWorkflowSuccessCount()
 	case repository.FieldWorkflowFailureCount:
 		return m.AddedWorkflowFailureCount()
+	case repository.FieldOpenPrCount:
+		return m.AddedOpenPrCount()
 	}
 	return nil, false
 }
@@ -2425,6 +2644,13 @@ func (m *RepositoryMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddWorkflowFailureCount(v)
 		return nil
+	case repository.FieldOpenPrCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOpenPrCount(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Repository numeric field %s", name)
 }
@@ -2492,6 +2718,15 @@ func (m *RepositoryMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(repository.FieldWorkflowFailureCount) {
 		fields = append(fields, repository.FieldWorkflowFailureCount)
+	}
+	if m.FieldCleared(repository.FieldOpenPrCount) {
+		fields = append(fields, repository.FieldOpenPrCount)
+	}
+	if m.FieldCleared(repository.FieldPullRequests) {
+		fields = append(fields, repository.FieldPullRequests)
+	}
+	if m.FieldCleared(repository.FieldLatestReleaseConclusion) {
+		fields = append(fields, repository.FieldLatestReleaseConclusion)
 	}
 	if m.FieldCleared(repository.FieldSyncedAt) {
 		fields = append(fields, repository.FieldSyncedAt)
@@ -2569,6 +2804,15 @@ func (m *RepositoryMutation) ClearField(name string) error {
 		return nil
 	case repository.FieldWorkflowFailureCount:
 		m.ClearWorkflowFailureCount()
+		return nil
+	case repository.FieldOpenPrCount:
+		m.ClearOpenPrCount()
+		return nil
+	case repository.FieldPullRequests:
+		m.ClearPullRequests()
+		return nil
+	case repository.FieldLatestReleaseConclusion:
+		m.ClearLatestReleaseConclusion()
 		return nil
 	case repository.FieldSyncedAt:
 		m.ClearSyncedAt()
@@ -2658,6 +2902,15 @@ func (m *RepositoryMutation) ResetField(name string) error {
 		return nil
 	case repository.FieldWorkflowFailureCount:
 		m.ResetWorkflowFailureCount()
+		return nil
+	case repository.FieldOpenPrCount:
+		m.ResetOpenPrCount()
+		return nil
+	case repository.FieldPullRequests:
+		m.ResetPullRequests()
+		return nil
+	case repository.FieldLatestReleaseConclusion:
+		m.ResetLatestReleaseConclusion()
 		return nil
 	case repository.FieldSyncedAt:
 		m.ResetSyncedAt()

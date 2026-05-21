@@ -111,6 +111,33 @@ type WorkflowRun struct {
 	Conclusion string
 }
 
+type PullRequest struct {
+	Number    int
+	Title     string
+	Author    string
+	CreatedAt time.Time
+	HTMLURL   string
+	HeadRef   string
+	BaseRef   string
+}
+
+type ghPullRequest struct {
+	Number int    `json:"number"`
+	Title  string `json:"title"`
+	User   struct {
+		Login string `json:"login"`
+	} `json:"user"`
+	CreatedAt string `json:"created_at"`
+	HTMLURL   string `json:"html_url"`
+	Head      struct {
+		Ref string `json:"ref"`
+	} `json:"head"`
+	Base struct {
+		Ref string `json:"ref"`
+	} `json:"base"`
+	MergeableState string `json:"mergeable_state"`
+}
+
 func (c *Client) doRequest(method, urlStr, token string, body io.Reader) (*http.Response, error) {
 	req, err := http.NewRequest(method, urlStr, body)
 	if err != nil {
@@ -370,9 +397,70 @@ func (c *Client) GetWorkflowRuns(token, owner, repo, branch string, perPage int)
 	return result, nil
 }
 
-func (c *Client) GetWorkflowStatus(token, owner, repo, branch string) (*WorkflowRun, error) {
-	url := fmt.Sprintf("%s/repos/%s/%s/actions/runs?per_page=1&branch=%s&status=completed", c.APIURL, owner, repo, branch)
+func (c *Client) ListPullRequests(token, owner, repo string) ([]*PullRequest, error) {
+	url := fmt.Sprintf("%s/repos/%s/%s/pulls?state=open&per_page=50&sort=created&direction=desc", c.APIURL, owner, repo)
 	resp, err := c.doRequest("GET", url, token, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var ghPRs []ghPullRequest
+	if err := json.NewDecoder(resp.Body).Decode(&ghPRs); err != nil {
+		return nil, fmt.Errorf("decoding pull requests: %w", err)
+	}
+
+	var prs []*PullRequest
+	for _, pr := range ghPRs {
+		t, _ := time.Parse(time.RFC3339, pr.CreatedAt)
+		prs = append(prs, &PullRequest{
+			Number:    pr.Number,
+			Title:     pr.Title,
+			Author:    pr.User.Login,
+			CreatedAt: t,
+			HTMLURL:   pr.HTMLURL,
+			HeadRef:   pr.Head.Ref,
+			BaseRef:   pr.Base.Ref,
+		})
+	}
+	return prs, nil
+}
+
+type mergePRRequest struct {
+	MergeMethod string `json:"merge_method"`
+}
+
+type mergePRResponse struct {
+	Merged  bool   `json:"merged"`
+	Message string `json:"message"`
+}
+
+func (c *Client) MergePullRequest(token, owner, repo string, prNumber int) (bool, string, error) {
+	url := fmt.Sprintf("%s/repos/%s/%s/pulls/%d/merge", c.APIURL, owner, repo, prNumber)
+	body := mergePRRequest{MergeMethod: "merge"}
+	var buf strings.Builder
+	if err := json.NewEncoder(&buf).Encode(body); err != nil {
+		return false, "", fmt.Errorf("encoding merge request: %w", err)
+	}
+	resp, err := c.doRequest("PUT", url, token, strings.NewReader(buf.String()))
+	if err != nil {
+		return false, "", err
+	}
+	defer resp.Body.Close()
+
+	var result mergePRResponse
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return false, "", fmt.Errorf("decoding merge response: %w", err)
+	}
+	return result.Merged, result.Message, nil
+}
+
+func (c *Client) GetWorkflowStatus(token, owner, repo, branch string) (*WorkflowRun, error) {
+	u := fmt.Sprintf("%s/repos/%s/%s/actions/runs?per_page=1&status=completed", c.APIURL, owner, repo)
+	if branch != "" {
+		u += "&branch=" + url.QueryEscape(branch)
+	}
+	resp, err := c.doRequest("GET", u, token, nil)
 	if err != nil {
 		return nil, err
 	}

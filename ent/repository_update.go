@@ -597,6 +597,73 @@ func (_u *RepositoryUpdate) ClearWorkflowFailureCount() *RepositoryUpdate {
 	return _u
 }
 
+// SetOpenPrCount sets the "open_pr_count" field.
+func (_u *RepositoryUpdate) SetOpenPrCount(v int) *RepositoryUpdate {
+	_u.mutation.ResetOpenPrCount()
+	_u.mutation.SetOpenPrCount(v)
+	return _u
+}
+
+// SetNillableOpenPrCount sets the "open_pr_count" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillableOpenPrCount(v *int) *RepositoryUpdate {
+	if v != nil {
+		_u.SetOpenPrCount(*v)
+	}
+	return _u
+}
+
+// AddOpenPrCount adds value to the "open_pr_count" field.
+func (_u *RepositoryUpdate) AddOpenPrCount(v int) *RepositoryUpdate {
+	_u.mutation.AddOpenPrCount(v)
+	return _u
+}
+
+// ClearOpenPrCount clears the value of the "open_pr_count" field.
+func (_u *RepositoryUpdate) ClearOpenPrCount() *RepositoryUpdate {
+	_u.mutation.ClearOpenPrCount()
+	return _u
+}
+
+// SetPullRequests sets the "pull_requests" field.
+func (_u *RepositoryUpdate) SetPullRequests(v string) *RepositoryUpdate {
+	_u.mutation.SetPullRequests(v)
+	return _u
+}
+
+// SetNillablePullRequests sets the "pull_requests" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillablePullRequests(v *string) *RepositoryUpdate {
+	if v != nil {
+		_u.SetPullRequests(*v)
+	}
+	return _u
+}
+
+// ClearPullRequests clears the value of the "pull_requests" field.
+func (_u *RepositoryUpdate) ClearPullRequests() *RepositoryUpdate {
+	_u.mutation.ClearPullRequests()
+	return _u
+}
+
+// SetLatestReleaseConclusion sets the "latest_release_conclusion" field.
+func (_u *RepositoryUpdate) SetLatestReleaseConclusion(v string) *RepositoryUpdate {
+	_u.mutation.SetLatestReleaseConclusion(v)
+	return _u
+}
+
+// SetNillableLatestReleaseConclusion sets the "latest_release_conclusion" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillableLatestReleaseConclusion(v *string) *RepositoryUpdate {
+	if v != nil {
+		_u.SetLatestReleaseConclusion(*v)
+	}
+	return _u
+}
+
+// ClearLatestReleaseConclusion clears the value of the "latest_release_conclusion" field.
+func (_u *RepositoryUpdate) ClearLatestReleaseConclusion() *RepositoryUpdate {
+	_u.mutation.ClearLatestReleaseConclusion()
+	return _u
+}
+
 // SetSyncedAt sets the "synced_at" field.
 func (_u *RepositoryUpdate) SetSyncedAt(v time.Time) *RepositoryUpdate {
 	_u.mutation.SetSyncedAt(v)
@@ -888,6 +955,27 @@ func (_u *RepositoryUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 	}
 	if _u.mutation.WorkflowFailureCountCleared() {
 		_spec.ClearField(repository.FieldWorkflowFailureCount, field.TypeInt)
+	}
+	if value, ok := _u.mutation.OpenPrCount(); ok {
+		_spec.SetField(repository.FieldOpenPrCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedOpenPrCount(); ok {
+		_spec.AddField(repository.FieldOpenPrCount, field.TypeInt, value)
+	}
+	if _u.mutation.OpenPrCountCleared() {
+		_spec.ClearField(repository.FieldOpenPrCount, field.TypeInt)
+	}
+	if value, ok := _u.mutation.PullRequests(); ok {
+		_spec.SetField(repository.FieldPullRequests, field.TypeString, value)
+	}
+	if _u.mutation.PullRequestsCleared() {
+		_spec.ClearField(repository.FieldPullRequests, field.TypeString)
+	}
+	if value, ok := _u.mutation.LatestReleaseConclusion(); ok {
+		_spec.SetField(repository.FieldLatestReleaseConclusion, field.TypeString, value)
+	}
+	if _u.mutation.LatestReleaseConclusionCleared() {
+		_spec.ClearField(repository.FieldLatestReleaseConclusion, field.TypeString)
 	}
 	if value, ok := _u.mutation.SyncedAt(); ok {
 		_spec.SetField(repository.FieldSyncedAt, field.TypeTime, value)
@@ -1518,6 +1606,73 @@ func (_u *RepositoryUpdateOne) ClearWorkflowFailureCount() *RepositoryUpdateOne 
 	return _u
 }
 
+// SetOpenPrCount sets the "open_pr_count" field.
+func (_u *RepositoryUpdateOne) SetOpenPrCount(v int) *RepositoryUpdateOne {
+	_u.mutation.ResetOpenPrCount()
+	_u.mutation.SetOpenPrCount(v)
+	return _u
+}
+
+// SetNillableOpenPrCount sets the "open_pr_count" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillableOpenPrCount(v *int) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetOpenPrCount(*v)
+	}
+	return _u
+}
+
+// AddOpenPrCount adds value to the "open_pr_count" field.
+func (_u *RepositoryUpdateOne) AddOpenPrCount(v int) *RepositoryUpdateOne {
+	_u.mutation.AddOpenPrCount(v)
+	return _u
+}
+
+// ClearOpenPrCount clears the value of the "open_pr_count" field.
+func (_u *RepositoryUpdateOne) ClearOpenPrCount() *RepositoryUpdateOne {
+	_u.mutation.ClearOpenPrCount()
+	return _u
+}
+
+// SetPullRequests sets the "pull_requests" field.
+func (_u *RepositoryUpdateOne) SetPullRequests(v string) *RepositoryUpdateOne {
+	_u.mutation.SetPullRequests(v)
+	return _u
+}
+
+// SetNillablePullRequests sets the "pull_requests" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillablePullRequests(v *string) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetPullRequests(*v)
+	}
+	return _u
+}
+
+// ClearPullRequests clears the value of the "pull_requests" field.
+func (_u *RepositoryUpdateOne) ClearPullRequests() *RepositoryUpdateOne {
+	_u.mutation.ClearPullRequests()
+	return _u
+}
+
+// SetLatestReleaseConclusion sets the "latest_release_conclusion" field.
+func (_u *RepositoryUpdateOne) SetLatestReleaseConclusion(v string) *RepositoryUpdateOne {
+	_u.mutation.SetLatestReleaseConclusion(v)
+	return _u
+}
+
+// SetNillableLatestReleaseConclusion sets the "latest_release_conclusion" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillableLatestReleaseConclusion(v *string) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetLatestReleaseConclusion(*v)
+	}
+	return _u
+}
+
+// ClearLatestReleaseConclusion clears the value of the "latest_release_conclusion" field.
+func (_u *RepositoryUpdateOne) ClearLatestReleaseConclusion() *RepositoryUpdateOne {
+	_u.mutation.ClearLatestReleaseConclusion()
+	return _u
+}
+
 // SetSyncedAt sets the "synced_at" field.
 func (_u *RepositoryUpdateOne) SetSyncedAt(v time.Time) *RepositoryUpdateOne {
 	_u.mutation.SetSyncedAt(v)
@@ -1839,6 +1994,27 @@ func (_u *RepositoryUpdateOne) sqlSave(ctx context.Context) (_node *Repository, 
 	}
 	if _u.mutation.WorkflowFailureCountCleared() {
 		_spec.ClearField(repository.FieldWorkflowFailureCount, field.TypeInt)
+	}
+	if value, ok := _u.mutation.OpenPrCount(); ok {
+		_spec.SetField(repository.FieldOpenPrCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedOpenPrCount(); ok {
+		_spec.AddField(repository.FieldOpenPrCount, field.TypeInt, value)
+	}
+	if _u.mutation.OpenPrCountCleared() {
+		_spec.ClearField(repository.FieldOpenPrCount, field.TypeInt)
+	}
+	if value, ok := _u.mutation.PullRequests(); ok {
+		_spec.SetField(repository.FieldPullRequests, field.TypeString, value)
+	}
+	if _u.mutation.PullRequestsCleared() {
+		_spec.ClearField(repository.FieldPullRequests, field.TypeString)
+	}
+	if value, ok := _u.mutation.LatestReleaseConclusion(); ok {
+		_spec.SetField(repository.FieldLatestReleaseConclusion, field.TypeString, value)
+	}
+	if _u.mutation.LatestReleaseConclusionCleared() {
+		_spec.ClearField(repository.FieldLatestReleaseConclusion, field.TypeString)
 	}
 	if value, ok := _u.mutation.SyncedAt(); ok {
 		_spec.SetField(repository.FieldSyncedAt, field.TypeTime, value)

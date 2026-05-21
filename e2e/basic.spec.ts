@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Home page (unauthenticated)', () => {
   test('loads with correct title', async ({ page }) => {
     await page.goto('/');
-    await expect(page).toHaveTitle('GitOverviewer');
+    await expect(page).toHaveTitle('GitLens');
   });
 
   test('displays login prompt', async ({ page }) => {
@@ -39,8 +39,8 @@ test.describe('Static assets', () => {
 test.describe('Navigation', () => {
   test('brand link navigates home', async ({ page }) => {
     await page.goto('/');
-    const brandLink = page.locator('.nav-brand a');
-    await expect(brandLink).toHaveText('GitOverviewer');
+    const brandLink = page.locator('.brand-link');
+    await expect(brandLink).toHaveText('GitLens');
     await expect(brandLink).toHaveAttribute('href', '/');
   });
 

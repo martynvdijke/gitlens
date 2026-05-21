@@ -3,15 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitOverviewer</title>
+    <title>GitLens</title>
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <script src="https://unpkg.com/htmx.org@2.0.4/dist/ext/ws.js"></script>
+    <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <nav>
         <div class="nav-brand">
-            <h1><a href="/" style="color:inherit;text-decoration:none">GitOverviewer</a></h1>
+            <a href="/" class="brand-link">
+                <img src="/static/logo.svg" alt="" width="24" height="24" class="brand-logo">
+                <h1>GitLens</h1>
+            </a>
         </div>
         <div class="nav-user">
             {{if .User}}
@@ -101,7 +105,7 @@
         {{template "repo_card" .}}
         {{else}}
         <div class="empty-state">
-            <h3>Welcome to GitOverviewer</h3>
+            <h3>Welcome to GitLens</h3>
             <p>Start by importing repositories from GitHub to track their latest commits, releases, and workflow status.</p>
             <div class="empty-actions">
                 <button class="btn btn-primary" hx-post="/repos/import-all" hx-target="#repo-grid" hx-swap="outerHTML" hx-indicator="#sync-spinner">
@@ -153,6 +157,9 @@
                     <strong>{{.LatestReleaseTag}}</strong>
                     {{if .LatestReleaseName}}<span class="stat-detail">{{.LatestReleaseName}}</span>{{end}}
                     {{if not .LatestReleaseDate.IsZero}}<span class="stat-time">{{formatTime .LatestReleaseDate}}</span>{{end}}
+                    {{if hasReleaseConclusion .LatestReleaseConclusion}}
+                    <span class="release-badge {{.LatestReleaseConclusion}}">{{releaseIcon .LatestReleaseConclusion}} {{releaseLabel .LatestReleaseConclusion}}</span>
+                    {{end}}
                     {{else}}
                     <span class="stat-none">No releases</span>
                     {{end}}
@@ -169,7 +176,22 @@
                     {{end}}
                 </div>
             </div>
+
+            <div class="stat prs">
+                <div class="stat-label">Pull Requests</div>
+                <div class="stat-value">
+                    {{if .OpenPRCount}}
+                    <span class="pr-count">{{.OpenPRCount}} open</span>
+                    <button class="btn btn-sm" hx-get="/repos/{{.ID}}/prs" hx-target="#prs-{{.ID}}" hx-swap="innerHTML" hx-indicator="#pr-spinner-{{.ID}}">View PRs</button>
+                    <span id="pr-spinner-{{.ID}}" class="htmx-indicator">Loading...</span>
+                    {{else}}
+                    <span class="stat-none">No open PRs</span>
+                    {{end}}
+                </div>
+            </div>
         </div>
+
+        <div id="prs-{{.ID}}" class="prs-container"></div>
 
         <div class="repo-footer">
             {{if not .SyncedAt.IsZero}}<span class="synced-at">Last synced: {{formatTime .SyncedAt}}</span>{{end}}
@@ -178,7 +200,31 @@
     </div>
     {{end}}
 
-    {{define "settings"}}
+    {{define "pr_list"}}
+<div class="prs-inner">
+    <div class="prs-header">
+        <span class="prs-title">Pull Requests ({{.Count}})</span>
+        {{if gt .Count 1}}
+        <button class="btn btn-sm btn-primary" hx-post="/repos/{{.Repo.ID}}/prs/merge-all" hx-target="#repo-{{.Repo.ID}}" hx-swap="outerHTML" hx-confirm="Merge all {{.Count}} open pull requests?" hx-indicator="#merge-all-spinner-{{.Repo.ID}}">Merge All</button>
+        <span id="merge-all-spinner-{{.Repo.ID}}" class="htmx-indicator">Merging...</span>
+        {{end}}
+    </div>
+    <div class="prs-list">
+        {{range .PRs}}
+        <div class="pr-item">
+            <div class="pr-info">
+                <a href="{{.h}}" target="_blank" rel="noopener" class="pr-title">#{{.n}} {{.t}}</a>
+                <span class="pr-meta">{{.a}} &middot; {{printf "%.10s" .c}} &middot; {{.hr}} → {{.br}}</span>
+            </div>
+            <button class="btn btn-sm btn-primary" hx-post="/repos/{{$.Repo.ID}}/prs/{{.n}}/merge" hx-target="#repo-{{$.Repo.ID}}" hx-swap="outerHTML" hx-confirm="Merge PR #{{.n}}?" hx-indicator="#pr-spin-{{$.Repo.ID}}-{{.n}}">Merge</button>
+            <span id="pr-spin-{{$.Repo.ID}}-{{.n}}" class="htmx-indicator">Merging...</span>
+        </div>
+        {{end}}
+    </div>
+</div>
+{{end}}
+
+{{define "settings"}}
     <div class="settings-page">
         <div class="settings-header">
             <h2>Settings</h2>

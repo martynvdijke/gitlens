@@ -337,6 +337,48 @@ func (_c *RepositoryCreate) SetNillableWorkflowFailureCount(v *int) *RepositoryC
 	return _c
 }
 
+// SetOpenPrCount sets the "open_pr_count" field.
+func (_c *RepositoryCreate) SetOpenPrCount(v int) *RepositoryCreate {
+	_c.mutation.SetOpenPrCount(v)
+	return _c
+}
+
+// SetNillableOpenPrCount sets the "open_pr_count" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillableOpenPrCount(v *int) *RepositoryCreate {
+	if v != nil {
+		_c.SetOpenPrCount(*v)
+	}
+	return _c
+}
+
+// SetPullRequests sets the "pull_requests" field.
+func (_c *RepositoryCreate) SetPullRequests(v string) *RepositoryCreate {
+	_c.mutation.SetPullRequests(v)
+	return _c
+}
+
+// SetNillablePullRequests sets the "pull_requests" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillablePullRequests(v *string) *RepositoryCreate {
+	if v != nil {
+		_c.SetPullRequests(*v)
+	}
+	return _c
+}
+
+// SetLatestReleaseConclusion sets the "latest_release_conclusion" field.
+func (_c *RepositoryCreate) SetLatestReleaseConclusion(v string) *RepositoryCreate {
+	_c.mutation.SetLatestReleaseConclusion(v)
+	return _c
+}
+
+// SetNillableLatestReleaseConclusion sets the "latest_release_conclusion" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillableLatestReleaseConclusion(v *string) *RepositoryCreate {
+	if v != nil {
+		_c.SetLatestReleaseConclusion(*v)
+	}
+	return _c
+}
+
 // SetSyncedAt sets the "synced_at" field.
 func (_c *RepositoryCreate) SetSyncedAt(v time.Time) *RepositoryCreate {
 	_c.mutation.SetSyncedAt(v)
@@ -428,6 +470,10 @@ func (_c *RepositoryCreate) defaults() {
 	if _, ok := _c.mutation.WorkflowStatus(); !ok {
 		v := repository.DefaultWorkflowStatus
 		_c.mutation.SetWorkflowStatus(v)
+	}
+	if _, ok := _c.mutation.LatestReleaseConclusion(); !ok {
+		v := repository.DefaultLatestReleaseConclusion
+		_c.mutation.SetLatestReleaseConclusion(v)
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := repository.DefaultCreatedAt()
@@ -597,6 +643,18 @@ func (_c *RepositoryCreate) createSpec() (*Repository, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.WorkflowFailureCount(); ok {
 		_spec.SetField(repository.FieldWorkflowFailureCount, field.TypeInt, value)
 		_node.WorkflowFailureCount = value
+	}
+	if value, ok := _c.mutation.OpenPrCount(); ok {
+		_spec.SetField(repository.FieldOpenPrCount, field.TypeInt, value)
+		_node.OpenPrCount = value
+	}
+	if value, ok := _c.mutation.PullRequests(); ok {
+		_spec.SetField(repository.FieldPullRequests, field.TypeString, value)
+		_node.PullRequests = value
+	}
+	if value, ok := _c.mutation.LatestReleaseConclusion(); ok {
+		_spec.SetField(repository.FieldLatestReleaseConclusion, field.TypeString, value)
+		_node.LatestReleaseConclusion = value
 	}
 	if value, ok := _c.mutation.SyncedAt(); ok {
 		_spec.SetField(repository.FieldSyncedAt, field.TypeTime, value)

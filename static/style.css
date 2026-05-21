@@ -20,6 +20,23 @@ nav {
     border-bottom: 1px solid #30363d;
 }
 
+.nav-brand {
+    display: flex;
+    align-items: center;
+}
+
+.brand-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: inherit;
+    text-decoration: none;
+}
+
+.brand-logo {
+    flex-shrink: 0;
+}
+
 .nav-brand h1 {
     font-size: 20px;
     font-weight: 600;
@@ -405,6 +422,116 @@ main {
     background: #1a2a3d;
     color: #d29922;
     border: 1px solid #9e6a03;
+}
+
+.release-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    width: fit-content;
+}
+
+.release-badge.success {
+    background: #0a3d1a;
+    color: #3fb950;
+    border: 1px solid #238636;
+}
+
+.release-badge.failure {
+    background: #3d0a0a;
+    color: #f85149;
+    border: 1px solid #da3633;
+}
+
+.release-badge.unknown {
+    background: #1f2937;
+    color: #8b949e;
+    border: 1px solid #30363d;
+}
+
+.stat.prs .stat-value {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.pr-count {
+    font-weight: 600;
+    color: #58a6ff;
+}
+
+.prs-container {
+    margin-top: 8px;
+}
+
+.prs-inner {
+    background: #0d1117;
+    border: 1px solid #21262d;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 8px;
+}
+
+.prs-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.prs-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e6edf3;
+}
+
+.prs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.pr-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    gap: 8px;
+}
+
+.pr-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+
+.pr-title {
+    color: #58a6ff;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pr-title:hover {
+    text-decoration: underline;
+}
+
+.pr-meta {
+    font-size: 11px;
+    color: #8b949e;
 }
 
 .repo-footer {
