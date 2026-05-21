@@ -144,6 +144,7 @@ func main() {
 	authHandler := handlers.NewAuthHandler(client, sessionStore, ghClient)
 	dashHandler := handlers.NewDashboardHandler(client, sessionStore, ghClient, syncer)
 	settingsHandler := handlers.NewSettingsHandler(client, sessionStore, ghClient, syncer)
+	chartHandler := handlers.NewChartHandler(client)
 	webhookHandler := handlers.NewWebhookHandler(client, syncer, os.Getenv("GITHUB_WEBHOOK_SECRET"))
 
 	r := gin.Default()
@@ -175,6 +176,8 @@ func main() {
 		authed.GET("/settings/repos/available", settingsHandler.AvailableRepos)
 		authed.POST("/settings/repos/select", settingsHandler.SelectRepos)
 		authed.DELETE("/repos/:id", settingsHandler.RemoveRepo)
+
+		authed.GET("/charts", chartHandler.Charts)
 	}
 
 	r.GET("/ws", func(c *gin.Context) {

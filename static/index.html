@@ -100,6 +100,12 @@
         <input type="search" class="search-input" placeholder="Search repositories..." hx-get="/repos" hx-trigger="keyup changed delay:300ms, search" hx-target="#repo-grid" hx-swap="outerHTML" hx-push-url="true" name="q" value="">
     </div>
 
+    <button class="btn btn-secondary" hx-get="/charts" hx-target="#charts-section" hx-swap="innerHTML" hx-indicator="#charts-spinner" style="margin-bottom:16px">
+        Show Charts
+    </button>
+    <span id="charts-spinner" class="htmx-indicator">Loading charts...</span>
+    <div id="charts-section"></div>
+
     {{template "repo_list" .}}
     {{end}}
 
@@ -327,5 +333,19 @@
         {{end}}
     </div>
     {{end}}
+
+{{define "charts"}}
+<div class="charts-row">
+    <div class="chart-card">
+        {{.BarChartSVG}}
+    </div>
+    <div class="chart-card">
+        {{.PieChartSVG}}
+    </div>
+    <div class="chart-card chart-card-wide">
+        {{.MetricTrendSVG}}
+    </div>
+</div>
+{{end}}
 </body>
 </html>
