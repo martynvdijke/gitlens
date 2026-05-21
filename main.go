@@ -146,6 +146,7 @@ func main() {
 	settingsHandler := handlers.NewSettingsHandler(client, sessionStore, ghClient, syncer)
 	chartHandler := handlers.NewChartHandler(client)
 	badgeHandler := handlers.NewBadgeHandler(client)
+	gitHubAppHandler := handlers.NewGitHubAppHandler(client)
 	webhookHandler := handlers.NewWebhookHandler(client, syncer, os.Getenv("GITHUB_WEBHOOK_SECRET"))
 
 	r := gin.Default()
@@ -161,6 +162,7 @@ func main() {
 
 	r.GET("/badge/:owner/:repo", badgeHandler.Badge)
 	r.POST("/webhook/github", webhookHandler.HandlePush)
+	r.POST("/webhook/github-app", gitHubAppHandler.HandleInstallation)
 
 	authed := r.Group("/")
 	authed.Use(middleware.AuthRequired(sessionStore))
@@ -180,6 +182,7 @@ func main() {
 		authed.DELETE("/repos/:id", settingsHandler.RemoveRepo)
 
 		authed.GET("/charts", chartHandler.Charts)
+		authed.POST("/repos/setup-webhooks", gitHubAppHandler.SetupAutoWebhooks)
 	}
 
 	r.GET("/ws", func(c *gin.Context) {
