@@ -111,7 +111,7 @@ test.describe('Protected routes', () => {
   });
 
   test('redirects unauthenticated from repo detail routes', async ({ page }) => {
-    await page.goto('/repos/1/sync');
+    await page.goto('/repos/1/prs');
     await expect(page.locator('.login-prompt')).toBeVisible();
   });
 });
