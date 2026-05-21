@@ -1,3 +1,14 @@
+# [1.1.0](https://github.com/martynvdijke/gitlens/compare/v1.0.1...v1.1.0) (2026-05-21)
+
+
+### Features
+
+* add DORA metrics charts with SVG rendering and tests ([784b1b4](https://github.com/martynvdijke/gitlens/commit/784b1b4a86ee108759baf81e313860daf475d964))
+* add GitHub App integration for auto-import and webhook setup ([c2def3b](https://github.com/martynvdijke/gitlens/commit/c2def3b38ae14e2915558bfdc76f55dfa443e404))
+* add repo search/filter with live HTMX search bar and tests ([9d5f6c9](https://github.com/martynvdijke/gitlens/commit/9d5f6c97fe7dd823747ba05521585f625da7235b))
+* add status badge API endpoint for README embedding ([09fb249](https://github.com/martynvdijke/gitlens/commit/09fb249e10e2307a9e2dd32782f0db19d40e3f63))
+* enhance landing page, add loading skeletons, improve mobile UX ([3f5145d](https://github.com/martynvdijke/gitlens/commit/3f5145d92e6def3821fc90969392689d689c3058))
+
 ## [1.0.1](https://github.com/martynvdijke/gitlens/compare/v1.0.0...v1.0.1) (2026-05-20)
 
 
