@@ -495,3 +495,173 @@ func TestListReleases_Empty(t *testing.T) {
 		t.Fatalf("expected 0 releases, got %d", len(releases))
 	}
 }
+
+func TestListPullRequests(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`[
+			{
+				"number": 1,
+				"title": "Add feature",
+				"user": {"login": "dev1"},
+				"created_at": "2024-06-01T10:00:00Z",
+				"html_url": "https://github.com/user/repo/pull/1",
+				"head": {"ref": "feature-branch"},
+				"base": {"ref": "main"}
+			},
+			{
+				"number": 2,
+				"title": "Fix bug",
+				"user": {"login": "dev2"},
+				"created_at": "2024-06-02T10:00:00Z",
+				"html_url": "https://github.com/user/repo/pull/2",
+				"head": {"ref": "bugfix"},
+				"base": {"ref": "main"}
+			}
+		]`))
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	prs, err := c.ListPullRequests("token", "user", "repo")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(prs) != 2 {
+		t.Fatalf("expected 2 PRs, got %d", len(prs))
+	}
+	if prs[0].Number != 1 || prs[0].Title != "Add feature" {
+		t.Errorf("unexpected first PR: %+v", prs[0])
+	}
+	if prs[0].Author != "dev1" {
+		t.Errorf("expected author dev1, got %s", prs[0].Author)
+	}
+	if prs[0].HeadRef != "feature-branch" {
+		t.Errorf("expected head ref feature-branch, got %s", prs[0].HeadRef)
+	}
+	if prs[0].BaseRef != "main" {
+		t.Errorf("expected base ref main, got %s", prs[0].BaseRef)
+	}
+}
+
+func TestListPullRequests_Empty(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`[]`))
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	prs, err := c.ListPullRequests("token", "user", "repo")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(prs) != 0 {
+		t.Fatalf("expected 0 PRs, got %d", len(prs))
+	}
+}
+
+func TestMergePullRequest_Success(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "PUT" {
+			t.Errorf("expected PUT, got %s", r.Method)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"merged": true, "message": "Pull Request successfully merged"}`))
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	merged, msg, err := c.MergePullRequest("token", "user", "repo", 1)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !merged {
+		t.Error("expected merged to be true")
+	}
+	if msg == "" {
+		t.Error("expected non-empty message")
+	}
+}
+
+func TestMergePullRequest_Error(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		w.Write([]byte(`{"message": "Merge conflict"}`))
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	_, _, err := c.MergePullRequest("token", "user", "repo", 1)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+}
+
+func TestParseCommitType_CI(t *testing.T) {
+	if tp := ParseCommitType("ci: update pipeline"); tp != "chore" {
+		t.Errorf("expected chore, got %s", tp)
+	}
+}
+
+func TestParseCommitType_Perf(t *testing.T) {
+	if tp := ParseCommitType("perf: optimize query"); tp != "chore" {
+		t.Errorf("expected chore, got %s", tp)
+	}
+}
+
+func TestParseCommitType_Style(t *testing.T) {
+	if tp := ParseCommitType("style: format code"); tp != "chore" {
+		t.Errorf("expected chore, got %s", tp)
+	}
+}
+
+func TestParseCommitType_Revert(t *testing.T) {
+	if tp := ParseCommitType("revert: undo change"); tp != "chore" {
+		t.Errorf("expected chore, got %s", tp)
+	}
+}
+
+func TestParseCommitType_Build(t *testing.T) {
+	if tp := ParseCommitType("build: update deps"); tp != "chore" {
+		t.Errorf("expected chore, got %s", tp)
+	}
+}
+
+func TestParseCommitType_Test(t *testing.T) {
+	if tp := ParseCommitType("test: add unit tests"); tp != "chore" {
+		t.Errorf("expected chore, got %s", tp)
+	}
+}
+
+func TestParseCommitType_Bugfix(t *testing.T) {
+	if tp := ParseCommitType("bugfix: resolve crash"); tp != "fix" {
+		t.Errorf("expected fix, got %s", tp)
+	}
+}
+
+func TestParseCommitType_Documentation(t *testing.T) {
+	if tp := ParseCommitType("documentation: update API docs"); tp != "docs" {
+		t.Errorf("expected docs, got %s", tp)
+	}
+}
+
+func TestParseCommitType_Whitespace(t *testing.T) {
+	if tp := ParseCommitType("  feat: add thing  "); tp != "feat" {
+		t.Errorf("expected feat, got %s", tp)
+	}
+}
+
+func TestParseCommitType_NoColon(t *testing.T) {
+	if tp := ParseCommitType("just a message"); tp != "other" {
+		t.Errorf("expected other, got %s", tp)
+	}
+}
