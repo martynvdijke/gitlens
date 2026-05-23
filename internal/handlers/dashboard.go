@@ -204,6 +204,7 @@ func (h *DashboardHandler) ImportAllRepos(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
+	var newIDs []int
 	for _, r := range ghRepos {
 		exists, _ := h.client.Repository.Query().
 			Where(
@@ -215,7 +216,7 @@ func (h *DashboardHandler) ImportAllRepos(c *gin.Context) {
 			continue
 		}
 
-		h.client.Repository.Create().
+		repo, err := h.client.Repository.Create().
 			SetGithubID(r.ID).
 			SetOwner(r.Owner).
 			SetName(r.Name).
@@ -226,18 +227,19 @@ func (h *DashboardHandler) ImportAllRepos(c *gin.Context) {
 			SetDefaultBranch(r.DefaultBranch).
 			SetUserID(u.ID).
 			Save(ctx)
+		if err == nil {
+			newIDs = append(newIDs, repo.ID)
+		}
+	}
+
+	for _, id := range newIDs {
+		r, err := h.client.Repository.Get(ctx, id)
+		if err == nil {
+			h.syncer.SyncOne(ctx, r)
+		}
 	}
 
 	repos, _ := h.client.Repository.Query().
-		Where(repository.HasUserWith(user.ID(u.ID))).
-		Order(ent.Desc(repository.FieldUpdatedAt)).
-		All(ctx)
-
-	for _, r := range repos {
-		h.syncer.SyncOne(ctx, r)
-	}
-
-	repos, _ = h.client.Repository.Query().
 		Where(repository.HasUserWith(user.ID(u.ID))).
 		Order(ent.Desc(repository.FieldUpdatedAt)).
 		All(ctx)

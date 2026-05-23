@@ -257,11 +257,11 @@
         {{range .PRs}}
         <div class="pr-item">
             <div class="pr-info">
-                <a href="{{.h}}" target="_blank" rel="noopener" class="pr-title">#{{.n}} {{.t}}</a>
-                <span class="pr-meta">{{.a}} &middot; {{printf "%.10s" .c}} &middot; {{.hr}} → {{.br}}</span>
+                <a href="{{.HTMLURL}}" target="_blank" rel="noopener" class="pr-title">#{{.Number}} {{.Title}}</a>
+                <span class="pr-meta">{{.Author}} &middot; {{printf "%.10s" .CreatedAt}} &middot; {{.HeadRef}} → {{.BaseRef}}</span>
             </div>
-            <button class="btn btn-sm btn-primary" hx-post="/repos/{{$.Repo.ID}}/prs/{{.n}}/merge" hx-target="#repo-{{$.Repo.ID}}" hx-swap="outerHTML" hx-confirm="Merge PR #{{.n}}?" hx-indicator="#pr-spin-{{$.Repo.ID}}-{{.n}}">Merge</button>
-            <span id="pr-spin-{{$.Repo.ID}}-{{.n}}" class="htmx-indicator">Merging...</span>
+            <button class="btn btn-sm btn-primary" hx-post="/repos/{{$.Repo.ID}}/prs/{{.Number}}/merge" hx-target="#repo-{{$.Repo.ID}}" hx-swap="outerHTML" hx-confirm="Merge PR #{{.Number}}?" hx-indicator="#pr-spin-{{$.Repo.ID}}-{{.Number}}">Merge</button>
+            <span id="pr-spin-{{$.Repo.ID}}-{{.Number}}" class="htmx-indicator">Merging...</span>
         </div>
         {{end}}
     </div>

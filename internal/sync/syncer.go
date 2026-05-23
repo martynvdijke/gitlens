@@ -149,10 +149,10 @@ func (s *Syncer) syncRelease(ctx context.Context, u *ent.User, repo *ent.Reposit
 		updated.SetLatestReleaseName(releases[0].Name)
 		updated.SetLatestReleaseDate(releases[0].PublishedAt)
 
-		// Check workflow runs without branch filter to catch tag-triggered runs
-		run, err := s.gh.GetWorkflowStatus(u.AccessToken, repo.Owner, repo.Name, "")
+		// Get the latest completed workflow run for the release (try tag, then default branch)
+		run, err := s.gh.GetLatestWorkflowRun(u.AccessToken, repo.Owner, repo.Name, releases[0].TagName)
 		if err != nil {
-			run, err = s.gh.GetWorkflowStatus(u.AccessToken, repo.Owner, repo.Name, repo.DefaultBranch)
+			run, err = s.gh.GetLatestWorkflowRun(u.AccessToken, repo.Owner, repo.Name, repo.DefaultBranch)
 		}
 		if err == nil {
 			updated.SetLatestReleaseConclusion(run.Conclusion)

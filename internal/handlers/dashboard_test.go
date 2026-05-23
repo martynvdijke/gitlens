@@ -217,6 +217,263 @@ func TestComputeMetrics(t *testing.T) {
 	}
 }
 
+func TestImportAllRepos_Success(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+
+	u, err := client.User.Create().
+		SetGithubID(100).
+		SetLogin("testuser").
+		SetAccessToken("test_token").
+		Save(context.Background())
+	if err != nil {
+		t.Fatalf("create user: %v", err)
+	}
+
+	// Pre-create one existing repo to test dedup
+	client.Repository.Create().
+		SetGithubID(1).SetOwner("user").SetName("existing").
+		SetFullName("user/existing").SetHTMLURL("https://github.com/user/existing").
+		SetDefaultBranch("main").SetUserID(u.ID).
+		Save(context.Background())
+
+	pageCounters := make(map[string]int)
+	apiCalls := 0
+	apiSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		apiCalls++
+		w.Header().Set("Content-Type", "application/json")
+		key := r.Method + " " + r.URL.Path
+		pageCounters[key]++
+		page := pageCounters[key]
+		switch {
+		case r.URL.Path == "/user/repos":
+			if page == 1 {
+				w.Write([]byte(`[
+					{"id":1,"name":"existing","full_name":"user/existing","html_url":"https://github.com/user/existing","default_branch":"main","owner":{"login":"user"}},
+					{"id":2,"name":"newrepo1","full_name":"user/newrepo1","html_url":"https://github.com/user/newrepo1","default_branch":"main","language":"Go","owner":{"login":"user"}}
+				]`))
+			} else {
+				w.Write([]byte(`[]`))
+			}
+		case strings.Contains(r.URL.Path, "/repos/user/newrepo1/commits"):
+			w.Write([]byte(`[{"sha":"abc","commit":{"message":"feat: initial commit","committer":{"date":"2024-06-01T10:00:00Z"}}}]`))
+		case strings.Contains(r.URL.Path, "/repos/user/newrepo1/releases"):
+			if page == 1 {
+				w.Write([]byte(`[{"tag_name":"v1.0.0","name":"Version 1","published_at":"2024-06-15T10:00:00Z"}]`))
+			} else {
+				w.Write([]byte(`[]`))
+			}
+		case strings.Contains(r.URL.Path, "/repos/user/newrepo1/actions/runs"):
+			w.Write([]byte(`{"workflow_runs":[{"id":1,"status":"completed","conclusion":"success"}]}`))
+		case strings.Contains(r.URL.Path, "/repos/user/newrepo1/pulls"):
+			w.Write([]byte(`[]`))
+		default:
+			t.Logf("Unexpected API call: %s %s", r.Method, r.URL.Path)
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer apiSrv.Close()
+	handler.gh.APIURL = apiSrv.URL
+
+	sessionID := store.Set(int64(u.ID))
+	w := httptest.NewRecorder()
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.SetHTMLTemplate(template.Must(template.New("").Funcs(template.FuncMap{
+		"shortSHA":             func(s string) string { return s },
+		"formatTime":           func(t time.Time) string { return "" },
+		"truncate":             func(s string, n int) string { return s },
+		"workflowIcon":         func(status string) string { return "" },
+		"workflowLabel":        func(status string) string { return "" },
+		"hasWorkflowRun":       func(status string) bool { return false },
+		"printf":               func(format string, args ...interface{}) string { return "" },
+		"releaseIcon":          func(conclusion string) string { return "" },
+		"releaseLabel":         func(conclusion string) string { return "" },
+		"hasReleaseConclusion": func(s string) bool { return false },
+	}).Parse(`{{define "repo_list"}}<div>{{range .Repos}}<div class="repo">{{.FullName}}</div>{{end}}</div>{{end}}`)))
+	engine.POST("/repos/import-all", func(c *gin.Context) {
+		c.Set("user_id", int64(u.ID))
+		handler.ImportAllRepos(c)
+	})
+	req := httptest.NewRequest("POST", "/repos/import-all", nil)
+	req.AddCookie(&http.Cookie{Name: "gitlens_session", Value: sessionID})
+	engine.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d. Body: %s", w.Code, w.Body.String())
+	}
+
+	repos, _ := client.Repository.Query().All(context.Background())
+	if len(repos) != 2 {
+		t.Fatalf("expected 2 repos, got %d", len(repos))
+	}
+
+	// Verify the existing repo was not synced (no API calls for existing)
+	if apiCalls < 2 {
+		t.Errorf("expected at least 2 API calls (list repos + sync new), got %d", apiCalls)
+	}
+}
+
+func TestImportAllRepos_NoRepos(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+
+	u, err := client.User.Create().
+		SetGithubID(200).
+		SetLogin("norepos").
+		SetAccessToken("token").
+		Save(context.Background())
+	if err != nil {
+		t.Fatalf("create user: %v", err)
+	}
+
+	apiSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`[]`))
+	}))
+	defer apiSrv.Close()
+	handler.gh.APIURL = apiSrv.URL
+
+	sessionID := store.Set(int64(u.ID))
+	w := httptest.NewRecorder()
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.SetHTMLTemplate(template.Must(template.New("").Funcs(template.FuncMap{
+		"shortSHA":             func(s string) string { return s },
+		"formatTime":           func(t time.Time) string { return "" },
+		"truncate":             func(s string, n int) string { return s },
+		"workflowIcon":         func(status string) string { return "" },
+		"workflowLabel":        func(status string) string { return "" },
+		"hasWorkflowRun":       func(status string) bool { return false },
+		"printf":               func(format string, args ...interface{}) string { return "" },
+		"releaseIcon":          func(conclusion string) string { return "" },
+		"releaseLabel":         func(conclusion string) string { return "" },
+		"hasReleaseConclusion": func(s string) bool { return false },
+	}).Parse(`{{define "repo_list"}}<div>{{range .Repos}}<div class="repo">{{.FullName}}</div>{{end}}</div>{{end}}`)))
+	engine.POST("/repos/import-all", func(c *gin.Context) {
+		c.Set("user_id", int64(u.ID))
+		handler.ImportAllRepos(c)
+	})
+	req := httptest.NewRequest("POST", "/repos/import-all", nil)
+	req.AddCookie(&http.Cookie{Name: "gitlens_session", Value: sessionID})
+	engine.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	repos, _ := client.Repository.Query().All(context.Background())
+	if len(repos) != 0 {
+		t.Fatalf("expected 0 repos, got %d", len(repos))
+	}
+}
+
+func TestListPullRequests_Success(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	ctx := context.Background()
+
+	u, err := client.User.Create().
+		SetGithubID(300).
+		SetLogin("pruser").
+		SetAccessToken("pr_token").
+		Save(ctx)
+	if err != nil {
+		t.Fatalf("create user: %v", err)
+	}
+
+	_, err = client.Repository.Create().
+		SetGithubID(10).SetOwner("org").SetName("pr-repo").
+		SetFullName("org/pr-repo").SetHTMLURL("https://github.com/org/pr-repo").
+		SetDefaultBranch("main").SetUserID(u.ID).
+		SetPullRequests(`[{"n":1,"t":"Fix bug","a":"dev1","c":"2024-06-01T10:00:00Z","h":"https://github.com/org/pr-repo/pull/1","hr":"fix-bug","br":"main"}]`).
+		SetOpenPrCount(1).
+		Save(ctx)
+	if err != nil {
+		t.Fatalf("create repo: %v", err)
+	}
+
+	sessionID := store.Set(int64(u.ID))
+	w := httptest.NewRecorder()
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.SetHTMLTemplate(template.Must(template.New("").Funcs(template.FuncMap{
+		"shortSHA":             func(s string) string { return s },
+		"formatTime":           func(t time.Time) string { return "" },
+		"truncate":             func(s string, n int) string { return s },
+		"workflowIcon":         func(status string) string { return "" },
+		"workflowLabel":        func(status string) string { return "" },
+		"hasWorkflowRun":       func(status string) bool { return false },
+		"printf":               func(format string, args ...interface{}) string { return "" },
+		"releaseIcon":          func(conclusion string) string { return "" },
+		"releaseLabel":         func(conclusion string) string { return "" },
+		"hasReleaseConclusion": func(s string) bool { return false },
+	}).Parse(`{{define "pr_list"}}<div>{{range .PRs}}<div class="pr-item">{{.Number}} {{.Title}}</div>{{end}}</div>{{end}}`)))
+	engine.GET("/repos/:id/prs", func(c *gin.Context) {
+		c.Set("user_id", int64(u.ID))
+		handler.ListPullRequests(c)
+	})
+	req := httptest.NewRequest("GET", "/repos/1/prs", nil)
+	req.AddCookie(&http.Cookie{Name: "gitlens_session", Value: sessionID})
+	engine.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d. Body: %s", w.Code, w.Body.String())
+	}
+	if !strings.Contains(w.Body.String(), "Fix bug") {
+		t.Errorf("expected PR title in response, body: %s", w.Body.String())
+	}
+}
+
+func TestListPullRequests_Empty(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	ctx := context.Background()
+
+	u, err := client.User.Create().
+		SetGithubID(400).
+		SetLogin("emptypru").
+		SetAccessToken("token").
+		Save(ctx)
+	if err != nil {
+		t.Fatalf("create user: %v", err)
+	}
+
+	_, err = client.Repository.Create().
+		SetGithubID(20).SetOwner("org").SetName("empty-pr").
+		SetFullName("org/empty-pr").SetHTMLURL("https://github.com/org/empty-pr").
+		SetDefaultBranch("main").SetUserID(u.ID).
+		SetPullRequests("[]").
+		SetOpenPrCount(0).
+		Save(ctx)
+	if err != nil {
+		t.Fatalf("create repo: %v", err)
+	}
+
+	sessionID := store.Set(int64(u.ID))
+	w := httptest.NewRecorder()
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.SetHTMLTemplate(template.Must(template.New("").Funcs(template.FuncMap{
+		"shortSHA":             func(s string) string { return s },
+		"formatTime":           func(t time.Time) string { return "" },
+		"truncate":             func(s string, n int) string { return s },
+		"workflowIcon":         func(status string) string { return "" },
+		"workflowLabel":        func(status string) string { return "" },
+		"hasWorkflowRun":       func(status string) bool { return false },
+		"printf":               func(format string, args ...interface{}) string { return "" },
+		"releaseIcon":          func(conclusion string) string { return "" },
+		"releaseLabel":         func(conclusion string) string { return "" },
+		"hasReleaseConclusion": func(s string) bool { return false },
+	}).Parse(`{{define "pr_list"}}<div>{{if .PRs}}{{range .PRs}}{{.n}}{{else}}empty{{end}}{{else}}empty{{end}}</div>{{end}}`)))
+	engine.GET("/repos/:id/prs", func(c *gin.Context) {
+		c.Set("user_id", int64(u.ID))
+		handler.ListPullRequests(c)
+	})
+	req := httptest.NewRequest("GET", "/repos/1/prs", nil)
+	req.AddCookie(&http.Cookie{Name: "gitlens_session", Value: sessionID})
+	engine.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+}
+
 func TestComputeMetrics_Empty(t *testing.T) {
 	metrics := computeMetrics(nil)
 	if metrics.TotalRepos != 0 {

@@ -199,6 +199,87 @@ func TestGetLatestRelease_NotFound(t *testing.T) {
 	}
 }
 
+func TestGetLatestWorkflowRun_Success(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"workflow_runs":[{"id":99,"status":"completed","conclusion":"success"}]}`))
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	run, err := c.GetLatestWorkflowRun("token", "user", "repo", "main")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if run.ID != 99 || run.Conclusion != "success" {
+		t.Errorf("expected id=99, conclusion=success, got %+v", run)
+	}
+}
+
+func TestGetLatestWorkflowRun_WithTag(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		branch := r.URL.Query().Get("branch")
+		if branch != "v1.0.0" {
+			t.Errorf("expected branch=v1.0.0, got %s", branch)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"workflow_runs":[{"id":42,"status":"completed","conclusion":"success"}]}`))
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	run, err := c.GetLatestWorkflowRun("token", "user", "repo", "v1.0.0")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if run.ID != 42 {
+		t.Errorf("expected id=42, got %d", run.ID)
+	}
+}
+
+func TestGetLatestWorkflowRun_NoRuns(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"workflow_runs":[]}`))
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	_, err := c.GetLatestWorkflowRun("token", "user", "repo", "main")
+	if err == nil {
+		t.Fatal("expected error for empty workflow runs")
+	}
+}
+
+func TestGetLatestWorkflowRun_EmptyBranch(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		branch := r.URL.Query().Get("branch")
+		if branch != "" {
+			t.Errorf("expected empty branch, got %s", branch)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"workflow_runs":[{"id":7,"status":"completed","conclusion":"failure"}]}`))
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	run, err := c.GetLatestWorkflowRun("token", "user", "repo", "")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if run.Conclusion != "failure" {
+		t.Errorf("expected failure, got %s", run.Conclusion)
+	}
+}
+
 func TestGetWorkflowStatus_NoRuns(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

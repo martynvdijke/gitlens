@@ -187,11 +187,6 @@ func (h *SettingsHandler) SelectRepos(c *gin.Context) {
 		Order(ent.Desc(repository.FieldUpdatedAt)).
 		All(ctx)
 
-	repos, _ = h.client.Repository.Query().
-		Where(repository.HasUserWith(user.ID(u.ID))).
-		Order(ent.Desc(repository.FieldUpdatedAt)).
-		All(ctx)
-
 	c.HTML(http.StatusOK, "dashboard", gin.H{
 		"User":    u,
 		"Repos":   repos,

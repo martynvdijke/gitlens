@@ -378,6 +378,29 @@ func (c *Client) ListReleases(token, owner, repo string) ([]*Release, error) {
 	return all, nil
 }
 
+func (c *Client) GetLatestWorkflowRun(token, owner, repo, branch string) (*WorkflowRun, error) {
+	u := fmt.Sprintf("%s/repos/%s/%s/actions/runs?per_page=1&status=completed", c.APIURL, owner, repo)
+	if branch != "" {
+		u += "&branch=" + url.QueryEscape(branch)
+	}
+	resp, err := c.doRequest("GET", u, token, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var runs ghWorkflowRuns
+	if err := json.NewDecoder(resp.Body).Decode(&runs); err != nil {
+		return nil, fmt.Errorf("decoding workflow runs: %w", err)
+	}
+	if len(runs.WorkflowRuns) == 0 {
+		return nil, fmt.Errorf("no completed workflow runs found")
+	}
+
+	run := runs.WorkflowRuns[0]
+	return &WorkflowRun{ID: run.ID, Conclusion: run.Conclusion}, nil
+}
+
 func (c *Client) GetWorkflowRuns(token, owner, repo, branch string, perPage int) ([]*WorkflowRun, error) {
 	url := fmt.Sprintf("%s/repos/%s/%s/actions/runs?per_page=%d&branch=%s", c.APIURL, owner, repo, perPage, branch)
 	resp, err := c.doRequest("GET", url, token, nil)
