@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/martynvdijke/gitlens/compare/v1.1.0...v1.1.1) (2026-05-23)
+
+
+### Bug Fixes
+
+* multi-repo import only syncs new repos, add release workflow status and PR tests ([1f6efa5](https://github.com/martynvdijke/gitlens/commit/1f6efa51a3cbbfedab23cf8c1a6604e6c87d0dc5))
+
 # [1.1.0](https://github.com/martynvdijke/gitlens/compare/v1.0.1...v1.1.0) (2026-05-21)
 
 
