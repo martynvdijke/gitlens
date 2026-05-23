@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/martynvdijke/gitlens/compare/v1.1.1...v1.2.0) (2026-05-23)
+
+
+### Features
+
+* add webhook, settings handler tests and expand github client coverage ([248cb6f](https://github.com/martynvdijke/gitlens/commit/248cb6f5b86818cda5a60512871c20a6fa73a9a2))
+
 ## [1.1.1](https://github.com/martynvdijke/gitlens/compare/v1.1.0...v1.1.1) (2026-05-23)
 
 
