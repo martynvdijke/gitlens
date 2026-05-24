@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -136,6 +137,40 @@ func main() {
 		"hasReleaseConclusion": func(s string) bool {
 			return s != "" && s != "unknown"
 		},
+		"contains": func(s, substr string) bool {
+			return strings.Contains(s, substr)
+		},
+		"timeSince": func(t time.Time) string {
+			d := time.Since(t)
+			switch {
+			case d < time.Minute:
+				return "just now"
+			case d < time.Hour:
+				m := int(d.Minutes())
+				if m == 1 { return "1 minute ago" }
+				return fmt.Sprintf("%d minutes ago", m)
+			case d < 24*time.Hour:
+				h := int(d.Hours())
+				if h == 1 { return "1 hour ago" }
+				return fmt.Sprintf("%d hours ago", h)
+			default:
+				days := int(d.Hours() / 24)
+				if days == 1 { return "1 day ago" }
+				return fmt.Sprintf("%d days ago", days)
+			}
+		},
+		"eventIcon": func(eventType string) string {
+			switch eventType {
+			case "release":
+				return "<svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#3fb950\" stroke-width=\"2\"><polyline points=\"23 6 13.5 15.5 8.5 10.5 1 18\"/><polyline points=\"17 6 23 6 23 12\"/></svg>"
+			case "workflow_failure":
+				return "<svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#f85149\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"15\" y1=\"9\" x2=\"9\" y2=\"15\"/><line x1=\"9\" y1=\"9\" x2=\"15\" y2=\"15\"/></svg>"
+			case "pr_merge":
+				return "<svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#58a6ff\" stroke-width=\"2\"><circle cx=\"18\" cy=\"18\" r=\"3\"/><circle cx=\"6\" cy=\"6\" r=\"3\"/><path d=\"M6 21V9c0 2 2 3 6 3s6 1 6 3v3\"/></svg>"
+			default:
+				return ""
+			}
+		},
 	}).ParseFiles(
 		"static/index.html",
 	))
@@ -148,6 +183,7 @@ func main() {
 	badgeHandler := handlers.NewBadgeHandler(client)
 	gitHubAppHandler := handlers.NewGitHubAppHandler(client)
 	webhookHandler := handlers.NewWebhookHandler(client, syncer, os.Getenv("GITHUB_WEBHOOK_SECRET"))
+	feedHandler := handlers.NewFeedHandler(client)
 
 	r := gin.Default()
 
@@ -182,6 +218,8 @@ func main() {
 		authed.DELETE("/repos/:id", settingsHandler.RemoveRepo)
 
 		authed.GET("/charts", chartHandler.Charts)
+		authed.GET("/feed", feedHandler.Feed)
+		authed.POST("/feed/filter", feedHandler.FeedFilter)
 		authed.POST("/repos/setup-webhooks", gitHubAppHandler.SetupAutoWebhooks)
 	}
 

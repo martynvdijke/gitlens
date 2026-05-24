@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"log"
 	"time"
 
 	"gitlens/ent"
+	"gitlens/ent/event"
 	"gitlens/ent/repository"
 	"gitlens/ent/user"
 	"gitlens/internal/github"
@@ -80,6 +82,11 @@ func (s *Syncer) SyncOne(ctx context.Context, repo *ent.Repository) *ent.Reposit
 		return repo
 	}
 
+	// Snapshot before state for event detection
+	beforeReleaseTag := repo.LatestReleaseTag
+	beforeWorkflowStatus := repo.WorkflowStatus
+	beforeReleaseConclusion := repo.LatestReleaseConclusion
+
 	updated := s.client.Repository.UpdateOne(repo)
 
 	s.syncCommits(ctx, u, repo, updated)
@@ -99,6 +106,8 @@ func (s *Syncer) SyncOne(ctx context.Context, repo *ent.Repository) *ent.Reposit
 	if err != nil {
 		return repo
 	}
+
+	s.recordEvents(ctx, u, repo, beforeReleaseTag, beforeWorkflowStatus, beforeReleaseConclusion)
 
 	if s.hub != nil {
 		s.broadcastUpdate(repo)
@@ -233,6 +242,101 @@ func (s *Syncer) SyncOneByGithubID(ctx context.Context, githubID int64) {
 		return
 	}
 	s.SyncOne(ctx, r)
+}
+
+func (s *Syncer) recordEvents(ctx context.Context, u *ent.User, repo *ent.Repository, beforeReleaseTag, beforeWorkflowStatus, beforeReleaseConclusion string) {
+	s.recordReleaseEvent(ctx, repo, beforeReleaseTag, beforeReleaseConclusion)
+	s.recordWorkflowFailureEvent(ctx, repo, beforeWorkflowStatus)
+	s.recordPRMergeEvents(ctx, u, repo)
+}
+
+func (s *Syncer) recordReleaseEvent(ctx context.Context, repo *ent.Repository, beforeTag, beforeConclusion string) {
+	if repo.LatestReleaseTag == "" || repo.LatestReleaseTag == beforeTag {
+		return
+	}
+	// Check if we already recorded this release event
+	exists, _ := s.client.Event.Query().
+		Where(event.RepoID(repo.ID)).
+		Where(event.TypeEQ(event.TypeRelease)).
+		Where(event.TitleEQ(repo.LatestReleaseTag)).
+		Exist(ctx)
+	if exists {
+		return
+	}
+
+	meta, _ := json.Marshal(map[string]string{
+		"conclusion": repo.LatestReleaseConclusion,
+	})
+	s.client.Event.Create().
+		SetRepoID(repo.ID).
+		SetType(event.TypeRelease).
+		SetTitle(repo.LatestReleaseTag).
+		SetURL(fmt.Sprintf("%s/releases/tag/%s", repo.HTMLURL, repo.LatestReleaseTag)).
+		SetMetadata(string(meta)).
+		SetTimestamp(repo.LatestReleaseDate).
+		Save(ctx)
+}
+
+func (s *Syncer) recordWorkflowFailureEvent(ctx context.Context, repo *ent.Repository, beforeStatus string) {
+	status := repo.WorkflowStatus
+	if status != "failure" && status != "cancelled" {
+		return
+	}
+	if status == beforeStatus {
+		return
+	}
+	// Check if we already recorded this failure
+	exists, _ := s.client.Event.Query().
+		Where(event.RepoID(repo.ID)).
+		Where(event.TypeEQ(event.TypeWorkflowFailure)).
+		Where(event.TitleContains("build #")).
+		Exist(ctx)
+	if !exists || beforeStatus == "" {
+		meta, _ := json.Marshal(map[string]interface{}{
+			"run_id": repo.WorkflowRunID,
+			"status": status,
+		})
+		s.client.Event.Create().
+			SetRepoID(repo.ID).
+			SetType(event.TypeWorkflowFailure).
+			SetTitle(fmt.Sprintf("CI %s — build #%d", status, repo.WorkflowRunID)).
+			SetURL(fmt.Sprintf("%s/actions/runs/%d", repo.HTMLURL, repo.WorkflowRunID)).
+			SetMetadata(string(meta)).
+			SetTimestamp(time.Now()).
+			Save(ctx)
+	}
+}
+
+func (s *Syncer) recordPRMergeEvents(ctx context.Context, u *ent.User, repo *ent.Repository) {
+	mergedPRs, err := s.gh.ListRecentlyMergedPRs(u.AccessToken, repo.Owner, repo.Name)
+	if err != nil {
+		log.Printf("Error fetching merged PRs for %s: %v", repo.FullName, err)
+		return
+	}
+	for _, pr := range mergedPRs {
+		title := fmt.Sprintf("#%d %s", pr.Number, pr.Title)
+		exists, _ := s.client.Event.Query().
+			Where(event.RepoID(repo.ID)).
+			Where(event.TypeEQ(event.TypePrMerge)).
+			Where(event.TitleEQ(title)).
+			Exist(ctx)
+		if exists {
+			continue
+		}
+		meta, _ := json.Marshal(map[string]interface{}{
+			"author":   pr.Author,
+			"number":   pr.Number,
+			"base_ref": pr.BaseRef,
+		})
+		s.client.Event.Create().
+			SetRepoID(repo.ID).
+			SetType(event.TypePrMerge).
+			SetTitle(title).
+			SetURL(pr.HTMLURL).
+			SetMetadata(string(meta)).
+			SetTimestamp(pr.CreatedAt).
+			Save(ctx)
+	}
 }
 
 func (s *Syncer) broadcastUpdate(repo *ent.Repository) {

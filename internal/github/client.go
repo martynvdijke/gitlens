@@ -136,6 +136,8 @@ type ghPullRequest struct {
 		Ref string `json:"ref"`
 	} `json:"base"`
 	MergeableState string `json:"mergeable_state"`
+	MergedAt       string `json:"merged_at"`
+	Merged         bool   `json:"merged"`
 }
 
 func (c *Client) doRequest(method, urlStr, token string, body io.Reader) (*http.Response, error) {
@@ -435,6 +437,38 @@ func (c *Client) ListPullRequests(token, owner, repo string) ([]*PullRequest, er
 
 	var prs []*PullRequest
 	for _, pr := range ghPRs {
+		t, _ := time.Parse(time.RFC3339, pr.CreatedAt)
+		prs = append(prs, &PullRequest{
+			Number:    pr.Number,
+			Title:     pr.Title,
+			Author:    pr.User.Login,
+			CreatedAt: t,
+			HTMLURL:   pr.HTMLURL,
+			HeadRef:   pr.Head.Ref,
+			BaseRef:   pr.Base.Ref,
+		})
+	}
+	return prs, nil
+}
+
+func (c *Client) ListRecentlyMergedPRs(token, owner, repo string) ([]*PullRequest, error) {
+	url := fmt.Sprintf("%s/repos/%s/%s/pulls?state=closed&sort=updated&direction=desc&per_page=10", c.APIURL, owner, repo)
+	resp, err := c.doRequest("GET", url, token, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var ghPRs []ghPullRequest
+	if err := json.NewDecoder(resp.Body).Decode(&ghPRs); err != nil {
+		return nil, fmt.Errorf("decoding pull requests: %w", err)
+	}
+
+	var prs []*PullRequest
+	for _, pr := range ghPRs {
+		if pr.MergedAt == "" {
+			continue
+		}
 		t, _ := time.Parse(time.RFC3339, pr.CreatedAt)
 		prs = append(prs, &PullRequest{
 			Number:    pr.Number,

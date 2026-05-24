@@ -966,3 +966,174 @@ main {
     width: 100%;
     margin-left: 26px;
 }
+
+/* Activity Feed */
+
+.feed-section {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.feed-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.feed-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #f0f6fc;
+    flex-shrink: 0;
+}
+
+.feed-filters {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.feed-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #8b949e;
+    cursor: pointer;
+}
+
+.feed-checkbox-label input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    accent-color: #238636;
+    cursor: pointer;
+}
+
+.feed-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.feed-date-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.feed-date-header {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #8b949e;
+    padding: 8px 0;
+    border-bottom: 1px solid #21262d;
+    margin-bottom: 4px;
+}
+
+.feed-event {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 8px;
+    border-radius: 6px;
+    transition: background 0.15s;
+    text-decoration: none;
+}
+
+.feed-event:hover {
+    background: #1c2128;
+}
+
+.feed-event-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-top: 1px;
+}
+
+.feed-event-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.feed-event-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+
+.feed-event-title {
+    color: #e6edf3;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.feed-event-title:hover {
+    color: #58a6ff;
+    text-decoration: underline;
+}
+
+.feed-event-repo {
+    font-size: 11px;
+    color: #8b949e;
+}
+
+.feed-event-time {
+    font-size: 11px;
+    color: #6e7681;
+}
+
+.feed-empty {
+    text-align: center;
+    padding: 32px 16px;
+    color: #8b949e;
+}
+
+.feed-empty p {
+    font-size: 14px;
+}
+
+/* Event type color accents */
+.feed-event-release .feed-event-icon svg {
+    color: #3fb950;
+}
+
+.feed-event-workflow_failure .feed-event-icon svg {
+    color: #f85149;
+}
+
+.feed-event-pr_merge .feed-event-icon svg {
+    color: #d29922;
+}
+
+@media (max-width: 640px) {
+    .feed-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .feed-filters {
+        width: 100%;
+    }
+
+    .feed-event {
+        padding: 8px 4px;
+    }
+}

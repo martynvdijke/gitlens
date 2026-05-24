@@ -139,6 +139,12 @@
     <span id="charts-spinner" class="htmx-indicator">Loading charts...</span>
     <div id="charts-section"></div>
 
+    <button class="btn btn-secondary" hx-get="/feed?since=7d" hx-target="#feed-section" hx-swap="innerHTML" hx-indicator="#feed-spinner">
+        Show Activity Feed
+    </button>
+    <span id="feed-spinner" class="htmx-indicator">Loading feed...</span>
+    <div id="feed-section"></div>
+
     {{template "repo_list" .}}
     {{end}}
 
@@ -388,6 +394,55 @@
     <div class="chart-card chart-card-wide">
         {{.MetricTrendSVG}}
     </div>
+</div>
+{{end}}
+
+{{define "feed"}}
+<div class="feed-section">
+    <div class="feed-header">
+        <h3>Activity Feed</h3>
+        <form hx-post="/feed/filter" hx-target="#feed-section" hx-swap="innerHTML" class="feed-filters">
+            <select name="since" class="settings-select">
+                <option value="24h" {{if eq .Since "24h"}}selected{{end}}>Last 24 hours</option>
+                <option value="7d" {{if eq .Since "7d"}}selected{{end}}>Last 7 days</option>
+                <option value="30d" {{if eq .Since "30d"}}selected{{end}}>Last 30 days</option>
+                <option value="all" {{if eq .Since "all"}}selected{{end}}>All time</option>
+            </select>
+            <label class="feed-checkbox-label">
+                <input type="checkbox" name="types" value="release" class="feed-type-cb" {{if or (eq .Types "all") (contains .Types "release")}}checked{{end}} onchange="this.form.requestSubmit()"> Releases
+            </label>
+            <label class="feed-checkbox-label">
+                <input type="checkbox" name="types" value="workflow_failure" class="feed-type-cb" {{if or (eq .Types "all") (contains .Types "workflow_failure")}}checked{{end}} onchange="this.form.requestSubmit()"> Failures
+            </label>
+            <label class="feed-checkbox-label">
+                <input type="checkbox" name="types" value="pr_merge" class="feed-type-cb" {{if or (eq .Types "all") (contains .Types "pr_merge")}}checked{{end}} onchange="this.form.requestSubmit()"> PR Merges
+            </label>
+        </form>
+    </div>
+
+    {{if gt .Count 0}}
+    <div class="feed-list">
+        {{range .Groups}}
+        <div class="feed-date-group">
+            <div class="feed-date-header">{{.Date}}</div>
+            {{range .Events}}
+            <div class="feed-event feed-event-{{.Type}}">
+                <div class="feed-event-icon">{{eventIcon .Type}}</div>
+                <div class="feed-event-content">
+                    <a href="{{.URL}}" target="_blank" rel="noopener" class="feed-event-title">{{.Title}}</a>
+                    <span class="feed-event-repo">{{.RepoFull}}</span>
+                    <span class="feed-event-time">{{timeSince .Timestamp}}</span>
+                </div>
+            </div>
+            {{end}}
+        </div>
+        {{end}}
+    </div>
+    {{else}}
+    <div class="feed-empty">
+        <p>No events in this period.</p>
+    </div>
+    {{end}}
 </div>
 {{end}}
 </body>

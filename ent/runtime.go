@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"gitlens/ent/event"
 	"gitlens/ent/repository"
 	"gitlens/ent/schema"
 	"gitlens/ent/user"
@@ -13,6 +14,12 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	eventFields := schema.Event{}.Fields()
+	_ = eventFields
+	// eventDescCreatedAt is the schema descriptor for created_at field.
+	eventDescCreatedAt := eventFields[6].Descriptor()
+	// event.DefaultCreatedAt holds the default value on creation for the created_at field.
+	event.DefaultCreatedAt = eventDescCreatedAt.Default.(func() time.Time)
 	repositoryFields := schema.Repository{}.Fields()
 	_ = repositoryFields
 	// repositoryDescWorkflowStatus is the schema descriptor for workflow_status field.

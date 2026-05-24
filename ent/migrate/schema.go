@@ -8,6 +8,40 @@ import (
 )
 
 var (
+	// EventsColumns holds the columns for the "events" table.
+	EventsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "repo_id", Type: field.TypeInt},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"release", "workflow_failure", "pr_merge"}},
+		{Name: "title", Type: field.TypeString},
+		{Name: "url", Type: field.TypeString},
+		{Name: "metadata", Type: field.TypeString, Nullable: true},
+		{Name: "timestamp", Type: field.TypeTime},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// EventsTable holds the schema information for the "events" table.
+	EventsTable = &schema.Table{
+		Name:       "events",
+		Columns:    EventsColumns,
+		PrimaryKey: []*schema.Column{EventsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "event_timestamp",
+				Unique:  false,
+				Columns: []*schema.Column{EventsColumns[6]},
+			},
+			{
+				Name:    "event_repo_id_timestamp",
+				Unique:  false,
+				Columns: []*schema.Column{EventsColumns[1], EventsColumns[6]},
+			},
+			{
+				Name:    "event_type_timestamp",
+				Unique:  false,
+				Columns: []*schema.Column{EventsColumns[2], EventsColumns[6]},
+			},
+		},
+	}
 	// RepositoriesColumns holds the columns for the "repositories" table.
 	RepositoriesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -79,6 +113,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		EventsTable,
 		RepositoriesTable,
 		UsersTable,
 	}
