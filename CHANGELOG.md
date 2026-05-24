@@ -1,3 +1,15 @@
+# [1.3.0](https://github.com/martynvdijke/gitlens/compare/v1.2.0...v1.3.0) (2026-05-24)
+
+
+### Bug Fixes
+
+* rebuild binary before e2e tests and fix feed redirect tests ([13a9356](https://github.com/martynvdijke/gitlens/commit/13a9356fe26e594dbb17fe41ded47f636098cfd4))
+
+
+### Features
+
+* add activity feed with timeline, filters, tests ([892c447](https://github.com/martynvdijke/gitlens/commit/892c447d5ba212b654de173a7f9f5fb14f00da4b))
+
 # [1.2.0](https://github.com/martynvdijke/gitlens/compare/v1.1.1...v1.2.0) (2026-05-23)
 
 
