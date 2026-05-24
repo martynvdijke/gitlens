@@ -28,6 +28,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+var Version = "dev" // overridden by ldflags at build time
+
 func main() {
 	dbPath := os.Getenv("DB_PATH")
 	if dbPath == "" {
@@ -61,6 +63,7 @@ func main() {
 	syncer := sync.NewSyncer(client, ghClient, hub)
 
 	tmpl := template.Must(template.New("").Funcs(template.FuncMap{
+		"appVersion": func() string { return Version },
 		"shortSHA": func(s string) string {
 			if len(s) > 7 {
 				return s[:7]

@@ -18,7 +18,8 @@ RUN go mod download
 COPY . .
 COPY --from=ts-builder /app/static/js ./static/js
 
-RUN CGO_ENABLED=1 GOOS=linux go build -o gitlens .
+ARG VERSION=dev
+RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-X main.Version=${VERSION}" -o gitlens .
 
 FROM alpine:latest
 RUN apk add --no-cache sqlite-libs ca-certificates

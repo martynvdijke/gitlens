@@ -3,7 +3,7 @@ tmp_dir = "tmp"
 
 [build]
   bin = "./tmp/gitlens"
-  cmd = "go build -o ./tmp/gitlens ."
+  cmd = "go build -ldflags=\"-X main.Version=$(git describe --tags --always --dirty 2>/dev/null || echo dev)\" -o ./tmp/gitlens ."
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", "ent"]
   exclude_file = []
