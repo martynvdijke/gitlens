@@ -2,33 +2,29 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Activity Feed - Protected Routes', () => {
   test('redirects unauthenticated users from GET /feed', async ({ page }) => {
-    const response = await page.request.get('/feed');
-    expect(response.status()).toBe(302);
-    expect(response.headers()['location']).toBe('/');
+    await page.goto('/feed');
+    await expect(page.locator('.login-prompt')).toBeVisible();
   });
 
   test('redirects unauthenticated users from POST /feed/filter', async ({ page }) => {
-    const response = await page.request.post('/feed/filter');
+    const response = await page.request.post('/feed/filter', { maxRedirects: 0 });
     expect(response.status()).toBe(302);
     expect(response.headers()['location']).toBe('/');
   });
 
   test('redirects unauthenticated users from GET /feed with query params', async ({ page }) => {
-    const response = await page.request.get('/feed?since=7d&types=release');
-    expect(response.status()).toBe(302);
-    expect(response.headers()['location']).toBe('/');
+    await page.goto('/feed?since=7d&types=release');
+    await expect(page.locator('.login-prompt')).toBeVisible();
   });
 
   test('redirects unauthenticated users from GET /feed with since filter', async ({ page }) => {
-    const response = await page.request.get('/feed?since=24h');
-    expect(response.status()).toBe(302);
-    expect(response.headers()['location']).toBe('/');
+    await page.goto('/feed?since=24h');
+    await expect(page.locator('.login-prompt')).toBeVisible();
   });
 
   test('redirects unauthenticated users from GET /feed with type filter', async ({ page }) => {
-    const response = await page.request.get('/feed?types=workflow_failure,pr_merge');
-    expect(response.status()).toBe(302);
-    expect(response.headers()['location']).toBe('/');
+    await page.goto('/feed?types=workflow_failure,pr_merge');
+    await expect(page.locator('.login-prompt')).toBeVisible();
   });
 });
 

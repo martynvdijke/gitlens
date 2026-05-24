@@ -37,6 +37,7 @@ tasks:
   test:e2e:
     desc: Run Playwright end-to-end tests
     cmds:
+      - task: build
       - rm -f gitlens.db gitlens.db-wal gitlens.db-shm
       - npx playwright test
 
