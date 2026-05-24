@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/martynvdijke/gitlens/compare/v1.4.0...v1.5.0) (2026-05-24)
+
+
+### Features
+
+* persist sessions in database so auth survives restarts ([c21eb4d](https://github.com/martynvdijke/gitlens/commit/c21eb4d96f3eb396a074d1dd9059e25f2b45cc12))
+
 # [1.4.0](https://github.com/martynvdijke/gitlens/compare/v1.3.0...v1.4.0) (2026-05-24)
 
 
