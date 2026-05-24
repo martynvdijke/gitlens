@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/martynvdijke/gitlens/compare/v1.3.0...v1.4.0) (2026-05-24)
+
+
+### Features
+
+* show app version in footer via ldflags ([d6d6ef4](https://github.com/martynvdijke/gitlens/commit/d6d6ef499876b1465da24b63de304edd00b476ce))
+
 # [1.3.0](https://github.com/martynvdijke/gitlens/compare/v1.2.0...v1.3.0) (2026-05-24)
 
 
