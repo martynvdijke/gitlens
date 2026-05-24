@@ -2,9 +2,10 @@ package middleware
 
 import (
 	"crypto/rand"
+	"database/sql"
 	"encoding/hex"
+	"log"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -16,41 +17,68 @@ const (
 )
 
 type SessionStore struct {
-	mu       sync.RWMutex
-	sessions map[string]int64
+	db *sql.DB
 }
 
-func NewSessionStore() *SessionStore {
-	return &SessionStore{
-		sessions: make(map[string]int64),
+func NewSessionStore(db *sql.DB) *SessionStore {
+	store := &SessionStore{db: db}
+	if err := store.init(); err != nil {
+		log.Printf("Failed to initialize session store: %v", err)
 	}
+	return store
+}
+
+func (s *SessionStore) init() error {
+	if _, err := s.db.Exec(`CREATE TABLE IF NOT EXISTS sessions (
+		id TEXT PRIMARY KEY,
+		user_id INTEGER NOT NULL,
+		expires_at DATETIME NOT NULL
+	)`); err != nil {
+		return err
+	}
+	_, err := s.db.Exec(`DELETE FROM sessions WHERE expires_at <= datetime('now')`)
+	return err
 }
 
 func (s *SessionStore) generateID() string {
 	b := make([]byte, 32)
-	rand.Read(b)
+	_, _ = rand.Read(b)
 	return hex.EncodeToString(b)
 }
 
 func (s *SessionStore) Set(userID int64) string {
-	s.mu.Lock()
-	defer s.mu.Unlock()
 	id := s.generateID()
-	s.sessions[id] = userID
+	expiresAt := time.Now().Add(sessionMaxAge)
+	_, err := s.db.Exec(
+		"INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)",
+		id, userID, expiresAt,
+	)
+	if err != nil {
+		log.Printf("Failed to set session: %v", err)
+		return ""
+	}
 	return id
 }
 
 func (s *SessionStore) Get(sessionID string) (int64, bool) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	userID, ok := s.sessions[sessionID]
-	return userID, ok
+	var userID int64
+	var expiresAt time.Time
+	err := s.db.QueryRow(
+		"SELECT user_id, expires_at FROM sessions WHERE id = ?",
+		sessionID,
+	).Scan(&userID, &expiresAt)
+	if err != nil {
+		return 0, false
+	}
+	if time.Now().After(expiresAt) {
+		s.Delete(sessionID)
+		return 0, false
+	}
+	return userID, true
 }
 
 func (s *SessionStore) Delete(sessionID string) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	delete(s.sessions, sessionID)
+	_, _ = s.db.Exec("DELETE FROM sessions WHERE id = ?", sessionID)
 }
 
 func AuthRequired(store *SessionStore) gin.HandlerFunc {

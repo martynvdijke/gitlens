@@ -1,15 +1,27 @@
 package middleware
 
 import (
+	"database/sql"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/mattn/go-sqlite3"
 )
 
+func newTestSessionStore(t *testing.T) *SessionStore {
+	t.Helper()
+	db, err := sql.Open("sqlite3", "file:"+t.TempDir()+"/sessions.db?_fk=1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { db.Close() })
+	return NewSessionStore(db)
+}
+
 func TestSessionStoreSetGet(t *testing.T) {
-	store := NewSessionStore()
+	store := newTestSessionStore(t)
 	id := store.Set(42)
 	uid, ok := store.Get(id)
 	if !ok {
@@ -21,7 +33,7 @@ func TestSessionStoreSetGet(t *testing.T) {
 }
 
 func TestSessionStoreGetInvalid(t *testing.T) {
-	store := NewSessionStore()
+	store := newTestSessionStore(t)
 	_, ok := store.Get("nonexistent")
 	if ok {
 		t.Fatal("expected nonexistent session to return false")
@@ -29,7 +41,7 @@ func TestSessionStoreGetInvalid(t *testing.T) {
 }
 
 func TestSessionStoreDelete(t *testing.T) {
-	store := NewSessionStore()
+	store := newTestSessionStore(t)
 	id := store.Set(42)
 	store.Delete(id)
 	_, ok := store.Get(id)
@@ -39,7 +51,7 @@ func TestSessionStoreDelete(t *testing.T) {
 }
 
 func TestSessionUniqueIDs(t *testing.T) {
-	store := NewSessionStore()
+	store := newTestSessionStore(t)
 	id1 := store.Set(1)
 	id2 := store.Set(2)
 	if id1 == id2 {
@@ -49,7 +61,7 @@ func TestSessionUniqueIDs(t *testing.T) {
 
 func TestAuthRequiredWithCookie(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	store := NewSessionStore()
+	store := newTestSessionStore(t)
 	sessionID := store.Set(42)
 
 	w := httptest.NewRecorder()
@@ -71,7 +83,7 @@ func TestAuthRequiredWithCookie(t *testing.T) {
 
 func TestAuthRequiredWithoutCookie(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	store := NewSessionStore()
+	store := newTestSessionStore(t)
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)

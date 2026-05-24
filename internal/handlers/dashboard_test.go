@@ -23,7 +23,7 @@ import (
 func newTestDashboardHandler(t *testing.T) (*DashboardHandler, *middleware.SessionStore, *ent.Client) {
 	t.Helper()
 	client := enttest.Open(t, "sqlite3", "file:"+t.TempDir()+"/test.db?_fk=1")
-	store := middleware.NewSessionStore()
+	store := middleware.NewSessionStore(testSessionDB(t))
 	ghClient := github.NewClient("", "")
 	hub := ws.NewHub()
 	syncer := sync.NewSyncer(client, ghClient, hub)

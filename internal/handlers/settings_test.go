@@ -20,7 +20,7 @@ import (
 func newTestSettingsHandler(t *testing.T, ghAPIURL string) (*SettingsHandler, *middleware.SessionStore) {
 	t.Helper()
 	client := enttest.Open(t, "sqlite3", "file:"+t.TempDir()+"/test.db?_fk=1")
-	store := middleware.NewSessionStore()
+	store := middleware.NewSessionStore(testSessionDB(t))
 	ghClient := github.NewClient("", "")
 	if ghAPIURL != "" {
 		ghClient.APIURL = ghAPIURL

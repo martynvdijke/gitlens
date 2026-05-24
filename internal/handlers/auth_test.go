@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"html/template"
 	"net/http"
@@ -18,10 +19,20 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+func testSessionDB(t *testing.T) *sql.DB {
+	t.Helper()
+	db, err := sql.Open("sqlite3", "file:"+t.TempDir()+"/sessions.db?_fk=1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { db.Close() })
+	return db
+}
+
 func newTestAuthHandler(t *testing.T, ghTokenURL, ghAPIURL string) (*AuthHandler, *middleware.SessionStore, *ent.Client) {
 	t.Helper()
 	client := enttest.Open(t, "sqlite3", "file:"+t.TempDir()+"/test.db?_fk=1")
-	store := middleware.NewSessionStore()
+	store := middleware.NewSessionStore(testSessionDB(t))
 	ghClient := github.NewClient("test_client_id", "test_client_secret")
 	if ghTokenURL != "" {
 		ghClient.TokenURL = ghTokenURL

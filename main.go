@@ -50,7 +50,7 @@ func main() {
 		log.Fatalf("Failed to run migrations: %v", err)
 	}
 
-	sessionStore := middleware.NewSessionStore()
+	sessionStore := middleware.NewSessionStore(db)
 
 	ghClient := github.NewClient(
 		os.Getenv("GITHUB_CLIENT_ID"),
