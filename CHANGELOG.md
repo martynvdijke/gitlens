@@ -1,3 +1,10 @@
+## [1.5.3](https://github.com/martynvdijke/gitlens/compare/v1.5.2...v1.5.3) (2026-05-25)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#1](https://github.com/martynvdijke/gitlens/issues/1)) ([971c0d1](https://github.com/martynvdijke/gitlens/commit/971c0d159a93631580decd3b6924b599aeb3cf12))
+
 ## [1.5.2](https://github.com/martynvdijke/gitlens/compare/v1.5.1...v1.5.2) (2026-05-25)
 
 
