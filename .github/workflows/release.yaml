@@ -75,7 +75,7 @@ jobs:
 
       - name: Build the Docker image
         if: steps.semantic.outputs.new_release_published == 'true'
-        run: docker build . --file Dockerfile --tag martynvandijke/gitlens:latest --tag ghcr.io/martynvdijke/gitlens:latest
+        run: docker build . --file Dockerfile --build-arg VERSION=${{ steps.semantic.outputs.new_release_version }} --tag martynvandijke/gitlens:latest --tag ghcr.io/martynvdijke/gitlens:latest
         
       - name: Push Docker image
         if: steps.semantic.outputs.new_release_published == 'true'

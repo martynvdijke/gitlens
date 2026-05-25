@@ -206,12 +206,16 @@ func (h *DashboardHandler) ImportAllRepos(c *gin.Context) {
 	ctx := c.Request.Context()
 	var newIDs []int
 	for _, r := range ghRepos {
-		exists, _ := h.client.Repository.Query().
+		exists, err := h.client.Repository.Query().
 			Where(
 				repository.HasUserWith(user.ID(u.ID)),
 				repository.GithubID(r.ID),
 			).
 			Exist(ctx)
+		if err != nil {
+			log.Printf("Error checking repo existence %s: %v", r.FullName, err)
+			continue
+		}
 		if exists {
 			continue
 		}
@@ -227,16 +231,20 @@ func (h *DashboardHandler) ImportAllRepos(c *gin.Context) {
 			SetDefaultBranch(r.DefaultBranch).
 			SetUserID(u.ID).
 			Save(ctx)
-		if err == nil {
-			newIDs = append(newIDs, repo.ID)
+		if err != nil {
+			log.Printf("Error creating repo %s: %v", r.FullName, err)
+			continue
 		}
+		newIDs = append(newIDs, repo.ID)
 	}
 
 	for _, id := range newIDs {
 		r, err := h.client.Repository.Get(ctx, id)
-		if err == nil {
-			h.syncer.SyncOne(ctx, r)
+		if err != nil {
+			log.Printf("Error fetching new repo ID %d: %v", id, err)
+			continue
 		}
+		h.syncer.SyncOne(ctx, r)
 	}
 
 	repos, _ := h.client.Repository.Query().

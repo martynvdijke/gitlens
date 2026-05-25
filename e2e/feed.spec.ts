@@ -84,3 +84,67 @@ test.describe('Activity Feed - HTML Template Structure', () => {
     expect(html).toContain('login-prompt');
   });
 });
+
+test.describe('Version Footer', () => {
+  test('footer has correct CSS class', async ({ page }) => {
+    const response = await page.request.get('/');
+    const html = await response.text();
+    expect(html).toContain('app-footer');
+  });
+
+  test('footer contains appVersion placeholder in template', async ({ page }) => {
+    const response = await page.request.get('/');
+    const html = await response.text();
+    // The template renders "GitLens <version>" in the footer
+    expect(html).toContain('GitLens');
+    expect(html).toContain('app-footer');
+  });
+
+  test('footer CSS is properly defined', async ({ page }) => {
+    const response = await page.request.get('/static/style.css');
+    const css = await response.text();
+    expect(css).toContain('.app-footer');
+    expect(css).toContain('border-top');
+    expect(css).toContain('text-align: center');
+  });
+
+  test('footer version class has monospace font', async ({ page }) => {
+    const response = await page.request.get('/static/style.css');
+    const css = await response.text();
+    expect(css).toContain('.app-footer .version');
+    expect(css).toContain('monospace');
+  });
+});
+
+test.describe('Import and Sync', () => {
+  test('import all endpoint redirects unauthenticated users', async ({ page }) => {
+    const response = await page.request.post('/repos/import-all', { maxRedirects: 0 });
+    expect(response.status()).toBe(302);
+    expect(response.headers()['location']).toBe('/');
+  });
+
+  test('sync endpoint redirects unauthenticated users', async ({ page }) => {
+    const response = await page.request.post('/repos/1/sync', { maxRedirects: 0 });
+    expect(response.status()).toBe(302);
+    expect(response.headers()['location']).toBe('/');
+  });
+});
+
+test.describe('PR Merge - Protected Routes', () => {
+  test('merge PR endpoint redirects unauthenticated users', async ({ page }) => {
+    const response = await page.request.post('/repos/1/prs/1/merge', { maxRedirects: 0 });
+    expect(response.status()).toBe(302);
+    expect(response.headers()['location']).toBe('/');
+  });
+
+  test('merge all PRs endpoint redirects unauthenticated users', async ({ page }) => {
+    const response = await page.request.post('/repos/1/prs/merge-all', { maxRedirects: 0 });
+    expect(response.status()).toBe(302);
+    expect(response.headers()['location']).toBe('/');
+  });
+
+  test('list PRs endpoint redirects unauthenticated users', async ({ page }) => {
+    await page.goto('/repos/1/prs');
+    await expect(page.locator('.login-prompt')).toBeVisible();
+  });
+});

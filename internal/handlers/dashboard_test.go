@@ -11,6 +11,8 @@ import (
 
 	"gitlens/ent"
 	"gitlens/ent/enttest"
+	"gitlens/ent/repository"
+	"gitlens/ent/user"
 	"gitlens/internal/github"
 	"gitlens/internal/middleware"
 	"gitlens/internal/sync"
@@ -498,5 +500,194 @@ func TestComputeMetrics_SingleRepo(t *testing.T) {
 	}
 	if metrics.WorkflowPassRate != 100.0 {
 		t.Errorf("expected 100%% pass rate, got %.1f%%", metrics.WorkflowPassRate)
+	}
+}
+
+func TestImportAllRepos_EmptyGitHubResponse(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	ctx := context.Background()
+
+	u, err := client.User.Create().
+		SetGithubID(900).SetLogin("importempty").SetAccessToken("tok").Save(ctx)
+	if err != nil {
+		t.Fatalf("create user: %v", err)
+	}
+
+	apiSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`[]`))
+	}))
+	defer apiSrv.Close()
+	handler.gh.APIURL = apiSrv.URL
+
+	sessionID := store.Set(int64(u.ID))
+	w := serveImportAllRequest(handler, sessionID, u.ID)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+}
+
+func TestImportAllRepos_DuplicateNotCreated(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	ctx := context.Background()
+
+	u, err := client.User.Create().
+		SetGithubID(901).SetLogin("importdup").SetAccessToken("tok").Save(ctx)
+	if err != nil {
+		t.Fatalf("create user: %v", err)
+	}
+
+	// Create a repo that matches what the mock GitHub API would return
+	client.Repository.Create().
+		SetGithubID(1).SetOwner("user").SetName("existing").
+		SetFullName("user/existing").SetHTMLURL("https://github.com/user/existing").
+		SetDefaultBranch("main").SetUserID(u.ID).
+		Save(ctx)
+
+	callCount := 0
+	apiSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		callCount++
+		if callCount == 1 {
+			w.Write([]byte(`[{"id":1,"name":"existing","full_name":"user/existing","description":"","html_url":"","language":"","default_branch":"main","owner":{"login":"user"}}]`))
+		} else {
+			w.Write([]byte(`[]`))
+		}
+	}))
+	defer apiSrv.Close()
+	handler.gh.APIURL = apiSrv.URL
+
+	sessionID := store.Set(int64(u.ID))
+	w := serveImportAllRequest(handler, sessionID, u.ID)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+
+	// Should still have only 1 repo (no duplicate created)
+	count, _ := client.Repository.Query().Where(repository.HasUserWith(user.ID(u.ID))).Count(ctx)
+	if count != 1 {
+		t.Errorf("expected 1 repo (no duplicate), got %d", count)
+	}
+}
+
+func serveImportAllRequest(handler *DashboardHandler, sessionID string, userID int) *httptest.ResponseRecorder {
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	engine := gin.New()
+	engine.SetHTMLTemplate(template.Must(template.New("").Funcs(template.FuncMap{
+		"shortSHA":             func(s string) string { return s },
+		"formatTime":           func(t time.Time) string { return "" },
+		"truncate":             func(s string, n int) string { return s },
+		"workflowIcon":         func(status string) string { return "" },
+		"workflowLabel":        func(status string) string { return "" },
+		"hasWorkflowRun":       func(status string) bool { return false },
+		"printf":               func(format string, args ...interface{}) string { return "" },
+		"releaseIcon":          func(conclusion string) string { return "" },
+		"releaseLabel":         func(conclusion string) string { return "" },
+		"hasReleaseConclusion": func(s string) bool { return false },
+	}).Parse(`{{define "repo_list"}}<div>{{range .Repos}}<div>{{.FullName}}</div>{{end}}</div>{{end}}`)))
+	engine.POST("/repos/import-all", func(c *gin.Context) {
+		c.Set("user_id", int64(userID))
+		handler.ImportAllRepos(c)
+	})
+	req := httptest.NewRequest("POST", "/repos/import-all", http.NoBody)
+	req.AddCookie(&http.Cookie{Name: "gitlens_session", Value: sessionID})
+	engine.ServeHTTP(w, req)
+	return w
+}
+
+func TestMergePR_InvalidRepoID(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().
+		SetGithubID(902).SetLogin("mergetest").SetAccessToken("tok").Save(context.Background())
+
+	sessionID := store.Set(int64(u.ID))
+	w := httptest.NewRecorder()
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.POST("/repos/:id/prs/:number/merge", func(c *gin.Context) {
+		c.Set("user_id", int64(u.ID))
+		handler.MergePR(c)
+	})
+	req := httptest.NewRequest("POST", "/repos/invalid/prs/1/merge", http.NoBody)
+	req.AddCookie(&http.Cookie{Name: "gitlens_session", Value: sessionID})
+	engine.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected 400 for invalid repo ID, got %d", w.Code)
+	}
+}
+
+func TestMergePR_RepoNotFound(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().
+		SetGithubID(903).SetLogin("mergenotfound").SetAccessToken("tok").Save(context.Background())
+
+	sessionID := store.Set(int64(u.ID))
+	w := httptest.NewRecorder()
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.POST("/repos/:id/prs/:number/merge", func(c *gin.Context) {
+		c.Set("user_id", int64(u.ID))
+		handler.MergePR(c)
+	})
+	req := httptest.NewRequest("POST", "/repos/999/prs/1/merge", http.NoBody)
+	req.AddCookie(&http.Cookie{Name: "gitlens_session", Value: sessionID})
+	engine.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNotFound {
+		t.Errorf("expected 404 for non-existent repo, got %d", w.Code)
+	}
+}
+
+func TestMergePR_InvalidPRNumber(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().
+		SetGithubID(904).SetLogin("mergeinvalidpr").SetAccessToken("tok").Save(context.Background())
+
+	client.Repository.Create().
+		SetGithubID(1).SetOwner("user").SetName("mergepr").
+		SetFullName("user/mergepr").SetHTMLURL("https://github.com/user/mergepr").
+		SetDefaultBranch("main").SetUserID(u.ID).
+		Save(context.Background())
+
+	sessionID := store.Set(int64(u.ID))
+	w := httptest.NewRecorder()
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.POST("/repos/:id/prs/:number/merge", func(c *gin.Context) {
+		c.Set("user_id", int64(u.ID))
+		handler.MergePR(c)
+	})
+	req := httptest.NewRequest("POST", "/repos/1/prs/invalid/merge", http.NoBody)
+	req.AddCookie(&http.Cookie{Name: "gitlens_session", Value: sessionID})
+	engine.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected 400 for invalid PR number, got %d", w.Code)
+	}
+}
+
+func TestMergeAllPRs_InvalidRepoID(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().
+		SetGithubID(905).SetLogin("mergeall").SetAccessToken("tok").Save(context.Background())
+
+	sessionID := store.Set(int64(u.ID))
+	w := httptest.NewRecorder()
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.POST("/repos/:id/prs/merge-all", func(c *gin.Context) {
+		c.Set("user_id", int64(u.ID))
+		handler.MergeAllPRs(c)
+	})
+	req := httptest.NewRequest("POST", "/repos/invalid/prs/merge-all", http.NoBody)
+	req.AddCookie(&http.Cookie{Name: "gitlens_session", Value: sessionID})
+	engine.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected 400 for invalid repo ID, got %d", w.Code)
 	}
 }
