@@ -1,3 +1,11 @@
+## [1.5.2](https://github.com/martynvdijke/gitlens/compare/v1.5.1...v1.5.2) (2026-05-25)
+
+
+### Bug Fixes
+
+* invalid timezone UTC+1, use Europe/Amsterdam instead ([cc23ee8](https://github.com/martynvdijke/gitlens/commit/cc23ee87d8afefd6932b4ae294cdb4709e4a6863))
+* remove stalePr and stalePrAge from renovate.json - removed in Renovate v37 ([ed0c000](https://github.com/martynvdijke/gitlens/commit/ed0c000c388cea345a9363a15da39455ecbd0b38))
+
 ## [1.5.1](https://github.com/martynvdijke/gitlens/compare/v1.5.0...v1.5.1) (2026-05-25)
 
 
