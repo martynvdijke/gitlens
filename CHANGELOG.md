@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/martynvdijke/gitlens/compare/v1.5.0...v1.5.1) (2026-05-25)
+
+
+### Bug Fixes
+
+* version footer, import error logging, add import/merge tests ([9c6d6b9](https://github.com/martynvdijke/gitlens/commit/9c6d6b97b108bbeeca306ffb022c0641a9c190ab))
+
 # [1.5.0](https://github.com/martynvdijke/gitlens/compare/v1.4.0...v1.5.0) (2026-05-24)
 
 
