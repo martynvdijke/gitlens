@@ -3,23 +3,24 @@ import { test, expect } from '@playwright/test';
 test.describe('Landing page (unauthenticated)', () => {
   test('displays hero section with gradient title', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('.hero-section')).toBeVisible();
-    await expect(page.locator('.hero-section h2')).toHaveText(
+    await expect(page.locator('h2.display-5')).toBeVisible();
+    await expect(page.locator('h2.display-5')).toHaveText(
       'Track your GitHub repositories'
     );
   });
 
   test('shows hero subtitle', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('.hero-subtitle')).toBeVisible();
-    await expect(page.locator('.hero-subtitle')).toHaveText(
+    const subtitle = page.locator('p.lead.text-secondary');
+    await expect(subtitle).toBeVisible();
+    await expect(subtitle).toContainText(
       'Monitor latest commits, releases, and workflow status across all your projects in one unified dashboard.'
     );
   });
 
   test('shows GitHub login button with icon', async ({ page }) => {
     await page.goto('/');
-    const loginButton = page.locator('.btn-github-large');
+    const loginButton = page.locator('a.btn-success.btn-lg[href="/auth/github"]');
     await expect(loginButton).toBeVisible();
     await expect(loginButton).toContainText('Login with GitHub');
     await expect(loginButton).toHaveAttribute('href', '/auth/github');
@@ -27,22 +28,22 @@ test.describe('Landing page (unauthenticated)', () => {
 
   test('displays three feature cards', async ({ page }) => {
     await page.goto('/');
-    const featureCards = page.locator('.feature-card');
+    const featureCards = page.locator('.row.g-3 .card.h-100');
     await expect(featureCards).toHaveCount(3);
   });
 
   test('feature cards have correct headings', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('.feature-card').nth(0).locator('h3')).toHaveText('Multi-Repo Dashboard');
-    await expect(page.locator('.feature-card').nth(1).locator('h3')).toHaveText('DORA Metrics');
-    await expect(page.locator('.feature-card').nth(2).locator('h3')).toHaveText('Live Monitoring');
+    await expect(page.locator('.row.g-3 .card.h-100').nth(0).locator('.card-title')).toHaveText('Multi-Repo Dashboard');
+    await expect(page.locator('.row.g-3 .card.h-100').nth(1).locator('.card-title')).toHaveText('DORA Metrics');
+    await expect(page.locator('.row.g-3 .card.h-100').nth(2).locator('.card-title')).toHaveText('Live Monitoring');
   });
 
   test('login link redirects to GitHub auth', async ({ page }) => {
     await page.goto('/');
     const [response] = await Promise.all([
       page.waitForResponse(resp => resp.url().includes('/auth/github')),
-      page.click('.btn-github-large'),
+      page.click('a.btn-success.btn-lg[href="/auth/github"]'),
     ]);
     expect(response.status()).toBe(302);
     expect(response.headers()['location']).toMatch(/github\.com\/login\/oauth\/authorize/);
@@ -102,17 +103,17 @@ test.describe('SVG endpoint error handling', () => {
 test.describe('Protected routes', () => {
   test('redirects unauthenticated from charts', async ({ page }) => {
     await page.goto('/charts');
-    await expect(page.locator('.login-prompt')).toBeVisible();
+    await expect(page.locator('h2:has-text("Track your GitHub repositories")')).toBeVisible();
   });
 
   test('redirects unauthenticated from repos list', async ({ page }) => {
     await page.goto('/repos');
-    await expect(page.locator('.login-prompt')).toBeVisible();
+    await expect(page.locator('h2:has-text("Track your GitHub repositories")')).toBeVisible();
   });
 
   test('redirects unauthenticated from repo detail routes', async ({ page }) => {
     await page.goto('/repos/1/prs');
-    await expect(page.locator('.login-prompt')).toBeVisible();
+    await expect(page.locator('h2:has-text("Track your GitHub repositories")')).toBeVisible();
   });
 });
 

@@ -8,17 +8,15 @@ test.describe('Home page (unauthenticated)', () => {
 
   test('displays login prompt', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('.login-prompt')).toBeVisible();
-    await expect(page.locator('.login-prompt h2')).toHaveText(
-      'Track your GitHub repositories'
-    );
+    const heroHeading = page.locator('h2:has-text("Track your GitHub repositories")');
+    await expect(heroHeading).toBeVisible();
   });
 
   test('shows GitHub login button', async ({ page }) => {
     await page.goto('/');
-    const loginButton = page.locator('.btn-github');
+    const loginButton = page.locator('a.btn-success[href="/auth/github"]');
     await expect(loginButton).toBeVisible();
-    await expect(loginButton).toHaveText('Login with GitHub');
+    await expect(loginButton).toContainText('Login with GitHub');
     await expect(loginButton).toHaveAttribute('href', '/auth/github');
   });
 });
@@ -39,8 +37,8 @@ test.describe('Static assets', () => {
 test.describe('Navigation', () => {
   test('brand link navigates home', async ({ page }) => {
     await page.goto('/');
-    const brandLink = page.locator('.brand-link');
-    await expect(brandLink).toHaveText('GitLens');
+    const brandLink = page.locator('.navbar-brand');
+    await expect(brandLink).toContainText('GitLens');
     await expect(brandLink).toHaveAttribute('href', '/');
   });
 
@@ -48,7 +46,7 @@ test.describe('Navigation', () => {
     await page.goto('/');
     const [response] = await Promise.all([
       page.waitForResponse(resp => resp.url().includes('/auth/github')),
-      page.click('.btn-github'),
+      page.click('a.btn-success[href="/auth/github"]'),
     ]);
     expect(response.status()).toBe(302);
     expect(response.headers()['location']).toMatch(/github\.com\/login\/oauth\/authorize/);
@@ -58,11 +56,12 @@ test.describe('Navigation', () => {
 test.describe('Protected routes', () => {
   test('redirects unauthenticated users from dashboard', async ({ page }) => {
     await page.goto('/dashboard');
-    await expect(page.locator('.login-prompt')).toBeVisible();
+    // AuthRequired middleware redirects to /, which shows the login hero
+    await expect(page.locator('h2:has-text("Track your GitHub repositories")')).toBeVisible();
   });
 
   test('redirects unauthenticated users from settings', async ({ page }) => {
     await page.goto('/settings');
-    await expect(page.locator('.login-prompt')).toBeVisible();
+    await expect(page.locator('h2:has-text("Track your GitHub repositories")')).toBeVisible();
   });
 });
