@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"html/template"
 	"net/http"
 	"net/http/httptest"
@@ -887,7 +888,20 @@ func TestBatchMergePRs_Success(t *testing.T) {
 	apiSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		callCount++
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"merged":true,"message":"ok"}`))
+		// Return appropriate data based on request path
+		if strings.Contains(r.URL.Path, "/pulls/") && strings.Contains(r.URL.Path, "/merge") {
+			w.Write([]byte(`{"merged":true,"message":"ok"}`))
+		} else if strings.Contains(r.URL.Path, "/pulls") {
+			w.Write([]byte(`[]`))
+		} else if strings.Contains(r.URL.Path, "/commits") {
+			w.Write([]byte(`[]`))
+		} else if strings.Contains(r.URL.Path, "/releases") {
+			w.Write([]byte(`[]`))
+		} else if strings.Contains(r.URL.Path, "/actions/runs") {
+			w.Write([]byte(`{"workflow_runs":[]}`))
+		} else {
+			w.Write([]byte(`{"merged":true,"message":"ok"}`))
+		}
 	}))
 	defer apiSrv.Close()
 	handler.gh.APIURL = apiSrv.URL
@@ -908,8 +922,8 @@ func TestBatchMergePRs_Success(t *testing.T) {
 	if !strings.Contains(w.Body.String(), "2 PR(s) merged") {
 		t.Errorf("expected 2 merges, got: %s", w.Body.String())
 	}
-	if callCount != 2 {
-		t.Errorf("expected 2 API calls, got %d", callCount)
+	if callCount != 12 {
+		t.Errorf("expected 12 API calls (2 merges + 5 sync × 2 repos), got %d", callCount)
 	}
 }
 
@@ -959,11 +973,12 @@ func TestMetricsTab_Renders(t *testing.T) {
 
 // ─── Index Tests ──────────────────────────────────────────────────
 
-func serveIndexRequest(handler http.HandlerFunc, path string, cookies ...*http.Cookie) *httptest.ResponseRecorder {
+func serveIndexRequest(handler gin.HandlerFunc, path string, cookies ...*http.Cookie) *httptest.ResponseRecorder {
 	gin.SetMode(gin.TestMode)
 	w := httptest.NewRecorder()
 	engine := gin.New()
-	engine.SetHTMLTemplate(template.Must(template.New("").Funcs(template.FuncMap{
+	tmpl := template.New("index.html")
+	tmpl.Funcs(template.FuncMap{
 		"appVersion":           func() string { return "test" },
 		"shortSHA":             func(s string) string { return s },
 		"formatTime":           func(t time.Time) string { return "" },
@@ -978,17 +993,9 @@ func serveIndexRequest(handler http.HandlerFunc, path string, cookies ...*http.C
 		"contains":             func(s, substr string) bool { return strings.Contains(s, substr) },
 		"timeSince":            func(t time.Time) string { return "" },
 		"eventIcon":            func(eventType string) string { return "" },
-	}).Parse(`{{define "tab_bar"}}<div class="tab-bar">{{if eq .ActiveTab "repos"}}active-repos{{end}}</div>{{end}}
-{{define "repos_tab"}}<div>repos-content{{range .Repos}}{{.FullName}}{{end}}</div>{{end}}
-{{define "repo_list"}}<div>{{range .Repos}}<div>{{.FullName}}</div>{{end}}</div>{{end}}
-{{define "repo_card"}}<div>{{.FullName}}</div>{{end}}
-{{define "pr_list"}}<div></div>{{end}}
-{{define "settings"}}<div>settings</div>{{end}}
-{{define "available_repos"}}<div></div>{{end}}
-{{define "charts"}}<div></div>{{end}}
-{{define "feed"}}<div></div>{{end}}
-{{define "prs_tab"}}<div></div>{{end}}
-{{define "metrics_tab"}}<div></div>{{end}}`))
+	})
+	template.Must(tmpl.ParseFiles("../../static/index.html"))
+	engine.SetHTMLTemplate(tmpl)
 	engine.GET("/", handler)
 	req := httptest.NewRequest("GET", path, nil)
 	for _, c := range cookies {
@@ -1009,10 +1016,10 @@ func TestIndex_RendersFullPage(t *testing.T) {
 		t.Fatalf("expected 200, got %d", w.Code)
 	}
 	body := w.Body.String()
-	if !strings.Contains(body, "active-repos") {
+	if !strings.Contains(body, `nav-link active`) {
 		t.Errorf("expected active-tab=repos, body: %s", body)
 	}
-	if !strings.Contains(body, "repos-content") {
+	if !strings.Contains(body, `btn btn-success btn-sm`) {
 		t.Errorf("expected repos tab content, body: %s", body)
 	}
 	if !strings.Contains(body, "u/idx") {
@@ -1027,7 +1034,7 @@ func TestIndex_Unauthenticated(t *testing.T) {
 		t.Fatalf("expected 200, got %d", w.Code)
 	}
 	body := w.Body.String()
-	if strings.Contains(body, "active-repos") {
+	if strings.Contains(body, `nav-link active`) {
 		t.Errorf("expected no active tab for unauthenticated user, body: %s", body)
 	}
 }
