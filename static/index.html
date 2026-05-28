@@ -29,10 +29,14 @@
         </div>
     </nav>
 
+    {{if .User}}
+    {{template "tab_bar" .}}
+    {{end}}
+
     <main>
         {{if .User}}
         <div id="main-content">
-            {{template "dashboard" .}}
+            {{template "repos_tab" .}}
         </div>
         {{else}}
         <div class="login-prompt">
@@ -76,7 +80,32 @@
         {{end}}
     </main>
 
-    {{define "dashboard"}}
+    {{define "tab_bar"}}
+    <div class="tab-bar" id="tab-bar">
+        <a href="/dashboard" class="tab {{if eq .ActiveTab "repos"}}active{{end}}"
+           hx-get="/dashboard" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            Repos
+        </a>
+        <a href="/prs" class="tab {{if eq .ActiveTab "prs"}}active{{end}}"
+           hx-get="/prs" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 21V9c0 2 2 3 6 3s6 1 6 3v3"/></svg>
+            PRs
+        </a>
+        <a href="/metrics" class="tab {{if eq .ActiveTab "metrics"}}active{{end}}"
+           hx-get="/metrics" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Metrics
+        </a>
+        <a href="/settings" class="tab {{if eq .ActiveTab "settings"}}active{{end}}"
+           hx-get="/settings" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            Settings
+        </a>
+    </div>
+    {{end}}
+
+    {{define "repos_tab"}}
     <div class="dashboard-controls">
         <button class="btn btn-primary" hx-post="/repos/import-all" hx-target="#repo-grid" hx-swap="outerHTML" hx-indicator="#sync-spinner">
             Import All Repositories
@@ -87,63 +116,10 @@
         <span id="sync-spinner" class="htmx-indicator">Working...</span>
     </div>
 
-    {{if .Metrics.TotalRepos}}
-    <div class="metrics-row">
-        <div class="metric-card">
-            <div class="metric-value">{{.Metrics.TotalRepos}}</div>
-            <div class="metric-label">Repos Tracked</div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-value">{{.Metrics.TotalReleases}}</div>
-            <div class="metric-label">Total Releases</div>
-            <div class="metric-sub">{{.Metrics.ReleasesPerRepo}} / repo</div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-value">{{.Metrics.TotalCommits}}</div>
-            <div class="metric-label">Commits (last 50)</div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-value">{{printf "%.1f" .Metrics.FeatPct}}%</div>
-            <div class="metric-label">Features</div>
-            <div class="metric-bar"><div class="metric-bar-fill feat" style="width:{{printf "%.0f" .Metrics.FeatPct}}%"></div></div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-value">{{printf "%.1f" .Metrics.FixPct}}%</div>
-            <div class="metric-label">Fixes</div>
-            <div class="metric-bar"><div class="metric-bar-fill fix" style="width:{{printf "%.0f" .Metrics.FixPct}}%"></div></div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-value">{{printf "%.1f" .Metrics.DocsPct}}%</div>
-            <div class="metric-label">Docs / Chore</div>
-            <div class="metric-bar"><div class="metric-bar-fill chore" style="width:{{printf "%.0f" .Metrics.DocsPct}}%"></div></div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-value">{{printf "%.1f" .Metrics.WorkflowPassRate}}%</div>
-            <div class="metric-label">Workflow Pass</div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-value">{{printf "%.1f" .Metrics.AvgLeadTimeHours}}h</div>
-            <div class="metric-label">Avg Lead Time</div>
-        </div>
-    </div>
-    {{end}}
-
     <div class="search-bar">
         <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="search" class="search-input" placeholder="Search repositories..." hx-get="/repos" hx-trigger="keyup changed delay:300ms, search" hx-target="#repo-grid" hx-swap="outerHTML" hx-push-url="true" name="q" value="">
     </div>
-
-    <button class="btn btn-secondary" hx-get="/charts" hx-target="#charts-section" hx-swap="innerHTML" hx-indicator="#charts-spinner" style="margin-bottom:16px">
-        Show Charts
-    </button>
-    <span id="charts-spinner" class="htmx-indicator">Loading charts...</span>
-    <div id="charts-section"></div>
-
-    <button class="btn btn-secondary" hx-get="/feed?since=7d" hx-target="#feed-section" hx-swap="innerHTML" hx-indicator="#feed-spinner">
-        Show Activity Feed
-    </button>
-    <span id="feed-spinner" class="htmx-indicator">Loading feed...</span>
-    <div id="feed-section"></div>
 
     {{template "repo_list" .}}
     {{end}}
@@ -445,6 +421,150 @@
     {{end}}
 </div>
 {{end}}
+    {{define "prs_tab"}}
+    <div class="prs-header-row">
+        <h2>Pull Requests</h2>
+        <div class="prs-toolbar">
+            {{if .Repos}}
+            <select class="settings-select" hx-get="/prs" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true" hx-trigger="change" name="repo">
+                <option value="">All Repos</option>
+                {{range .Repos}}
+                <option value="{{.FullName}}" {{if eq $.FilterRepo .FullName}}selected{{end}}>{{.FullName}}</option>
+                {{end}}
+            </select>
+            {{end}}
+            <span id="batch-spinner" class="htmx-indicator">Merging...</span>
+        </div>
+    </div>
+
+    {{if .PRs}}
+    <form id="pr-queue-form" hx-post="/prs/batch-merge" hx-target="#pr-queue-status" hx-swap="innerHTML" hx-indicator="#batch-spinner">
+        <div id="pr-queue-status"></div>
+        <div class="pr-queue-list">
+            <div class="pr-queue-header">
+                <label class="pr-checkbox-label">
+                    <input type="checkbox" onchange="document.querySelectorAll('.pr-queue-checkbox').forEach(c => c.checked = this.checked)" title="Select all">
+                </label>
+                <span class="pr-queue-hdr-repo">Repository</span>
+                <span class="pr-queue-hdr-pr">Pull Request</span>
+                <span class="pr-queue-hdr-meta">Author / Age</span>
+                <span class="pr-queue-hdr-action">Action</span>
+            </div>
+            {{range .PRs}}
+            <div class="pr-queue-item">
+                <label class="pr-checkbox-label">
+                    <input type="checkbox" name="pr_ids" value="{{.RepoID}}:{{.Number}}" class="pr-queue-checkbox">
+                </label>
+                <span class="pr-queue-repo">{{.RepoFullName}}</span>
+                <span class="pr-queue-info">
+                    <a href="{{.HTMLURL}}" target="_blank" rel="noopener" class="pr-queue-title">#{{.Number}} {{.Title}}</a>
+                    <span class="pr-queue-refs">{{.HeadRef}} → {{.BaseRef}}</span>
+                </span>
+                <span class="pr-queue-meta">
+                    <span class="pr-queue-author">{{.Author}}</span>
+                    <span class="pr-queue-time">{{printf "%.10s" .CreatedAt}}</span>
+                </span>
+                <span class="pr-queue-action">
+                    <button class="btn btn-sm btn-primary" hx-post="/prs/merge" hx-vals='{"repo_id":{{.RepoID}},"pr_number":{{.Number}}}' hx-target="#pr-queue-status" hx-swap="innerHTML" hx-indicator="#batch-spinner" hx-confirm="Merge #{{.Number}} ({{.RepoFullName}})?">Merge</button>
+                </span>
+            </div>
+            {{end}}
+        </div>
+        <div class="pr-queue-footer">
+            <button type="submit" class="btn btn-primary" onclick="return document.querySelectorAll('.pr-queue-checkbox:checked').length > 0 || (alert('Select at least one PR to merge'), false)">
+                Merge Selected
+            </button>
+        </div>
+    </form>
+    {{else}}
+    <div class="empty-state">
+        <h3>No open pull requests</h3>
+        <p>All tracked repositories have no open PRs.</p>
+    </div>
+    {{end}}
+    {{end}}
+
+    {{define "metrics_tab"}}
+    <div class="metrics-page">
+        <h2>DORA Metrics</h2>
+
+        {{if .Metrics.TotalRepos}}
+        <div class="metrics-row">
+            <div class="metric-card">
+                <div class="metric-value">{{.Metrics.TotalRepos}}</div>
+                <div class="metric-label">Repos Tracked</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">{{.Metrics.TotalReleases}}</div>
+                <div class="metric-label">Total Releases</div>
+                <div class="metric-sub">{{.Metrics.ReleasesPerRepo}} / repo</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">{{.Metrics.TotalCommits}}</div>
+                <div class="metric-label">Commits (last 50)</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">{{printf "%.1f" .Metrics.FeatPct}}%</div>
+                <div class="metric-label">Features</div>
+                <div class="metric-bar"><div class="metric-bar-fill feat" style="width:{{printf "%.0f" .Metrics.FeatPct}}%"></div></div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">{{printf "%.1f" .Metrics.FixPct}}%</div>
+                <div class="metric-label">Fixes</div>
+                <div class="metric-bar"><div class="metric-bar-fill fix" style="width:{{printf "%.0f" .Metrics.FixPct}}%"></div></div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">{{printf "%.1f" .Metrics.DocsPct}}%</div>
+                <div class="metric-label">Docs / Chore</div>
+                <div class="metric-bar"><div class="metric-bar-fill chore" style="width:{{printf "%.0f" .Metrics.DocsPct}}%"></div></div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">{{printf "%.1f" .Metrics.WorkflowPassRate}}%</div>
+                <div class="metric-label">Workflow Pass</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">{{printf "%.1f" .Metrics.AvgLeadTimeHours}}h</div>
+                <div class="metric-label">Avg Lead Time</div>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom:12px;margin-top:24px">Per-Repository Breakdown</h3>
+        <div class="per-repo-metrics">
+            {{range .Repos}}
+            <div class="repo-metric-row">
+                <span class="repo-metric-name"><a href="{{.HTMLURL}}" target="_blank" rel="noopener">{{.FullName}}</a></span>
+                <span class="repo-metric-stat">{{.TotalCommitsFetched}} commits</span>
+                <span class="repo-metric-stat">
+                    {{if .WorkflowStatus}}
+                    <span class="workflow-badge {{.WorkflowStatus}}">{{workflowIcon .WorkflowStatus}} {{workflowLabel .WorkflowStatus}}</span>
+                    {{else}}
+                    <span class="stat-none">No workflows</span>
+                    {{end}}
+                </span>
+                <span class="repo-metric-stat">{{.ReleaseCount}} releases</span>
+                <span class="repo-metric-stat">
+                    {{if gt .AvgLeadTimeHours 0.0}}{{printf "%.1f" .AvgLeadTimeHours}}h avg lead{{end}}
+                </span>
+            </div>
+            {{end}}
+        </div>
+
+        <div id="metrics-charts" hx-get="/charts" hx-trigger="load" hx-swap="innerHTML" hx-indicator="#charts-loading">
+            <div id="charts-loading" class="htmx-indicator">Loading charts...</div>
+        </div>
+
+        <div id="metrics-feed" hx-get="/feed?since=7d" hx-trigger="load" hx-swap="innerHTML" hx-indicator="#feed-loading" style="margin-top:16px">
+            <div id="feed-loading" class="htmx-indicator">Loading activity feed...</div>
+        </div>
+        {{else}}
+        <div class="empty-state">
+            <h3>No data yet</h3>
+            <p>Import repositories and sync data to see DORA metrics.</p>
+        </div>
+        {{end}}
+    </div>
+    {{end}}
+
     <footer class="app-footer">
         <span>GitLens <span class="version">{{appVersion}}</span></span>
     </footer>

@@ -187,10 +187,11 @@ func (h *SettingsHandler) SelectRepos(c *gin.Context) {
 		Order(ent.Desc(repository.FieldUpdatedAt)).
 		All(ctx)
 
-	c.HTML(http.StatusOK, "dashboard", gin.H{
-		"User":    u,
-		"Repos":   repos,
-		"Metrics": computeMetrics(repos),
+	c.HTML(http.StatusOK, "repos_tab", gin.H{
+		"User":      u,
+		"Repos":     repos,
+		"Metrics":   computeMetrics(repos),
+		"ActiveTab": "repos",
 	})
 }
 

@@ -2,10 +2,13 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"math"
 	"net/http"
+	"sort"
 	"strconv"
+	"strings"
 
 	"gitlens/ent"
 	"gitlens/ent/repository"
@@ -90,56 +93,6 @@ func computeMetrics(repos []*ent.Repository) *DORAMetrics {
 
 func roundPct(v float64) float64 {
 	return math.Round(v*10) / 10
-}
-
-func (h *DashboardHandler) Index(c *gin.Context) {
-	var u *ent.User
-	var repos []*ent.Repository
-
-	sessionID, err := c.Cookie("gitlens_session")
-	if err == nil {
-		userID, ok := h.store.Get(sessionID)
-		if ok {
-			u, _ = h.client.User.Get(c.Request.Context(), int(userID))
-			if u != nil {
-				repos, _ = h.client.Repository.Query().
-					Where(repository.HasUserWith(user.ID(u.ID))).
-					Order(ent.Desc(repository.FieldUpdatedAt)).
-					All(c.Request.Context())
-			}
-		}
-	}
-
-	c.HTML(http.StatusOK, "index.html", gin.H{
-		"User":    u,
-		"Repos":   repos,
-		"Metrics": computeMetrics(repos),
-	})
-}
-
-func (h *DashboardHandler) Dashboard(c *gin.Context) {
-	userID := c.GetInt64("user_id")
-	u, _ := h.client.User.Get(c.Request.Context(), int(userID))
-
-	q := c.Query("q")
-	query := h.client.Repository.Query().
-		Where(repository.HasUserWith(user.ID(int(userID)))).
-		Order(ent.Desc(repository.FieldUpdatedAt))
-	if q != "" {
-		query = query.Where(
-			repository.Or(
-				repository.FullNameContainsFold(q),
-				repository.NameContainsFold(q),
-			),
-		)
-	}
-	repos, _ := query.All(c.Request.Context())
-
-	c.HTML(http.StatusOK, "dashboard", gin.H{
-		"User":    u,
-		"Repos":   repos,
-		"Metrics": computeMetrics(repos),
-	})
 }
 
 func (h *DashboardHandler) ListRepos(c *gin.Context) {
@@ -275,15 +228,6 @@ func (h *DashboardHandler) ListPullRequests(c *gin.Context) {
 		return
 	}
 
-	type prSummary struct {
-		Number    int    `json:"n"`
-		Title     string `json:"t"`
-		Author    string `json:"a"`
-		CreatedAt string `json:"c"`
-		HTMLURL   string `json:"h"`
-		HeadRef   string `json:"hr"`
-		BaseRef   string `json:"br"`
-	}
 	var prs []prSummary
 	if r.PullRequests != "" {
 		json.Unmarshal([]byte(r.PullRequests), &prs)
@@ -293,6 +237,281 @@ func (h *DashboardHandler) ListPullRequests(c *gin.Context) {
 		"Repo":  r,
 		"PRs":   prs,
 		"Count": len(prs),
+	})
+}
+
+// PRQueueItem represents a pull request in the unified cross-repo queue.
+type PRQueueItem struct {
+	RepoID       int
+	RepoFullName string
+	Number       int
+	Title        string
+	Author       string
+	CreatedAt    string
+	HTMLURL      string
+	HeadRef      string
+	BaseRef      string
+}
+
+// prSummary is the JSON-unmarshalled form of a pull request stored on a Repository.
+type prSummary struct {
+	Number    int    `json:"n"`
+	Title     string `json:"t"`
+	Author    string `json:"a"`
+	CreatedAt string `json:"c"`
+	HTMLURL   string `json:"h"`
+	HeadRef   string `json:"hr"`
+	BaseRef   string `json:"br"`
+}
+
+// Index renders the full page with repos tab as default.
+func (h *DashboardHandler) Index(c *gin.Context) {
+	var u *ent.User
+	var repos []*ent.Repository
+
+	sessionID, err := c.Cookie("gitlens_session")
+	if err == nil {
+		userID, ok := h.store.Get(sessionID)
+		if ok {
+			u, _ = h.client.User.Get(c.Request.Context(), int(userID))
+			if u != nil {
+				repos, _ = h.client.Repository.Query().
+					Where(repository.HasUserWith(user.ID(u.ID))).
+					Order(ent.Desc(repository.FieldUpdatedAt)).
+					All(c.Request.Context())
+			}
+		}
+	}
+
+	c.HTML(http.StatusOK, "index.html", gin.H{
+		"User":      u,
+		"Repos":     repos,
+		"Metrics":   computeMetrics(repos),
+		"ActiveTab": "repos",
+	})
+}
+
+// ReposTab renders the repos tab content (partial, no layout).
+func (h *DashboardHandler) ReposTab(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	u, _ := h.client.User.Get(c.Request.Context(), int(userID))
+
+	q := c.Query("q")
+	query := h.client.Repository.Query().
+		Where(repository.HasUserWith(user.ID(int(userID)))).
+		Order(ent.Desc(repository.FieldUpdatedAt))
+	if q != "" {
+		query = query.Where(
+			repository.Or(
+				repository.FullNameContainsFold(q),
+				repository.NameContainsFold(q),
+			),
+		)
+	}
+	repos, _ := query.All(c.Request.Context())
+
+	c.HTML(http.StatusOK, "repos_tab", gin.H{
+		"User":      u,
+		"Repos":     repos,
+		"ActiveTab": "repos",
+	})
+}
+
+// PRsTab renders the unified cross-repo PR queue.
+func (h *DashboardHandler) PRsTab(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	u, _ := h.client.User.Get(c.Request.Context(), int(userID))
+
+	repos, err := h.client.Repository.Query().
+		Where(repository.HasUserWith(user.ID(int(userID)))).
+		Order(ent.Desc(repository.FieldUpdatedAt)).
+		All(c.Request.Context())
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "prs_tab", gin.H{"Error": "Failed to fetch repositories"})
+		return
+	}
+
+	var allPRs []PRQueueItem
+	for _, r := range repos {
+		if r.PullRequests == "" {
+			continue
+		}
+		var prs []prSummary
+		if err := json.Unmarshal([]byte(r.PullRequests), &prs); err != nil {
+			continue
+		}
+		for _, pr := range prs {
+			allPRs = append(allPRs, PRQueueItem{
+				RepoID:       r.ID,
+				RepoFullName: r.FullName,
+				Number:       pr.Number,
+				Title:        pr.Title,
+				Author:       pr.Author,
+				CreatedAt:    pr.CreatedAt,
+				HTMLURL:      pr.HTMLURL,
+				HeadRef:      pr.HeadRef,
+				BaseRef:      pr.BaseRef,
+			})
+		}
+	}
+
+	// Sort newest first
+	sort.Slice(allPRs, func(i, j int) bool {
+		return allPRs[i].CreatedAt > allPRs[j].CreatedAt
+	})
+
+	filterRepo := c.Query("repo")
+	if filterRepo != "" {
+		var filtered []PRQueueItem
+		for _, pr := range allPRs {
+			if strings.EqualFold(pr.RepoFullName, filterRepo) {
+				filtered = append(filtered, pr)
+			}
+		}
+		allPRs = filtered
+	}
+
+	c.HTML(http.StatusOK, "prs_tab", gin.H{
+		"User":      u,
+		"PRs":       allPRs,
+		"Repos":     repos,
+		"FilterRepo": filterRepo,
+		"ActiveTab": "prs",
+	})
+}
+
+type mergeRequest struct {
+	RepoID   int `json:"repo_id" form:"repo_id"`
+	PRNumber int `json:"pr_number" form:"pr_number"`
+}
+
+// MergeSinglePR merges a single PR from the unified queue.
+func (h *DashboardHandler) MergeSinglePR(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+
+	var req mergeRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.String(http.StatusBadRequest, "Invalid request")
+		return
+	}
+
+	ctx := c.Request.Context()
+	r, err := h.client.Repository.Query().
+		Where(
+			repository.ID(req.RepoID),
+			repository.HasUserWith(user.ID(int(userID))),
+		).
+		Only(ctx)
+	if err != nil {
+		c.String(http.StatusNotFound, "Repository not found")
+		return
+	}
+
+	u, err := h.client.User.Get(ctx, int(userID))
+	if err != nil {
+		c.String(http.StatusInternalServerError, "User not found")
+		return
+	}
+
+	merged, msg, err := h.gh.MergePullRequest(u.AccessToken, r.Owner, r.Name, req.PRNumber)
+	if err != nil {
+		log.Printf("Error merging PR #%d for %s: %v", req.PRNumber, r.FullName, err)
+		c.String(http.StatusInternalServerError, "Failed to merge: %v", err)
+		return
+	}
+	if !merged {
+		c.String(http.StatusConflict, "Merge failed: %s", msg)
+		return
+	}
+
+	h.syncer.SyncOne(ctx, r)
+	c.String(http.StatusOK, "PR #%d merged successfully", req.PRNumber)
+}
+
+// BatchMergePRs merges selected PRs from the unified queue.
+func (h *DashboardHandler) BatchMergePRs(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	ctx := c.Request.Context()
+
+	prIDs := c.PostFormArray("pr_ids")
+	if len(prIDs) == 0 {
+		c.String(http.StatusBadRequest, "No PRs selected")
+		return
+	}
+
+	u, err := h.client.User.Get(ctx, int(userID))
+	if err != nil {
+		c.String(http.StatusInternalServerError, "User not found")
+		return
+	}
+
+	var merged []string
+	var failed []string
+
+	for _, id := range prIDs {
+		parts := strings.SplitN(id, ":", 2)
+		if len(parts) != 2 {
+			failed = append(failed, id)
+			continue
+		}
+		repoID, err := strconv.Atoi(parts[0])
+		if err != nil {
+			failed = append(failed, id)
+			continue
+		}
+		prNumber, err := strconv.Atoi(parts[1])
+		if err != nil {
+			failed = append(failed, id)
+			continue
+		}
+
+		r, err := h.client.Repository.Query().
+			Where(
+				repository.ID(repoID),
+				repository.HasUserWith(user.ID(int(userID))),
+			).
+			Only(ctx)
+		if err != nil {
+			failed = append(failed, fmt.Sprintf("#%d (repo not found)", prNumber))
+			continue
+		}
+
+		ok, msg, err := h.gh.MergePullRequest(u.AccessToken, r.Owner, r.Name, prNumber)
+		if err != nil || !ok {
+			reason := msg
+			if err != nil {
+				reason = err.Error()
+			}
+			failed = append(failed, fmt.Sprintf("#%d (%s)", prNumber, reason))
+			continue
+		}
+		merged = append(merged, fmt.Sprintf("#%d", prNumber))
+		h.syncer.SyncOne(ctx, r)
+	}
+
+	total := len(merged) + len(failed)
+	if len(failed) == 0 {
+		c.String(http.StatusOK, "All %d PR(s) merged successfully!", total)
+	} else {
+		c.String(http.StatusOK, "Merged %d/%d. Failed: %s", len(merged), total, strings.Join(failed, ", "))
+	}
+}
+
+// MetricsTab renders the DORA metrics page.
+func (h *DashboardHandler) MetricsTab(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	u, _ := h.client.User.Get(c.Request.Context(), int(userID))
+
+	repos, _ := h.client.Repository.Query().
+		Where(repository.HasUserWith(user.ID(int(userID)))).
+		Order(ent.Desc(repository.FieldUpdatedAt)).
+		All(c.Request.Context())
+
+	c.HTML(http.StatusOK, "metrics_tab", gin.H{
+		"User":      u,
+		"Repos":     repos,
+		"Metrics":   computeMetrics(repos),
+		"ActiveTab": "metrics",
 	})
 }
 

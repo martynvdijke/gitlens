@@ -1148,6 +1148,293 @@ main {
     margin-top: 24px;
 }
 
+/* Tab Bar */
+.tab-bar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 0 24px;
+    overflow-x: auto;
+}
+
+.tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #8b949e;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+}
+
+.tab:hover {
+    color: #e6edf3;
+}
+
+.tab.active {
+    color: #f0f6fc;
+    border-bottom-color: #f78166;
+}
+
+.tab svg {
+    flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+    .tab-bar {
+        padding: 0 12px;
+    }
+    .tab {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+}
+
+/* PR Queue Tab */
+.prs-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.prs-header-row h2 {
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.prs-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pr-queue-list {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.pr-queue-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: #1c2128;
+    border-bottom: 1px solid #30363d;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #8b949e;
+    font-weight: 600;
+}
+
+.pr-queue-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: #161b22;
+    border-bottom: 1px solid #21262d;
+    transition: background 0.15s;
+}
+
+.pr-queue-item:last-child {
+    border-bottom: none;
+}
+
+.pr-queue-item:hover {
+    background: #1c2128;
+}
+
+.pr-checkbox-label {
+    display: flex;
+    align-items: center;
+    width: 20px;
+    flex-shrink: 0;
+}
+
+.pr-checkbox-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #238636;
+    cursor: pointer;
+}
+
+.pr-queue-hdr-repo,
+.pr-queue-repo {
+    width: 180px;
+    flex-shrink: 0;
+    font-size: 13px;
+    color: #58a6ff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pr-queue-hdr-pr,
+.pr-queue-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.pr-queue-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.pr-queue-title {
+    color: #e6edf3;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pr-queue-title:hover {
+    color: #58a6ff;
+    text-decoration: underline;
+}
+
+.pr-queue-refs {
+    font-size: 11px;
+    color: #8b949e;
+}
+
+.pr-queue-hdr-meta,
+.pr-queue-meta {
+    width: 140px;
+    flex-shrink: 0;
+    text-align: right;
+}
+
+.pr-queue-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 12px;
+    color: #8b949e;
+}
+
+.pr-queue-author {
+    color: #e6edf3;
+}
+
+.pr-queue-time {
+    font-size: 11px;
+}
+
+.pr-queue-hdr-action,
+.pr-queue-action {
+    width: 80px;
+    flex-shrink: 0;
+    text-align: right;
+}
+
+.pr-queue-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+@media (max-width: 768px) {
+    .pr-queue-header {
+        display: none;
+    }
+    .pr-queue-item {
+        flex-wrap: wrap;
+    }
+    .pr-queue-repo {
+        width: auto;
+        flex: 1;
+    }
+    .pr-queue-hdr-meta,
+    .pr-queue-meta {
+        width: auto;
+        text-align: left;
+        flex: 1;
+    }
+    .pr-queue-action {
+        width: auto;
+    }
+}
+
+/* Per-Repo Metrics Table */
+.per-repo-metrics {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.repo-metric-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    background: #161b22;
+    border-bottom: 1px solid #21262d;
+    font-size: 13px;
+}
+
+.repo-metric-row:last-child {
+    border-bottom: none;
+}
+
+.repo-metric-row:hover {
+    background: #1c2128;
+}
+
+.repo-metric-name {
+    flex: 1;
+    min-width: 0;
+}
+
+.repo-metric-name a {
+    color: #58a6ff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.repo-metric-name a:hover {
+    text-decoration: underline;
+}
+
+.repo-metric-stat {
+    width: 130px;
+    flex-shrink: 0;
+    text-align: right;
+    color: #e6edf3;
+}
+
+/* Metrics tab spacing */
+.metrics-page h2 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.metrics-page h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #f0f6fc;
+}
+
 .app-footer .version {
     color: #8b949e;
     font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;

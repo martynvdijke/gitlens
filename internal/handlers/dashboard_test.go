@@ -72,7 +72,7 @@ func serveDashboardRequest(handler gin.HandlerFunc, method, path string, cookies
 		"releaseIcon":          func(conclusion string) string { return "" },
 		"releaseLabel":         func(conclusion string) string { return "" },
 		"hasReleaseConclusion": func(s string) bool { return false },
-	}).Parse(`{{define "dashboard"}}<div>{{range .Repos}}<div class="repo">{{.FullName}}</div>{{end}}</div>{{end}}`)))
+	}).Parse(`{{define "repos_tab"}}<div>{{range .Repos}}<div class="repo">{{.FullName}}</div>{{end}}</div>{{end}}`)))
 	engine.GET("/dashboard", handler)
 	req := httptest.NewRequest(method, path, nil)
 	for _, cookie := range cookies {
@@ -161,7 +161,7 @@ func TestDashboard_FilterByQuery(t *testing.T) {
 
 	dashHandler := func(c *gin.Context) {
 		c.Set("user_id", int64(u.ID))
-		handler.Dashboard(c)
+		handler.ReposTab(c)
 	}
 	w := serveDashboardRequest(dashHandler, "GET", "/dashboard?q=alpha", &http.Cookie{Name: "gitlens_session", Value: sessionID})
 	if w.Code != http.StatusOK {
@@ -689,5 +689,345 @@ func TestMergeAllPRs_InvalidRepoID(t *testing.T) {
 
 	if w.Code != http.StatusBadRequest {
 		t.Errorf("expected 400 for invalid repo ID, got %d", w.Code)
+	}
+}
+
+// ─── ReposTab Tests ───────────────────────────────────────────────
+
+func TestReposTab_Renders(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().
+		SetGithubID(500).SetLogin("repostab").SetAccessToken("tok").Save(context.Background())
+	client.Repository.Create().SetGithubID(30).SetOwner("u").SetName("rep1").SetFullName("u/rep1").SetHTMLURL("https://github.com/u/rep1").SetDefaultBranch("main").SetUserID(u.ID).Save(context.Background())
+	client.Repository.Create().SetGithubID(31).SetOwner("u").SetName("rep2").SetFullName("u/rep2").SetHTMLURL("https://github.com/u/rep2").SetDefaultBranch("main").SetUserID(u.ID).Save(context.Background())
+
+	sessionID := store.Set(int64(u.ID))
+	h := func(c *gin.Context) { c.Set("user_id", int64(u.ID)); handler.ReposTab(c) }
+	w := serveDashboardRequest(h, "GET", "/dashboard", &http.Cookie{Name: "gitlens_session", Value: sessionID})
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	if !strings.Contains(w.Body.String(), "u/rep1") || !strings.Contains(w.Body.String(), "u/rep2") {
+		t.Errorf("expected both repos in response, body: %s", w.Body.String())
+	}
+}
+
+// ─── PRsTab Tests ─────────────────────────────────────────────────
+
+func servePRsTabRequest(handler gin.HandlerFunc, path string, cookies ...*http.Cookie) *httptest.ResponseRecorder {
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	engine := gin.New()
+	engine.SetHTMLTemplate(template.Must(template.New("").Funcs(template.FuncMap{
+		"printf": func(format string, args ...interface{}) string { return "" },
+	}).Parse(`{{define "prs_tab"}}<div>{{range .PRs}}<div class="pr-item" data-repo="{{.RepoFullName}}">#{{.Number}} {{.Title}} ({{.RepoFullName}})</div>{{else}}<div class="empty">no PRs</div>{{end}}</div>{{end}}`)))
+	engine.GET("/prs", handler)
+	req := httptest.NewRequest("GET", path, nil)
+	for _, c := range cookies {
+		req.AddCookie(c)
+	}
+	engine.ServeHTTP(w, req)
+	return w
+}
+
+func TestPRsTab_Empty(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().SetGithubID(600).SetLogin("prsempty").SetAccessToken("tok").Save(context.Background())
+
+	sessionID := store.Set(int64(u.ID))
+	h := func(c *gin.Context) { c.Set("user_id", int64(u.ID)); handler.PRsTab(c) }
+	w := servePRsTabRequest(h, "/prs", &http.Cookie{Name: "gitlens_session", Value: sessionID})
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	if !strings.Contains(w.Body.String(), "no PRs") {
+		t.Errorf("expected empty state, body: %s", w.Body.String())
+	}
+}
+
+func TestPRsTab_WithPRs(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().SetGithubID(601).SetLogin("prswith").SetAccessToken("tok").Save(context.Background())
+	client.Repository.Create().SetGithubID(40).SetOwner("u").SetName("repo-a").SetFullName("u/repo-a").SetHTMLURL("https://github.com/u/repo-a").SetDefaultBranch("main").SetUserID(u.ID).
+		SetPullRequests(`[{"n":1,"t":"PR one","a":"dev1","c":"2024-06-02T10:00:00Z","h":"https://github.com/u/repo-a/pull/1","hr":"br1","br":"main"}]`).SetOpenPrCount(1).Save(context.Background())
+	client.Repository.Create().SetGithubID(41).SetOwner("u").SetName("repo-b").SetFullName("u/repo-b").SetHTMLURL("https://github.com/u/repo-b").SetDefaultBranch("main").SetUserID(u.ID).
+		SetPullRequests(`[{"n":2,"t":"PR two","a":"dev2","c":"2024-06-01T10:00:00Z","h":"https://github.com/u/repo-b/pull/2","hr":"br2","br":"main"}]`).SetOpenPrCount(1).Save(context.Background())
+
+	sessionID := store.Set(int64(u.ID))
+	h := func(c *gin.Context) { c.Set("user_id", int64(u.ID)); handler.PRsTab(c) }
+	w := servePRsTabRequest(h, "/prs", &http.Cookie{Name: "gitlens_session", Value: sessionID})
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	body := w.Body.String()
+	if !strings.Contains(body, "PR one") || !strings.Contains(body, "PR two") {
+		t.Errorf("expected both PRs, body: %s", body)
+	}
+}
+
+func TestPRsTab_FilterByRepo(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().SetGithubID(602).SetLogin("prsfilter").SetAccessToken("tok").Save(context.Background())
+	client.Repository.Create().SetGithubID(50).SetOwner("u").SetName("repo-x").SetFullName("u/repo-x").SetHTMLURL("https://github.com/u/repo-x").SetDefaultBranch("main").SetUserID(u.ID).
+		SetPullRequests(`[{"n":10,"t":"PR ten","a":"dev1","c":"2024-06-01T10:00:00Z","h":"","hr":"b","br":"m"}]`).SetOpenPrCount(1).Save(context.Background())
+	client.Repository.Create().SetGithubID(51).SetOwner("u").SetName("repo-y").SetFullName("u/repo-y").SetHTMLURL("https://github.com/u/repo-y").SetDefaultBranch("main").SetUserID(u.ID).
+		SetPullRequests(`[{"n":11,"t":"PR eleven","a":"dev2","c":"2024-06-01T10:00:00Z","h":"","hr":"b","br":"m"}]`).SetOpenPrCount(1).Save(context.Background())
+
+	sessionID := store.Set(int64(u.ID))
+	h := func(c *gin.Context) { c.Set("user_id", int64(u.ID)); handler.PRsTab(c) }
+	w := servePRsTabRequest(h, "/prs?repo=u/repo-x", &http.Cookie{Name: "gitlens_session", Value: sessionID})
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	body := w.Body.String()
+	if !strings.Contains(body, "PR ten") {
+		t.Errorf("expected PR ten in filtered results, body: %s", body)
+	}
+	if strings.Contains(body, "PR eleven") {
+		t.Errorf("did not expect PR eleven in filtered results, body: %s", body)
+	}
+}
+
+// ─── MergeSinglePR Tests ──────────────────────────────────────────
+
+func TestMergeSinglePR_InvalidBody(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().SetGithubID(700).SetLogin("mergeinv").SetAccessToken("tok").Save(context.Background())
+	sessionID := store.Set(int64(u.ID))
+
+	w := httptest.NewRecorder()
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.POST("/prs/merge", func(c *gin.Context) { c.Set("user_id", int64(u.ID)); handler.MergeSinglePR(c) })
+	req := httptest.NewRequest("POST", "/prs/merge", strings.NewReader(`not-json`))
+	req.Header.Set("Content-Type", "application/json")
+	req.AddCookie(&http.Cookie{Name: "gitlens_session", Value: sessionID})
+	engine.ServeHTTP(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected 400 for invalid JSON, got %d", w.Code)
+	}
+}
+
+func TestMergeSinglePR_NoRepo(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().SetGithubID(701).SetLogin("mergenorepo").SetAccessToken("tok").Save(context.Background())
+	sessionID := store.Set(int64(u.ID))
+
+	w := httptest.NewRecorder()
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.POST("/prs/merge", func(c *gin.Context) { c.Set("user_id", int64(u.ID)); handler.MergeSinglePR(c) })
+	body := strings.NewReader(`{"repo_id":999,"pr_number":1}`)
+	req := httptest.NewRequest("POST", "/prs/merge", body)
+	req.Header.Set("Content-Type", "application/json")
+	req.AddCookie(&http.Cookie{Name: "gitlens_session", Value: sessionID})
+	engine.ServeHTTP(w, req)
+	if w.Code != http.StatusNotFound {
+		t.Errorf("expected 404, got %d: %s", w.Code, w.Body.String())
+	}
+}
+
+func TestMergeSinglePR_Success(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().SetGithubID(702).SetLogin("mergesucc").SetAccessToken("tok").Save(context.Background())
+	r, _ := client.Repository.Create().SetGithubID(60).SetOwner("u").SetName("mergerepo").SetFullName("u/mergerepo").SetHTMLURL("https://github.com/u/mergerepo").SetDefaultBranch("main").SetUserID(u.ID).Save(context.Background())
+
+	apiSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"merged":true,"message":"Pull Request successfully merged"}`))
+	}))
+	defer apiSrv.Close()
+	handler.gh.APIURL = apiSrv.URL
+
+	sessionID := store.Set(int64(u.ID))
+	w := httptest.NewRecorder()
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.POST("/prs/merge", func(c *gin.Context) { c.Set("user_id", int64(u.ID)); handler.MergeSinglePR(c) })
+	body := strings.NewReader(fmt.Sprintf(`{"repo_id":%d,"pr_number":42}`, r.ID))
+	req := httptest.NewRequest("POST", "/prs/merge", body)
+	req.Header.Set("Content-Type", "application/json")
+	req.AddCookie(&http.Cookie{Name: "gitlens_session", Value: sessionID})
+	engine.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	if !strings.Contains(w.Body.String(), "merged successfully") {
+		t.Errorf("expected success message, got: %s", w.Body.String())
+	}
+}
+
+// ─── BatchMergePRs Tests ──────────────────────────────────────────
+
+func TestBatchMergePRs_NoSelection(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().SetGithubID(800).SetLogin("batchno").SetAccessToken("tok").Save(context.Background())
+	sessionID := store.Set(int64(u.ID))
+
+	w := httptest.NewRecorder()
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.POST("/prs/batch-merge", func(c *gin.Context) { c.Set("user_id", int64(u.ID)); handler.BatchMergePRs(c) })
+	req := httptest.NewRequest("POST", "/prs/batch-merge", strings.NewReader(``))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.AddCookie(&http.Cookie{Name: "gitlens_session", Value: sessionID})
+	engine.ServeHTTP(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected 400 for empty selection, got %d", w.Code)
+	}
+}
+
+func TestBatchMergePRs_Success(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().SetGithubID(801).SetLogin("batchsucc").SetAccessToken("tok").Save(context.Background())
+	r1, _ := client.Repository.Create().SetGithubID(70).SetOwner("u").SetName("batch-a").SetFullName("u/batch-a").SetHTMLURL("https://github.com/u/batch-a").SetDefaultBranch("main").SetUserID(u.ID).Save(context.Background())
+	r2, _ := client.Repository.Create().SetGithubID(71).SetOwner("u").SetName("batch-b").SetFullName("u/batch-b").SetHTMLURL("https://github.com/u/batch-b").SetDefaultBranch("main").SetUserID(u.ID).Save(context.Background())
+
+	callCount := 0
+	apiSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		callCount++
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"merged":true,"message":"ok"}`))
+	}))
+	defer apiSrv.Close()
+	handler.gh.APIURL = apiSrv.URL
+
+	sessionID := store.Set(int64(u.ID))
+	w := httptest.NewRecorder()
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.POST("/prs/batch-merge", func(c *gin.Context) { c.Set("user_id", int64(u.ID)); handler.BatchMergePRs(c) })
+	form := fmt.Sprintf("pr_ids=%d:1&pr_ids=%d:2", r1.ID, r2.ID)
+	req := httptest.NewRequest("POST", "/prs/batch-merge", strings.NewReader(form))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.AddCookie(&http.Cookie{Name: "gitlens_session", Value: sessionID})
+	engine.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	if !strings.Contains(w.Body.String(), "2 PR(s) merged") {
+		t.Errorf("expected 2 merges, got: %s", w.Body.String())
+	}
+	if callCount != 2 {
+		t.Errorf("expected 2 API calls, got %d", callCount)
+	}
+}
+
+// ─── MetricsTab Tests ─────────────────────────────────────────────
+
+func serveMetricsTabRequest(handler gin.HandlerFunc, path string, cookies ...*http.Cookie) *httptest.ResponseRecorder {
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	engine := gin.New()
+	engine.SetHTMLTemplate(template.Must(template.New("").Funcs(template.FuncMap{
+		"printf":               func(format string, args ...interface{}) string { return "" },
+		"workflowIcon":         func(status string) string { return "" },
+		"workflowLabel":        func(status string) string { return "" },
+		"hasWorkflowRun":       func(status string) bool { return false },
+	}).Parse(`{{define "metrics_tab"}}<div class="metrics">{{if .Metrics}}<span class="total-repos">{{.Metrics.TotalRepos}}</span>{{end}}{{range .Repos}}<span class="repo-name">{{.FullName}}</span>{{end}}</div>{{end}}`)))
+	engine.GET("/metrics", handler)
+	req := httptest.NewRequest("GET", path, nil)
+	for _, c := range cookies {
+		req.AddCookie(c)
+	}
+	engine.ServeHTTP(w, req)
+	return w
+}
+
+func TestMetricsTab_Renders(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().SetGithubID(900).SetLogin("metrictab").SetAccessToken("tok").Save(context.Background())
+	client.Repository.Create().SetGithubID(80).SetOwner("u").SetName("m1").SetFullName("u/m1").SetHTMLURL("https://github.com/u/m1").SetDefaultBranch("main").SetUserID(u.ID).
+		SetTotalCommitsFetched(10).SetFeatCount(4).SetFixCount(3).SetDocsCount(2).SetChoreCount(1).SetReleaseCount(2).SetWorkflowSuccessCount(5).SetWorkflowFailureCount(1).Save(context.Background())
+	client.Repository.Create().SetGithubID(81).SetOwner("u").SetName("m2").SetFullName("u/m2").SetHTMLURL("https://github.com/u/m2").SetDefaultBranch("main").SetUserID(u.ID).
+		SetTotalCommitsFetched(20).SetFeatCount(2).SetFixCount(2).SetDocsCount(1).SetChoreCount(3).SetReleaseCount(3).SetWorkflowSuccessCount(8).SetWorkflowFailureCount(2).Save(context.Background())
+
+	sessionID := store.Set(int64(u.ID))
+	h := func(c *gin.Context) { c.Set("user_id", int64(u.ID)); handler.MetricsTab(c) }
+	w := serveMetricsTabRequest(h, "/metrics", &http.Cookie{Name: "gitlens_session", Value: sessionID})
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	body := w.Body.String()
+	if !strings.Contains(body, "u/m1") || !strings.Contains(body, "u/m2") {
+		t.Errorf("expected both repos in metrics, body: %s", body)
+	}
+	if !strings.Contains(body, "2") {
+		t.Errorf("expected total repos count (2) in response, body: %s", body)
+	}
+}
+
+// ─── Index Tests ──────────────────────────────────────────────────
+
+func serveIndexRequest(handler http.HandlerFunc, path string, cookies ...*http.Cookie) *httptest.ResponseRecorder {
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	engine := gin.New()
+	engine.SetHTMLTemplate(template.Must(template.New("").Funcs(template.FuncMap{
+		"appVersion":           func() string { return "test" },
+		"shortSHA":             func(s string) string { return s },
+		"formatTime":           func(t time.Time) string { return "" },
+		"truncate":             func(s string, n int) string { return s },
+		"workflowIcon":         func(status string) string { return "" },
+		"workflowLabel":        func(status string) string { return "" },
+		"hasWorkflowRun":       func(status string) bool { return false },
+		"printf":               func(format string, args ...interface{}) string { return "" },
+		"releaseIcon":          func(conclusion string) string { return "" },
+		"releaseLabel":         func(conclusion string) string { return "" },
+		"hasReleaseConclusion": func(s string) bool { return false },
+		"contains":             func(s, substr string) bool { return strings.Contains(s, substr) },
+		"timeSince":            func(t time.Time) string { return "" },
+		"eventIcon":            func(eventType string) string { return "" },
+	}).Parse(`{{define "tab_bar"}}<div class="tab-bar">{{if eq .ActiveTab "repos"}}active-repos{{end}}</div>{{end}}
+{{define "repos_tab"}}<div>repos-content{{range .Repos}}{{.FullName}}{{end}}</div>{{end}}
+{{define "repo_list"}}<div>{{range .Repos}}<div>{{.FullName}}</div>{{end}}</div>{{end}}
+{{define "repo_card"}}<div>{{.FullName}}</div>{{end}}
+{{define "pr_list"}}<div></div>{{end}}
+{{define "settings"}}<div>settings</div>{{end}}
+{{define "available_repos"}}<div></div>{{end}}
+{{define "charts"}}<div></div>{{end}}
+{{define "feed"}}<div></div>{{end}}
+{{define "prs_tab"}}<div></div>{{end}}
+{{define "metrics_tab"}}<div></div>{{end}}`))
+	engine.GET("/", handler)
+	req := httptest.NewRequest("GET", path, nil)
+	for _, c := range cookies {
+		req.AddCookie(c)
+	}
+	engine.ServeHTTP(w, req)
+	return w
+}
+
+func TestIndex_RendersFullPage(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().SetGithubID(1000).SetLogin("indexuser").SetAvatarURL("https://avatars.example.com/u.png").SetAccessToken("tok").Save(context.Background())
+	client.Repository.Create().SetGithubID(90).SetOwner("u").SetName("idx").SetFullName("u/idx").SetHTMLURL("https://github.com/u/idx").SetDefaultBranch("main").SetUserID(u.ID).Save(context.Background())
+
+	sessionID := store.Set(int64(u.ID))
+	w := serveIndexRequest(handler.Index, "/", &http.Cookie{Name: "gitlens_session", Value: sessionID})
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	body := w.Body.String()
+	if !strings.Contains(body, "active-repos") {
+		t.Errorf("expected active-tab=repos, body: %s", body)
+	}
+	if !strings.Contains(body, "repos-content") {
+		t.Errorf("expected repos tab content, body: %s", body)
+	}
+	if !strings.Contains(body, "u/idx") {
+		t.Errorf("expected repo name in response, body: %s", body)
+	}
+}
+
+func TestIndex_Unauthenticated(t *testing.T) {
+	handler, _, _ := newTestDashboardHandler(t)
+	w := serveIndexRequest(handler.Index, "/")
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	body := w.Body.String()
+	if strings.Contains(body, "active-repos") {
+		t.Errorf("expected no active tab for unauthenticated user, body: %s", body)
 	}
 }

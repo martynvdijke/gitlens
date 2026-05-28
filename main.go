@@ -206,7 +206,11 @@ func main() {
 	authed := r.Group("/")
 	authed.Use(middleware.AuthRequired(sessionStore))
 	{
-		authed.GET("/dashboard", dashHandler.Dashboard)
+		authed.GET("/dashboard", dashHandler.ReposTab)
+		authed.GET("/prs", dashHandler.PRsTab)
+		authed.POST("/prs/merge", dashHandler.MergeSinglePR)
+		authed.POST("/prs/batch-merge", dashHandler.BatchMergePRs)
+		authed.GET("/metrics", dashHandler.MetricsTab)
 		authed.GET("/repos", dashHandler.ListRepos)
 		authed.POST("/repos/:id/sync", dashHandler.SyncRepo)
 		authed.POST("/repos/import-all", dashHandler.ImportAllRepos)
