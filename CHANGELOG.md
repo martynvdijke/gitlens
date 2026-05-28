@@ -1,3 +1,16 @@
+# [1.6.0](https://github.com/martynvdijke/gitlens/compare/v1.5.4...v1.6.0) (2026-05-28)
+
+
+### Bug Fixes
+
+* update Playwright tests for Bootstrap Darkly UI migration ([c7e1a53](https://github.com/martynvdijke/gitlens/commit/c7e1a53309e8d1927d862d15221da4e7bac68d35))
+
+
+### Features
+
+* add Bootstrap Darkly CSS framework with Material-inspired UI ([9da26ff](https://github.com/martynvdijke/gitlens/commit/9da26ff624b7d8fc87ff7bbee5ccab8c284ff35d))
+* tab-navigation-redesign with cross-repo PR queue and metrics tab ([9e9113a](https://github.com/martynvdijke/gitlens/commit/9e9113af59282ceb561b579cc4153e14e20bedcb))
+
 ## [1.5.4](https://github.com/martynvdijke/gitlens/compare/v1.5.3...v1.5.4) (2026-05-26)
 
 ## [1.5.3](https://github.com/martynvdijke/gitlens/compare/v1.5.2...v1.5.3) (2026-05-25)
