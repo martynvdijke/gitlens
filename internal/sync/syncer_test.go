@@ -101,6 +101,15 @@ func TestSyncOne_AllAPIs(t *testing.T) {
 	if synced.TotalCommitsFetched != 2 {
 		t.Errorf("expected 2 commits fetched, got %d", synced.TotalCommitsFetched)
 	}
+	if synced.LatestCommitSha != "a1b2c3" {
+		t.Errorf("expected latest commit SHA 'a1b2c3', got '%s'", synced.LatestCommitSha)
+	}
+	if synced.LatestCommitMessage != "feat: add feature" {
+		t.Errorf("expected latest commit message 'feat: add feature', got '%s'", synced.LatestCommitMessage)
+	}
+	if synced.LatestCommitDate.IsZero() {
+		t.Error("expected latest commit date to be set")
+	}
 	if synced.FeatCount != 1 {
 		t.Errorf("expected 1 feat, got %d", synced.FeatCount)
 	}

@@ -26,7 +26,9 @@ func newTestSettingsHandler(t *testing.T, ghAPIURL string) (*SettingsHandler, *m
 		ghClient.APIURL = ghAPIURL
 	}
 	syncer := sync.NewSyncer(client, ghClient, nil)
-	return NewSettingsHandler(client, store, ghClient, syncer), store
+	h := NewSettingsHandler(client, store, ghClient, syncer)
+	h.bgCtx = t.Context()
+	return h, store
 }
 
 func TestSettingsHandler_UpdateInterval_InvalidInput(t *testing.T) {

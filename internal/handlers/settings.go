@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"strconv"
@@ -20,10 +21,11 @@ type SettingsHandler struct {
 	store  *mw.SessionStore
 	gh     *github.Client
 	syncer *sync.Syncer
+	bgCtx  context.Context
 }
 
 func NewSettingsHandler(client *ent.Client, store *mw.SessionStore, gh *github.Client, syncer *sync.Syncer) *SettingsHandler {
-	return &SettingsHandler{client: client, store: store, gh: gh, syncer: syncer}
+	return &SettingsHandler{client: client, store: store, gh: gh, syncer: syncer, bgCtx: context.Background()}
 }
 
 func (h *SettingsHandler) Index(c *gin.Context) {
@@ -144,6 +146,7 @@ func (h *SettingsHandler) SelectRepos(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
+	var newIDs []int
 	for _, r := range selected {
 		exists, _ := h.client.Repository.Query().
 			Where(
@@ -155,7 +158,7 @@ func (h *SettingsHandler) SelectRepos(c *gin.Context) {
 			continue
 		}
 
-		_, err := h.client.Repository.Create().
+		repo, err := h.client.Repository.Create().
 			SetGithubID(r.ID).
 			SetOwner(r.Owner).
 			SetName(r.Name).
@@ -170,19 +173,24 @@ func (h *SettingsHandler) SelectRepos(c *gin.Context) {
 			log.Printf("Error saving repo %s: %v", r.FullName, err)
 		} else {
 			log.Printf("Added repo %s", r.FullName)
+			newIDs = append(newIDs, repo.ID)
 		}
 	}
 
+	// Sync new repos in background so the HTTP request returns quickly.
+	// WebSocket broadcasts push updated repo cards as each sync completes.
+	go func() {
+		for _, id := range newIDs {
+			r, err := h.client.Repository.Get(h.bgCtx, id)
+			if err != nil {
+				log.Printf("Error fetching new repo ID %d: %v", id, err)
+				continue
+			}
+			h.syncer.SyncOne(h.bgCtx, r)
+		}
+	}()
+
 	repos, _ := h.client.Repository.Query().
-		Where(repository.HasUserWith(user.ID(u.ID))).
-		Order(ent.Desc(repository.FieldUpdatedAt)).
-		All(ctx)
-
-	for _, r := range repos {
-		h.syncer.SyncOne(ctx, r)
-	}
-
-	repos, _ = h.client.Repository.Query().
 		Where(repository.HasUserWith(user.ID(u.ID))).
 		Order(ent.Desc(repository.FieldUpdatedAt)).
 		All(ctx)

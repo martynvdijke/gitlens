@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -45,10 +46,11 @@ type DashboardHandler struct {
 	store  *mw.SessionStore
 	gh     *github.Client
 	syncer *sync.Syncer
+	bgCtx  context.Context
 }
 
 func NewDashboardHandler(client *ent.Client, store *mw.SessionStore, gh *github.Client, syncer *sync.Syncer) *DashboardHandler {
-	return &DashboardHandler{client: client, store: store, gh: gh, syncer: syncer}
+	return &DashboardHandler{client: client, store: store, gh: gh, syncer: syncer, bgCtx: context.Background()}
 }
 
 func computeMetrics(repos []*ent.Repository) *DORAMetrics {
@@ -191,14 +193,18 @@ func (h *DashboardHandler) ImportAllRepos(c *gin.Context) {
 		newIDs = append(newIDs, repo.ID)
 	}
 
-	for _, id := range newIDs {
-		r, err := h.client.Repository.Get(ctx, id)
-		if err != nil {
-			log.Printf("Error fetching new repo ID %d: %v", id, err)
-			continue
+	// Sync new repos in background so the HTTP request returns quickly.
+	// WebSocket broadcasts push updated repo cards as each sync completes.
+	go func() {
+		for _, id := range newIDs {
+			r, err := h.client.Repository.Get(h.bgCtx, id)
+			if err != nil {
+				log.Printf("Error fetching new repo ID %d: %v", id, err)
+				continue
+			}
+			h.syncer.SyncOne(h.bgCtx, r)
 		}
-		h.syncer.SyncOne(ctx, r)
-	}
+	}()
 
 	repos, _ := h.client.Repository.Query().
 		Where(repository.HasUserWith(user.ID(u.ID))).

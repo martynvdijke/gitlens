@@ -30,7 +30,9 @@ func newTestDashboardHandler(t *testing.T) (*DashboardHandler, *middleware.Sessi
 	ghClient := github.NewClient("", "")
 	hub := ws.NewHub()
 	syncer := sync.NewSyncer(client, ghClient, hub)
-	return NewDashboardHandler(client, store, ghClient, syncer), store, client
+	h := NewDashboardHandler(client, store, ghClient, syncer)
+	h.bgCtx = t.Context()
+	return h, store, client
 }
 
 func serveListReposRequest(handler gin.HandlerFunc, method, path string, cookies ...*http.Cookie) *httptest.ResponseRecorder {
@@ -305,14 +307,17 @@ func TestImportAllRepos_Success(t *testing.T) {
 		t.Fatalf("expected 200, got %d. Body: %s", w.Code, w.Body.String())
 	}
 
+	// Repos are created synchronously, sync happens in background
 	repos, _ := client.Repository.Query().All(context.Background())
 	if len(repos) != 2 {
 		t.Fatalf("expected 2 repos, got %d", len(repos))
 	}
 
-	// Verify the existing repo was not synced (no API calls for existing)
-	if apiCalls < 2 {
-		t.Errorf("expected at least 2 API calls (list repos + sync new), got %d", apiCalls)
+	if !strings.Contains(w.Body.String(), "user/existing") {
+		t.Errorf("response should contain existing repo name")
+	}
+	if !strings.Contains(w.Body.String(), "user/newrepo1") {
+		t.Errorf("response should contain new repo name")
 	}
 }
 

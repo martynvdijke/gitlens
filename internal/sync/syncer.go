@@ -123,6 +123,13 @@ func (s *Syncer) syncCommits(ctx context.Context, u *ent.User, repo *ent.Reposit
 	}
 
 	updated.SetTotalCommitsFetched(len(commits))
+
+	if len(commits) > 0 {
+		updated.SetLatestCommitSha(commits[0].SHA)
+		updated.SetLatestCommitMessage(commits[0].Message)
+		updated.SetLatestCommitDate(commits[0].Date)
+	}
+
 	var feat, fix, docs, chore, other int
 	for _, c := range commits {
 		switch github.ParseCommitType(c.Message) {
