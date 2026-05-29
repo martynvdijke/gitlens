@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/martynvdijke/gitlens/compare/v1.6.0...v1.6.1) (2026-05-29)
+
+
+### Bug Fixes
+
+* prevent blank page on refresh with HTMX redirect middleware, improve mobile layout ([c6db9fc](https://github.com/martynvdijke/gitlens/commit/c6db9fca6e6e68331d88735389c373c8527ac3da))
+
 # [1.6.0](https://github.com/martynvdijke/gitlens/compare/v1.5.4...v1.6.0) (2026-05-28)
 
 
