@@ -225,10 +225,13 @@
 
                 <div class="col-md-3 col-6">
                     <div class="p-2 bg-dark rounded border border-secondary">
-                        <div class="text-uppercase small text-secondary mb-1 stat-label">Workflow Status</div>
+                        <div class="text-uppercase small text-secondary mb-1 stat-label">Latest Build</div>
                         <div class="stat-value">
                             {{if hasWorkflowRun .WorkflowStatus}}
-                            <span class="badge {{if eq .WorkflowStatus "success"}}bg-success{{else if eq .WorkflowStatus "failure"}}bg-danger{{else}}bg-warning text-dark{{end}}">{{workflowIcon .WorkflowStatus}} {{workflowLabel .WorkflowStatus}}</span>
+                            <span class="badge {{if eq .WorkflowStatus "success"}}bg-success{{else if eq .WorkflowStatus "failure"}}bg-danger{{else}}bg-warning text-dark{{end}} mb-1">{{workflowIcon .WorkflowStatus}} {{workflowLabel .WorkflowStatus}}</span>
+                            {{if or .WorkflowSuccessCount .WorkflowFailureCount}}
+                            <div class="text-light small">{{.WorkflowSuccessCount}} passed / {{.WorkflowFailureCount}} failed</div>
+                            {{end}}
                             {{else}}
                             <span class="text-secondary fst-italic small">No workflows</span>
                             {{end}}
