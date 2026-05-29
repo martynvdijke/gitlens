@@ -109,3 +109,15 @@ func SetSessionCookie(c *gin.Context, sessionID string) {
 func ClearSessionCookie(c *gin.Context) {
 	c.SetCookie(sessionCookieName, "", -1, "/", "", false, true)
 }
+
+// HTMXOnly aborts with a redirect to / when the request is not an HTMX
+// partial request. This prevents direct browser refreshes on push-url
+// routes from rendering raw partial templates.
+func HTMXOnly() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if c.GetHeader("HX-Request") == "" {
+			c.Redirect(http.StatusFound, "/")
+			c.Abort()
+		}
+	}
+}

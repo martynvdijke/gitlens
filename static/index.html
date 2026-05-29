@@ -94,7 +94,7 @@
     </main>
 
     {{define "tab_bar"}}
-    <ul class="nav nav-tabs px-3 border-bottom border-secondary" id="tab-bar">
+    <ul class="nav nav-tabs px-3 border-bottom border-secondary flex-nowrap overflow-auto" id="tab-bar">
         <li class="nav-item">
             <a href="/dashboard" class="nav-link {{if eq .ActiveTab "repos"}}active{{end}}"
                hx-get="/dashboard" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true">
@@ -189,14 +189,14 @@
             <p class="text-secondary small mb-3">{{.Description}}</p>
             {{end}}
 
-            <div class="row g-2 mb-3">
+            <div class="row g-2 mb-3 repo-stats">
                 <div class="col-md-3 col-6">
                     <div class="p-2 bg-dark rounded border border-secondary">
-                        <div class="text-uppercase small text-secondary mb-1">Latest Commit</div>
-                        <div>
+                        <div class="text-uppercase small text-secondary mb-1 stat-label">Latest Commit</div>
+                        <div class="stat-value">
                             {{if .LatestCommitSHA}}
                             <code class="text-light small">{{shortSHA .LatestCommitSHA}}</code>
-                            <div class="text-light small">{{truncate .LatestCommitMessage 60}}</div>
+                            <div class="text-light small text-truncate">{{truncate .LatestCommitMessage 60}}</div>
                             {{if not .LatestCommitDate.IsZero}}<div class="text-secondary small">{{formatTime .LatestCommitDate}}</div>{{end}}
                             {{else}}
                             <span class="text-secondary fst-italic small">Not synced</span>
@@ -207,11 +207,11 @@
 
                 <div class="col-md-3 col-6">
                     <div class="p-2 bg-dark rounded border border-secondary">
-                        <div class="text-uppercase small text-secondary mb-1">Latest Release</div>
-                        <div>
+                        <div class="text-uppercase small text-secondary mb-1 stat-label">Latest Release</div>
+                        <div class="stat-value">
                             {{if .LatestReleaseTag}}
                             <strong class="text-light small">{{.LatestReleaseTag}}</strong>
-                            {{if .LatestReleaseName}}<div class="text-light small">{{.LatestReleaseName}}</div>{{end}}
+                            {{if .LatestReleaseName}}<div class="text-light small text-truncate">{{.LatestReleaseName}}</div>{{end}}
                             {{if not .LatestReleaseDate.IsZero}}<div class="text-secondary small">{{formatTime .LatestReleaseDate}}</div>{{end}}
                             {{if hasReleaseConclusion .LatestReleaseConclusion}}
                             <span class="badge {{if eq .LatestReleaseConclusion "success"}}bg-success{{else if eq .LatestReleaseConclusion "failure"}}bg-danger{{else}}bg-secondary{{end}}">{{releaseIcon .LatestReleaseConclusion}} {{releaseLabel .LatestReleaseConclusion}}</span>
@@ -225,8 +225,8 @@
 
                 <div class="col-md-3 col-6">
                     <div class="p-2 bg-dark rounded border border-secondary">
-                        <div class="text-uppercase small text-secondary mb-1">Workflow Status</div>
-                        <div>
+                        <div class="text-uppercase small text-secondary mb-1 stat-label">Workflow Status</div>
+                        <div class="stat-value">
                             {{if hasWorkflowRun .WorkflowStatus}}
                             <span class="badge {{if eq .WorkflowStatus "success"}}bg-success{{else if eq .WorkflowStatus "failure"}}bg-danger{{else}}bg-warning text-dark{{end}}">{{workflowIcon .WorkflowStatus}} {{workflowLabel .WorkflowStatus}}</span>
                             {{else}}
@@ -238,8 +238,8 @@
 
                 <div class="col-md-3 col-6">
                     <div class="p-2 bg-dark rounded border border-secondary">
-                        <div class="text-uppercase small text-secondary mb-1">Pull Requests</div>
-                        <div>
+                        <div class="text-uppercase small text-secondary mb-1 stat-label">Pull Requests</div>
+                        <div class="stat-value">
                             {{if .OpenPRCount}}
                             <span class="text-info fw-semibold small">{{.OpenPRCount}} open</span>
                             <button class="btn btn-sm btn-outline-info ms-1" hx-get="/repos/{{.ID}}/prs" hx-target="#prs-{{.ID}}" hx-swap="innerHTML" hx-indicator="#pr-spinner-{{.ID}}">View PRs</button>
@@ -497,27 +497,28 @@
     {{if .PRs}}
     <form id="pr-queue-form" hx-post="/prs/batch-merge" hx-target="#pr-queue-status" hx-swap="innerHTML" hx-indicator="#batch-spinner">
         <div id="pr-queue-status"></div>
-        <div class="card border-secondary">
-            <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom border-secondary bg-dark small text-uppercase text-secondary fw-semibold">
+        <div class="card border-secondary pr-queue-scroll">
+            <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom border-secondary bg-dark small text-uppercase text-secondary fw-semibold pr-header">
                 <label style="width:20px;flex-shrink:0">
                     <input type="checkbox" class="form-check-input" onchange="document.querySelectorAll('.pr-queue-checkbox').forEach(c => c.checked = this.checked)" title="Select all">
                 </label>
                 <span style="width:180px;flex-shrink:0">Repository</span>
                 <span class="flex-grow-1">Pull Request</span>
-                <span style="width:140px;flex-shrink:0;text-align:right">Author / Age</span>
+                <span class="d-none d-sm-inline" style="width:140px;flex-shrink:0;text-align:right">Author / Age</span>
                 <span style="width:80px;flex-shrink:0;text-align:right">Action</span>
             </div>
             {{range .PRs}}
-            <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom border-secondary bg-dark">
+            <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom border-secondary bg-dark pr-row">
                 <label style="width:20px;flex-shrink:0">
                     <input type="checkbox" name="pr_ids" value="{{.RepoID}}:{{.Number}}" class="form-check-input pr-queue-checkbox">
                 </label>
-                <span class="text-info small text-truncate" style="width:180px;flex-shrink:0">{{.RepoFullName}}</span>
+                <span class="text-info small text-truncate d-none d-sm-inline" style="width:180px;flex-shrink:0">{{.RepoFullName}}</span>
                 <span class="flex-grow-1 min-w-0 d-flex flex-column">
                     <a href="{{.HTMLURL}}" target="_blank" rel="noopener" class="text-light text-decoration-none small fw-medium text-truncate">#{{.Number}} {{.Title}}</a>
+                    <span class="text-secondary small text-truncate d-sm-none">{{.RepoFullName}}</span>
                     <span class="text-secondary small">{{.HeadRef}} → {{.BaseRef}}</span>
                 </span>
-                <span class="d-flex flex-column" style="width:140px;flex-shrink:0;text-align:right">
+                <span class="d-none d-sm-flex flex-column" style="width:140px;flex-shrink:0;text-align:right">
                     <span class="text-light small">{{.Author}}</span>
                     <span class="text-secondary small">{{printf "%.10s" .CreatedAt}}</span>
                 </span>
@@ -626,20 +627,20 @@
         </div>
 
         <h5 class="fw-semibold mb-2 mt-4">Per-Repository Breakdown</h5>
-        <div class="card border-secondary">
+        <div class="card border-secondary metrics-scroll">
             {{range .Repos}}
-            <div class="d-flex align-items-center gap-3 px-3 py-2 border-bottom border-secondary bg-dark small">
-                <span class="flex-grow-1 min-w-0"><a href="{{.HTMLURL}}" target="_blank" rel="noopener" class="text-info text-decoration-none fw-medium">{{.FullName}}</a></span>
-                <span class="text-end text-light" style="width:130px;flex-shrink:0">{{.TotalCommitsFetched}} commits</span>
-                <span class="text-end" style="width:130px;flex-shrink:0">
+            <div class="d-flex align-items-center gap-3 px-3 py-2 border-bottom border-secondary bg-dark small metrics-row">
+                <span class="flex-grow-1 min-w-0"><a href="{{.HTMLURL}}" target="_blank" rel="noopener" class="text-info text-decoration-none fw-medium text-truncate d-inline-block" style="max-width:200px">{{.FullName}}</a></span>
+                <span class="text-end text-light" style="width:110px;flex-shrink:0">{{.TotalCommitsFetched}} commits</span>
+                <span class="text-end d-none d-sm-inline" style="width:130px;flex-shrink:0">
                     {{if .WorkflowStatus}}
                     <span class="badge {{if eq .WorkflowStatus "success"}}bg-success{{else if eq .WorkflowStatus "failure"}}bg-danger{{else}}bg-warning text-dark{{end}}">{{workflowIcon .WorkflowStatus}} {{workflowLabel .WorkflowStatus}}</span>
                     {{else}}
                     <span class="text-secondary fst-italic">No workflows</span>
                     {{end}}
                 </span>
-                <span class="text-end text-light" style="width:130px;flex-shrink:0">{{.ReleaseCount}} releases</span>
-                <span class="text-end text-light" style="width:130px;flex-shrink:0">
+                <span class="text-end text-light" style="width:100px;flex-shrink:0">{{.ReleaseCount}} releases</span>
+                <span class="text-end d-none d-sm-inline text-light" style="width:130px;flex-shrink:0">
                     {{if gt .AvgLeadTimeHours 0.0}}{{printf "%.1f" .AvgLeadTimeHours}}h avg lead{{end}}
                 </span>
             </div>

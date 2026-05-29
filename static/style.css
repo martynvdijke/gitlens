@@ -83,3 +83,81 @@
 .progress {
     background-color: #21262d;
 }
+
+/* Mobile: horizontally scrollable tab bar */
+@media (max-width: 576px) {
+    #tab-bar {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    #tab-bar::-webkit-scrollbar {
+        display: none;
+    }
+    #tab-bar .nav-link {
+        white-space: nowrap;
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+    }
+}
+
+/* Mobile: repo card stat blocks */
+@media (max-width: 576px) {
+    .repo-stats .stat-label {
+        font-size: 0.7rem;
+    }
+    .repo-stats .stat-value {
+        font-size: 0.8rem;
+    }
+}
+
+/* Mobile: PR queue card layout */
+@media (max-width: 767.98px) {
+    .pr-queue-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .pr-queue-scroll .pr-row {
+        min-width: 600px;
+    }
+    .pr-queue-scroll .pr-header {
+        min-width: 600px;
+    }
+}
+
+/* Mobile: metrics breakdown scroll */
+@media (max-width: 767.98px) {
+    .metrics-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .metrics-scroll .metrics-row {
+        min-width: 500px;
+    }
+}
+
+/* Mobile: reduce container padding */
+@media (max-width: 576px) {
+    main.container {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+}
+
+/* Mobile: settings page */
+@media (max-width: 576px) {
+    .settings-page .card-body {
+        padding: 1rem;
+    }
+}
+
+/* Mobile: landing page hero */
+@media (max-width: 576px) {
+    .display-5 {
+        font-size: 1.75rem;
+    }
+    .lead {
+        font-size: 0.95rem;
+    }
+}
