@@ -1,3 +1,10 @@
+## [1.6.2](https://github.com/martynvdijke/gitlens/compare/v1.6.1...v1.6.2) (2026-05-30)
+
+
+### Bug Fixes
+
+* SVG escaping, session persistence, WS scope, and pagination ([19081a7](https://github.com/martynvdijke/gitlens/commit/19081a7bfcb0270022544d7e135661e24c74511f))
+
 ## [1.6.1](https://github.com/martynvdijke/gitlens/compare/v1.6.0...v1.6.1) (2026-05-29)
 
 
