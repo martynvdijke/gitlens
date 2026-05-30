@@ -279,8 +279,9 @@ func (c *Client) GetLatestCommit(token, owner, repo, branch string) (*Commit, er
 	}, nil
 }
 
-func (c *Client) GetCommits(token, owner, repo, branch string, perPage int) ([]*Commit, error) {
-	url := fmt.Sprintf("%s/repos/%s/%s/commits?per_page=%d&sha=%s", c.APIURL, owner, repo, perPage, branch)
+// getCommitsPage fetches a single page of commits from the GitHub API.
+func (c *Client) getCommitsPage(token, owner, repo, branch string, perPage, page int) ([]*Commit, error) {
+	url := fmt.Sprintf("%s/repos/%s/%s/commits?per_page=%d&page=%d&sha=%s", c.APIURL, owner, repo, perPage, page, branch)
 	resp, err := c.doRequest("GET", url, token, nil)
 	if err != nil {
 		return nil, err
@@ -302,6 +303,32 @@ func (c *Client) GetCommits(token, owner, repo, branch string, perPage int) ([]*
 		})
 	}
 	return commits, nil
+}
+
+// GetCommits fetches up to perPage commits from the default branch (page 1).
+// Use GetAllCommits to fetch every commit.
+func (c *Client) GetCommits(token, owner, repo, branch string, perPage int) ([]*Commit, error) {
+	return c.getCommitsPage(token, owner, repo, branch, perPage, 1)
+}
+
+// GetAllCommits paginates through every commit on the given branch.
+// Returns all commits (paginated 100 at a time) with a safety limit of 10 000.
+func (c *Client) GetAllCommits(token, owner, repo, branch string) ([]*Commit, error) {
+	const perPage = 100
+	const maxPages = 100 // 10 000 commits safety ceiling
+
+	var allCommits []*Commit
+	for page := 1; page <= maxPages; page++ {
+		commits, err := c.getCommitsPage(token, owner, repo, branch, perPage, page)
+		if err != nil {
+			return allCommits, err
+		}
+		allCommits = append(allCommits, commits...)
+		if len(commits) < perPage {
+			break
+		}
+	}
+	return allCommits, nil
 }
 
 func ParseCommitType(msg string) string {

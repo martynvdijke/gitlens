@@ -231,7 +231,12 @@ func main() {
 	}
 
 	r.GET("/ws", func(c *gin.Context) {
-		hub.HandleWebSocket(c.Writer, c.Request)
+		var userID int64
+		cookie, err := c.Cookie("gitlens_session")
+		if err == nil {
+			userID, _ = sessionStore.Get(cookie)
+		}
+		hub.HandleWebSocket(c.Writer, c.Request, userID)
 	})
 
 	_ = repository.FieldName

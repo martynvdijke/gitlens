@@ -103,7 +103,12 @@ func AuthRequired(store *SessionStore) gin.HandlerFunc {
 }
 
 func SetSessionCookie(c *gin.Context, sessionID string) {
-	c.SetCookie(sessionCookieName, sessionID, int(sessionMaxAge.Seconds()), "/", "", false, true)
+	// Secure the cookie when the request arrived over TLS or behind a TLS-terminating proxy.
+	secure := false
+	if c.Request != nil {
+		secure = c.Request.TLS != nil || c.GetHeader("X-Forwarded-Proto") == "https"
+	}
+	c.SetCookie(sessionCookieName, sessionID, int(sessionMaxAge.Seconds()), "/", "", secure, true)
 }
 
 func ClearSessionCookie(c *gin.Context) {

@@ -110,13 +110,13 @@ func (s *Syncer) SyncOne(ctx context.Context, repo *ent.Repository) *ent.Reposit
 	s.recordEvents(ctx, u, repo, beforeReleaseTag, beforeWorkflowStatus, beforeReleaseConclusion)
 
 	if s.hub != nil {
-		s.broadcastUpdate(repo)
+		s.broadcastUpdate(repo, u)
 	}
 	return repo
 }
 
 func (s *Syncer) syncCommits(ctx context.Context, u *ent.User, repo *ent.Repository, updated *ent.RepositoryUpdateOne) {
-	commits, err := s.gh.GetCommits(u.AccessToken, repo.Owner, repo.Name, repo.DefaultBranch, 50)
+	commits, err := s.gh.GetAllCommits(u.AccessToken, repo.Owner, repo.Name, repo.DefaultBranch)
 	if err != nil {
 		log.Printf("Error fetching commits for %s: %v", repo.FullName, err)
 		return
@@ -346,7 +346,7 @@ func (s *Syncer) recordPRMergeEvents(ctx context.Context, u *ent.User, repo *ent
 	}
 }
 
-func (s *Syncer) broadcastUpdate(repo *ent.Repository) {
+func (s *Syncer) broadcastUpdate(repo *ent.Repository, u *ent.User) {
 	if s.tmpl == nil {
 		return
 	}
@@ -355,5 +355,5 @@ func (s *Syncer) broadcastUpdate(repo *ent.Repository) {
 	if err != nil {
 		return
 	}
-	s.hub.Broadcast(buf.Bytes())
+	s.hub.BroadcastToUser(int64(u.ID), buf.Bytes())
 }

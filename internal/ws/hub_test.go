@@ -15,7 +15,7 @@ func TestHubBroadcast(t *testing.T) {
 	go hub.Run()
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		hub.HandleWebSocket(w, r)
+		hub.HandleWebSocket(w, r, 0)
 	}))
 	defer srv.Close()
 
@@ -44,7 +44,7 @@ func TestHubMultipleClients(t *testing.T) {
 	go hub.Run()
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		hub.HandleWebSocket(w, r)
+		hub.HandleWebSocket(w, r, 0)
 	}))
 	defer srv.Close()
 
@@ -83,12 +83,66 @@ func TestHubMultipleClients(t *testing.T) {
 	}
 }
 
+func TestHubBroadcastToUser(t *testing.T) {
+	hub := NewHub()
+	go hub.Run()
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hub.HandleWebSocket(w, r, 0)
+	}))
+	defer srv.Close()
+
+	u := "ws" + strings.TrimPrefix(srv.URL, "http")
+
+	// Anonymous client (userID=0)
+	connAnon, _, err := websocket.DefaultDialer.Dial(u, nil)
+	if err != nil {
+		t.Fatalf("dial anon error: %v", err)
+	}
+	defer connAnon.Close()
+
+	// User-specific clients via separate servers with different userIDs
+	srv2 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hub.HandleWebSocket(w, r, 42)
+	}))
+	defer srv2.Close()
+
+	u2 := "ws" + strings.TrimPrefix(srv2.URL, "http")
+	connUser, _, err := websocket.DefaultDialer.Dial(u2, nil)
+	if err != nil {
+		t.Fatalf("dial user error: %v", err)
+	}
+	defer connUser.Close()
+
+	time.Sleep(100 * time.Millisecond)
+
+	// Broadcast to user 42 - only connUser should receive it
+	hub.BroadcastToUser(42, []byte("secret-for-42"))
+
+	// connUser should receive the message
+	_, msg, err := connUser.ReadMessage()
+	if err != nil {
+		t.Fatalf("read user error: %v", err)
+	}
+	if string(msg) != "secret-for-42" {
+		t.Fatalf("expected 'secret-for-42', got '%s'", string(msg))
+	}
+
+	// connAnon should NOT receive the message
+	// Use a short timeout to confirm no message arrives
+	connAnon.SetReadDeadline(time.Now().Add(50 * time.Millisecond))
+	_, _, err = connAnon.ReadMessage()
+	if err == nil {
+		t.Fatal("anonymous client should not have received user-targeted broadcast")
+	}
+}
+
 func TestHubClientDisconnect(t *testing.T) {
 	hub := NewHub()
 	go hub.Run()
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		hub.HandleWebSocket(w, r)
+		hub.HandleWebSocket(w, r, 0)
 	}))
 	defer srv.Close()
 

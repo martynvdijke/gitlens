@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"html/template"
 	"math"
 	"net/http"
 
@@ -36,10 +37,10 @@ func (h *ChartHandler) Charts(c *gin.Context) {
 	metrics := computeMetrics(repos)
 
 	c.HTML(http.StatusOK, "charts", gin.H{
-		"Metrics":       metrics,
-		"BarChartSVG":   svgBarChart(metrics),
-		"PieChartSVG":   svgPieChart(metrics),
-		"MetricTrendSVG": svgMetricTrend(metrics),
+		"Metrics":        metrics,
+		"BarChartSVG":    template.HTML(svgBarChart(metrics)),
+		"PieChartSVG":    template.HTML(svgPieChart(metrics)),
+		"MetricTrendSVG": template.HTML(svgMetricTrend(metrics)),
 	})
 }
 

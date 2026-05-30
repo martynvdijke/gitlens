@@ -17,31 +17,37 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+// clientConn associates a WebSocket connection with an authenticated user.
+type clientConn struct {
+	conn   *websocket.Conn
+	userID int64
+}
+
 type Hub struct {
-	clients    map[*websocket.Conn]bool
+	clients    map[*websocket.Conn]*clientConn
 	broadcast  chan []byte
-	register   chan *websocket.Conn
+	register   chan *clientConn
 	unregister chan *websocket.Conn
 	mu         sync.RWMutex
 }
 
 func NewHub() *Hub {
 	return &Hub{
-		clients:    make(map[*websocket.Conn]bool),
+		clients:    make(map[*websocket.Conn]*clientConn),
 		broadcast:  make(chan []byte, 256),
-		register:   make(chan *websocket.Conn),
-		unregister: make(chan *websocket.Conn),
+		register:   make(chan *clientConn, 64),
+		unregister: make(chan *websocket.Conn, 64),
 	}
 }
 
 func (h *Hub) Run() {
 	for {
 		select {
-		case conn := <-h.register:
+		case cc := <-h.register:
 			h.mu.Lock()
-			h.clients[conn] = true
+			h.clients[cc.conn] = cc
 			h.mu.Unlock()
-			log.Printf("WebSocket client connected (%d total)", len(h.clients))
+			log.Printf("WebSocket client connected (user=%d, total=%d)", cc.userID, len(h.clients))
 
 		case conn := <-h.unregister:
 			h.mu.Lock()
@@ -53,11 +59,11 @@ func (h *Hub) Run() {
 
 		case message := <-h.broadcast:
 			h.mu.RLock()
-			for conn := range h.clients {
-				conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
-				if err := conn.WriteMessage(websocket.TextMessage, message); err != nil {
-					conn.Close()
-					delete(h.clients, conn)
+			for _, cc := range h.clients {
+				cc.conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+				if err := cc.conn.WriteMessage(websocket.TextMessage, message); err != nil {
+					cc.conn.Close()
+					delete(h.clients, cc.conn)
 				}
 			}
 			h.mu.RUnlock()
@@ -65,17 +71,34 @@ func (h *Hub) Run() {
 	}
 }
 
+// Broadcast sends a message to every connected client.
 func (h *Hub) Broadcast(msg []byte) {
 	h.broadcast <- msg
 }
 
-func (h *Hub) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
+// BroadcastToUser sends a message only to WebSocket connections belonging to the given user.
+func (h *Hub) BroadcastToUser(userID int64, msg []byte) {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+	for _, cc := range h.clients {
+		if cc.userID == userID {
+			cc.conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+			if err := cc.conn.WriteMessage(websocket.TextMessage, msg); err != nil {
+				cc.conn.Close()
+				delete(h.clients, cc.conn)
+			}
+		}
+	}
+}
+
+// HandleWebSocket upgrades the connection and registers it with the given userID.
+func (h *Hub) HandleWebSocket(w http.ResponseWriter, r *http.Request, userID int64) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Printf("WebSocket upgrade error: %v", err)
 		return
 	}
-	h.register <- conn
+	h.register <- &clientConn{conn: conn, userID: userID}
 
 	go func() {
 		defer func() {

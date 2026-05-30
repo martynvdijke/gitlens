@@ -27,6 +27,7 @@ RUN apk add --no-cache sqlite-libs ca-certificates
 WORKDIR /app
 
 ENV DOCKER=true
+ENV DB_PATH=/db/gitlens.db
 
 COPY --from=builder /app/gitlens .
 COPY --from=builder /app/static ./static
