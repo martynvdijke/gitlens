@@ -36,7 +36,7 @@ func (s *SessionStore) init() error {
 	)`); err != nil {
 		return err
 	}
-	_, err := s.db.Exec(`DELETE FROM sessions WHERE expires_at <= datetime('now')`)
+	_, err := s.db.Exec(`DELETE FROM sessions WHERE expires_at <= ?`, time.Now().UTC().Format("2006-01-02 15:04:05"))
 	return err
 }
 
@@ -48,10 +48,10 @@ func (s *SessionStore) generateID() string {
 
 func (s *SessionStore) Set(userID int64) string {
 	id := s.generateID()
-	expiresAt := time.Now().Add(sessionMaxAge)
+	expiresAt := time.Now().UTC().Add(sessionMaxAge)
 	_, err := s.db.Exec(
 		"INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)",
-		id, userID, expiresAt,
+		id, userID, expiresAt.Format("2006-01-02 15:04:05"),
 	)
 	if err != nil {
 		log.Printf("Failed to set session: %v", err)

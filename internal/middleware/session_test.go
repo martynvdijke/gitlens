@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
@@ -94,6 +95,68 @@ func TestAuthRequiredWithoutCookie(t *testing.T) {
 
 	if !c.IsAborted() {
 		t.Fatal("expected to be aborted (redirect)")
+	}
+}
+
+func TestSessionStore_InitPreservesValidSessions(t *testing.T) {
+	db, err := sql.Open("sqlite3", "file:"+t.TempDir()+"/sessions.db?_fk=1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	// Simulate a session that was stored with UTC format (our fixed format)
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS sessions (
+		id TEXT PRIMARY KEY,
+		user_id INTEGER NOT NULL,
+		expires_at DATETIME NOT NULL
+	)`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expiry := time.Now().UTC().Add(7 * 24 * time.Hour).Format("2006-01-02 15:04:05")
+	_, err = db.Exec("INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)", "test_valid", int64(42), expiry)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// init() runs cleanup - valid sessions should survive
+	store := NewSessionStore(db)
+	uid, ok := store.Get("test_valid")
+	if !ok {
+		t.Fatal("expected valid session to survive init() cleanup")
+	}
+	if uid != 42 {
+		t.Fatalf("expected uid 42, got %d", uid)
+	}
+}
+
+func TestSessionStore_InitCleansExpiredSessions(t *testing.T) {
+	db, err := sql.Open("sqlite3", "file:"+t.TempDir()+"/sessions.db?_fk=1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS sessions (
+		id TEXT PRIMARY KEY,
+		user_id INTEGER NOT NULL,
+		expires_at DATETIME NOT NULL
+	)`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expiry := time.Now().UTC().Add(-1 * time.Hour).Format("2006-01-02 15:04:05")
+	_, err = db.Exec("INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)", "test_expired", int64(99), expiry)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// init() runs cleanup - expired sessions should be deleted
+	store := NewSessionStore(db)
+	_, ok := store.Get("test_expired")
+	if ok {
+		t.Fatal("expected expired session to be cleaned by init()")
 	}
 }
 

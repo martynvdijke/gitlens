@@ -1,9 +1,12 @@
 package github
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
+	"time"
 )
 
 func TestGetAccessToken(t *testing.T) {
@@ -392,6 +395,153 @@ func TestParseCommitType_Empty(t *testing.T) {
 func TestParseCommitType_UpperCase(t *testing.T) {
 	if tp := ParseCommitType("FEAT: add"); tp != "feat" {
 		t.Errorf("expected feat, got %s", tp)
+	}
+}
+
+func TestGetCommitsSince_NoSince(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("X-RateLimit-Remaining", "4999")
+		w.Header().Set("X-RateLimit-Reset", "9999999999")
+		w.Write([]byte(`[
+			{"sha":"a","commit":{"message":"feat: one","committer":{"date":"2024-01-01T00:00:00Z"}}},
+			{"sha":"b","commit":{"message":"fix: two","committer":{"date":"2024-01-02T00:00:00Z"}}}
+		]`))
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	commits, err := c.GetCommitsSince("token", "user", "repo", "main", time.Time{}, 500)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(commits) != 2 {
+		t.Fatalf("expected 2 commits, got %d", len(commits))
+	}
+	if commits[0].SHA != "a" || commits[1].SHA != "b" {
+		t.Errorf("unexpected commits order: %+v", commits)
+	}
+}
+
+func TestGetCommitsSince_WithSince(t *testing.T) {
+	since := time.Date(2024, 6, 1, 0, 0, 0, 0, time.UTC)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sinceParam := r.URL.Query().Get("since")
+		if sinceParam != "2024-06-01T00:00:00Z" {
+			t.Errorf("expected since=2024-06-01T00:00:00Z, got %s", sinceParam)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("X-RateLimit-Remaining", "4999")
+		w.Header().Set("X-RateLimit-Reset", "9999999999")
+		w.Write([]byte(`[
+			{"sha":"c","commit":{"message":"feat: after since","committer":{"date":"2024-06-02T00:00:00Z"}}}
+		]`))
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	commits, err := c.GetCommitsSince("token", "user", "repo", "main", since, 500)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(commits) != 1 {
+		t.Fatalf("expected 1 commit, got %d", len(commits))
+	}
+	if commits[0].SHA != "c" {
+		t.Errorf("expected SHA 'c', got %s", commits[0].SHA)
+	}
+}
+
+func TestGetCommitsSince_Pagination(t *testing.T) {
+	pageNum := 0
+	perPage := 100
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		pageNum++
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("X-RateLimit-Remaining", "4999")
+		w.Header().Set("X-RateLimit-Reset", "9999999999")
+		if pageNum <= 3 {
+			// Return full page (100 commits) for first 2 pages, partial for third
+			count := perPage
+			if pageNum == 3 {
+				count = 3 // third page with fewer commits
+			}
+			var commits []string
+			for i := 0; i < count; i++ {
+				commits = append(commits, `{"sha":"p`+fmt.Sprintf("%d", pageNum)+`c`+fmt.Sprintf("%d", i)+`","commit":{"message":"c`+fmt.Sprintf("%d", pageNum)+`.`+fmt.Sprintf("%d", i)+`","committer":{"date":"2024-06-01T00:00:00Z"}}}`)
+			}
+			w.Write([]byte(`[` + strings.Join(commits, ",") + `]`))
+		} else {
+			w.Write([]byte(`[]`))
+		}
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	commits, err := c.GetCommitsSince("token", "user", "repo", "main", time.Time{}, 500)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	expected := 203 // 100 + 100 + 3
+	if len(commits) != expected {
+		t.Fatalf("expected %d commits (2 full pages + 1 partial), got %d", expected, len(commits))
+	}
+}
+
+func TestGetCommitsSince_RateLimitHeaders(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("X-RateLimit-Remaining", "42")
+		w.Header().Set("X-RateLimit-Reset", "9999999999")
+		w.Write([]byte(`[{"sha":"x","commit":{"message":"feat: tracked","committer":{"date":"2024-01-01T00:00:00Z"}}}]`))
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	_, err := c.GetCommitsSince("token", "user", "repo", "main", time.Time{}, 500)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if c.RateLimitRemaining != 42 {
+		t.Errorf("expected RateLimitRemaining=42, got %d", c.RateLimitRemaining)
+	}
+	if c.RateLimitReset != 9999999999 {
+		t.Errorf("expected RateLimitReset=9999999999, got %d", c.RateLimitReset)
+	}
+}
+
+func TestGetCommitsSince_MaxLimit(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("X-RateLimit-Remaining", "4999")
+		w.Header().Set("X-RateLimit-Reset", "9999999999")
+		// Return 100 commits each page (full page)
+		var commits []string
+		for i := 0; i < 100; i++ {
+			commits = append(commits, `{"sha":"a`+fmt.Sprintf("%d", i)+`","commit":{"message":"commit `+fmt.Sprintf("%d", i)+`","committer":{"date":"2024-01-01T00:00:00Z"}}}`)
+		}
+		w.Write([]byte(`[` + strings.Join(commits, ",") + `]`))
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	// Max should be capped at 500
+	commits, err := c.GetCommitsSince("token", "user", "repo", "main", time.Time{}, 0)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(commits) != 500 {
+		t.Errorf("expected 500 commits (max limit), got %d", len(commits))
 	}
 }
 

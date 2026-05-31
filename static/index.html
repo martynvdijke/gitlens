@@ -37,7 +37,11 @@
     <main class="container py-4">
         {{if .User}}
         <div id="main-content">
+            {{if .ShowSetup}}
+            {{template "available_repos" .}}
+            {{else}}
             {{template "repos_tab" .}}
+            {{end}}
         </div>
         {{else}}
         <div class="row justify-content-center">
@@ -371,7 +375,7 @@
     <div style="max-width:720px">
         <div class="d-flex align-items-center justify-content-between mb-4">
             <h2 class="h4 fw-semibold mb-0">Select Repositories</h2>
-            <button class="btn btn-sm btn-outline-secondary" hx-get="/settings" hx-target="#main-content" hx-swap="innerHTML">Back</button>
+            <button class="btn btn-sm btn-outline-secondary" hx-get="{{if .ShowSetup}}/{{else}}/settings{{end}}" hx-target="#main-content" hx-swap="innerHTML">Back</button>
         </div>
 
         {{if .Error}}

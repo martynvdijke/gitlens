@@ -1043,3 +1043,91 @@ func TestIndex_Unauthenticated(t *testing.T) {
 		t.Errorf("expected no active tab for unauthenticated user, body: %s", body)
 	}
 }
+
+func TestIndex_ShowSetupWhenNoRepos(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, err := client.User.Create().
+		SetGithubID(1100).SetLogin("setupuser").SetAvatarURL("https://avatars.example.com/u.png").SetAccessToken("tok").
+		Save(context.Background())
+	if err != nil {
+		t.Fatalf("create user: %v", err)
+	}
+
+	pageCount := 0
+	apiSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		pageCount++
+		w.Header().Set("Content-Type", "application/json")
+		if pageCount == 1 {
+			w.Write([]byte(`[
+				{"id":1,"name":"repo1","full_name":"user/repo1","description":"First repo","html_url":"https://github.com/user/repo1","language":"Go","default_branch":"main","owner":{"login":"user"}},
+				{"id":2,"name":"repo2","full_name":"user/repo2","description":"Second repo","html_url":"https://github.com/user/repo2","language":"Python","default_branch":"main","owner":{"login":"user"}}
+			]`))
+		} else {
+			w.Write([]byte(`[]`))
+		}
+	}))
+	defer apiSrv.Close()
+	handler.gh.APIURL = apiSrv.URL
+
+	sessionID := store.Set(int64(u.ID))
+
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	engine := gin.New()
+	engine.SetHTMLTemplate(template.Must(template.New("").Funcs(template.FuncMap{
+		"shortSHA":             func(s string) string { return s },
+		"formatTime":           func(t time.Time) string { return "" },
+		"truncate":             func(s string, n int) string { return s },
+		"workflowIcon":         func(status string) string { return "" },
+		"workflowLabel":        func(status string) string { return "" },
+		"hasWorkflowRun":       func(status string) bool { return false },
+		"printf":               func(format string, args ...interface{}) string { return "" },
+		"releaseIcon":          func(conclusion string) string { return "" },
+		"releaseLabel":         func(conclusion string) string { return "" },
+		"hasReleaseConclusion": func(s string) bool { return false },
+		"contains":             func(s, substr string) bool { return strings.Contains(s, substr) },
+		"timeSince":            func(t time.Time) string { return "" },
+		"eventIcon":            func(eventType string) string { return "" },
+	}).Parse(`{{define "available_repos"}}<h2>Select Repositories</h2><div hx-get="{{if .ShowSetup}}/{{else}}/settings{{end}}">back</div>{{range .Repos}}<div class="repo">{{.FullName}}</div>{{end}}{{end}}{{define "repos_tab"}}<div>Import All</div>{{end}}{{define "index.html"}}<div>{{if .User}}{{if .ShowSetup}}{{template "available_repos" .}}{{else}}{{template "repos_tab" .}}{{end}}{{end}}</div>{{end}}`)))
+	engine.GET("/", handler.Index)
+	req := httptest.NewRequest("GET", "/", nil)
+	req.AddCookie(&http.Cookie{Name: "gitlens_session", Value: sessionID})
+	engine.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	body := w.Body.String()
+
+	if !strings.Contains(body, "Select Repositories") {
+		t.Errorf("expected 'Select Repositories' heading, body: %s", body)
+	}
+	if !strings.Contains(body, "user/repo1") || !strings.Contains(body, "user/repo2") {
+		t.Errorf("expected both available repos, body: %s", body)
+	}
+	if strings.Contains(body, "Import All") {
+		t.Errorf("did not expect Import All button in setup mode, body: %s", body)
+	}
+}
+
+func TestIndex_RendersNormalWhenHasRepos(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().
+		SetGithubID(1101).SetLogin("normaluser").SetAvatarURL("https://avatars.example.com/u.png").SetAccessToken("tok").
+		Save(context.Background())
+	client.Repository.Create().SetGithubID(95).SetOwner("u").SetName("myrepo").SetFullName("u/myrepo").SetHTMLURL("https://github.com/u/myrepo").SetDefaultBranch("main").SetUserID(u.ID).Save(context.Background())
+
+	sessionID := store.Set(int64(u.ID))
+	w := serveIndexRequest(handler.Index, "/", &http.Cookie{Name: "gitlens_session", Value: sessionID})
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	body := w.Body.String()
+	// Should show repos tab (not the setup <h2> heading)
+	if strings.Contains(body, "<h2>Select Repositories</h2>") {
+		t.Errorf("did not expect setup heading when user has tracked repos, body: %s", body)
+	}
+	if !strings.Contains(body, "Import All") {
+		t.Errorf("expected Import All button when user has tracked repos, body: %s", body)
+	}
+}

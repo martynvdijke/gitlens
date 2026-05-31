@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -16,6 +18,9 @@ type Client struct {
 	httpClient   *http.Client
 	TokenURL     string
 	APIURL       string
+
+	RateLimitRemaining int
+	RateLimitReset     int64
 }
 
 func NewClient(clientID, clientSecret string) *Client {
@@ -156,6 +161,18 @@ func (c *Client) doRequest(method, urlStr, token string, body io.Reader) (*http.
 	if err != nil {
 		return nil, fmt.Errorf("doing request: %w", err)
 	}
+
+	if v := resp.Header.Get("X-RateLimit-Remaining"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil {
+			c.RateLimitRemaining = n
+		}
+	}
+	if v := resp.Header.Get("X-RateLimit-Reset"); v != "" {
+		if n, err := strconv.ParseInt(v, 10, 64); err == nil {
+			c.RateLimitReset = n
+		}
+	}
+
 	if resp.StatusCode >= 400 {
 		resp.Body.Close()
 		return nil, fmt.Errorf("GitHub API error: %s", resp.Status)
@@ -306,28 +323,77 @@ func (c *Client) getCommitsPage(token, owner, repo, branch string, perPage, page
 }
 
 // GetCommits fetches up to perPage commits from the default branch (page 1).
-// Use GetAllCommits to fetch every commit.
+// Use GetCommitsSince for paginated or incremental fetching.
 func (c *Client) GetCommits(token, owner, repo, branch string, perPage int) ([]*Commit, error) {
 	return c.getCommitsPage(token, owner, repo, branch, perPage, 1)
 }
 
-// GetAllCommits paginates through every commit on the given branch.
-// Returns all commits (paginated 100 at a time) with a safety limit of 10 000.
-func (c *Client) GetAllCommits(token, owner, repo, branch string) ([]*Commit, error) {
+// GetCommitsSince fetches commits since a given time with rate-limit awareness.
+// Uses GitHub's `since` parameter for incremental fetching.
+// If since is zero time, fetches recent commits up to maxCommits.
+// Adds inter-page delays and respects X-RateLimit-Remaining headers.
+func (c *Client) GetCommitsSince(token, owner, repo, branch string, since time.Time, maxCommits int) ([]*Commit, error) {
 	const perPage = 100
-	const maxPages = 100 // 10 000 commits safety ceiling
+	if maxCommits <= 0 || maxCommits > 500 {
+		maxCommits = 500
+	}
 
 	var allCommits []*Commit
-	for page := 1; page <= maxPages; page++ {
-		commits, err := c.getCommitsPage(token, owner, repo, branch, perPage, page)
+	page := 1
+
+	for len(allCommits) < maxCommits {
+		if c.RateLimitRemaining < 10 {
+			if c.RateLimitReset > 0 {
+				wait := time.Until(time.Unix(c.RateLimitReset, 0))
+				if wait > 0 && wait < 60*time.Second {
+					log.Printf("Rate limit low (%d remaining), waiting %v before next request...", c.RateLimitRemaining, wait)
+					time.Sleep(wait)
+				}
+			}
+		}
+
+		u := fmt.Sprintf("%s/repos/%s/%s/commits?per_page=%d&page=%d&sha=%s",
+			c.APIURL, owner, repo, perPage, page, branch)
+		if !since.IsZero() {
+			u += "&since=" + url.QueryEscape(since.Format(time.RFC3339))
+		}
+		resp, err := c.doRequest("GET", u, token, nil)
 		if err != nil {
 			return allCommits, err
 		}
-		allCommits = append(allCommits, commits...)
-		if len(commits) < perPage {
+
+		var ghCommits []ghCommit
+		if err := json.NewDecoder(resp.Body).Decode(&ghCommits); err != nil {
+			resp.Body.Close()
+			return allCommits, fmt.Errorf("decoding commits: %w", err)
+		}
+		resp.Body.Close()
+
+		if len(ghCommits) == 0 {
 			break
 		}
+
+		remaining := maxCommits - len(allCommits)
+		for i, c := range ghCommits {
+			if i >= remaining {
+				break
+			}
+			t, _ := time.Parse(time.RFC3339, c.Commit.Committer.Date)
+			allCommits = append(allCommits, &Commit{
+				SHA:     c.SHA,
+				Message: strings.Split(c.Commit.Message, "\n")[0],
+				Date:    t,
+			})
+		}
+
+		if len(ghCommits) < perPage {
+			break
+		}
+
+		page++
+		time.Sleep(100 * time.Millisecond)
 	}
+
 	return allCommits, nil
 }
 

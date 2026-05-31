@@ -116,13 +116,23 @@ func (s *Syncer) SyncOne(ctx context.Context, repo *ent.Repository) *ent.Reposit
 }
 
 func (s *Syncer) syncCommits(ctx context.Context, u *ent.User, repo *ent.Repository, updated *ent.RepositoryUpdateOne) {
-	commits, err := s.gh.GetAllCommits(u.AccessToken, repo.Owner, repo.Name, repo.DefaultBranch)
+	var since time.Time
+	if !repo.SyncedAt.IsZero() {
+		since = repo.SyncedAt
+	}
+	commits, err := s.gh.GetCommitsSince(u.AccessToken, repo.Owner, repo.Name, repo.DefaultBranch, since, 500)
 	if err != nil {
 		log.Printf("Error fetching commits for %s: %v", repo.FullName, err)
 		return
 	}
 
-	updated.SetTotalCommitsFetched(len(commits))
+	total := repo.TotalCommitsFetched
+	if repo.SyncedAt.IsZero() {
+		total = len(commits)
+	} else {
+		total += len(commits)
+	}
+	updated.SetTotalCommitsFetched(total)
 
 	if len(commits) > 0 {
 		updated.SetLatestCommitSha(commits[0].SHA)

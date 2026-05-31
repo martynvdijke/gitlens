@@ -289,6 +289,35 @@ func (h *DashboardHandler) Index(c *gin.Context) {
 		}
 	}
 
+	// Post-login: if user has no tracked repos, fetch available ones from GitHub
+	// and show the repo selector instead of an empty dashboard.
+	if u != nil && len(repos) == 0 {
+		ghRepos, err := h.gh.ListRepositories(u.AccessToken)
+		if err == nil {
+			available := make([]*github.Repository, 0, len(ghRepos))
+			for _, r := range ghRepos {
+				available = append(available, &github.Repository{
+					ID:            r.ID,
+					Owner:         r.Owner,
+					Name:          r.Name,
+					FullName:      r.FullName,
+					Description:   r.Description,
+					HTMLURL:       r.HTMLURL,
+					Language:      r.Language,
+					DefaultBranch: r.DefaultBranch,
+				})
+			}
+			c.HTML(http.StatusOK, "index.html", gin.H{
+				"User":      u,
+				"Repos":     available,
+				"Metrics":   computeMetrics(nil),
+				"ActiveTab": "repos",
+				"ShowSetup": true,
+			})
+			return
+		}
+	}
+
 	c.HTML(http.StatusOK, "index.html", gin.H{
 		"User":      u,
 		"Repos":     repos,
