@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/martynvdijke/gitlens/compare/v1.6.2...v1.7.0) (2026-05-31)
+
+
+### Features
+
+* auto-show setup on login, session timezone fix, rate-limited commits ([b12d1dd](https://github.com/martynvdijke/gitlens/commit/b12d1dd8d4e2720d0e6c69e4eccad17b43216f05))
+
 ## [1.6.2](https://github.com/martynvdijke/gitlens/compare/v1.6.1...v1.6.2) (2026-05-30)
 
 
