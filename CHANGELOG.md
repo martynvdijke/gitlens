@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/martynvdijke/gitlens/compare/v1.7.0...v1.7.1) (2026-06-01)
+
+
+### Bug Fixes
+
+* cumulative commit counts, drop unique github_id, fix SVG escaping ([7f1547e](https://github.com/martynvdijke/gitlens/commit/7f1547e8d6d8c87dbb16ced3e6d6f78072c4ca35))
+
 # [1.7.0](https://github.com/martynvdijke/gitlens/compare/v1.6.2...v1.7.0) (2026-05-31)
 
 
