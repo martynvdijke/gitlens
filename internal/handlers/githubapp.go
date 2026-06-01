@@ -225,8 +225,8 @@ func (h *GitHubAppHandler) SetupAutoWebhooks(c *gin.Context) {
 }
 
 type createHookRequest struct {
-	Name   string `json:"name"`
-	Active bool   `json:"active"`
+	Name   string   `json:"name"`
+	Active bool     `json:"active"`
 	Events []string `json:"events"`
 	Config struct {
 		URL         string `json:"url"`

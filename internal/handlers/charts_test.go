@@ -102,12 +102,12 @@ func TestSVGPieChart_AllFailures(t *testing.T) {
 
 func TestSVGMetricTrend(t *testing.T) {
 	metrics := &DORAMetrics{
-		TotalRepos:        5,
-		TotalReleases:     20,
-		TotalCommits:      500,
-		AvgLeadTimeHours:  12.5,
-		ReleasesPerRepo:   4.0,
-		WorkflowPassRate:  95.0,
+		TotalRepos:       5,
+		TotalReleases:    20,
+		TotalCommits:     500,
+		AvgLeadTimeHours: 12.5,
+		ReleasesPerRepo:  4.0,
+		WorkflowPassRate: 95.0,
 	}
 
 	svg := svgMetricTrend(metrics)

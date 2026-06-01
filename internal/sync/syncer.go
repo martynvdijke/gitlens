@@ -155,11 +155,19 @@ func (s *Syncer) syncCommits(ctx context.Context, u *ent.User, repo *ent.Reposit
 			other++
 		}
 	}
-	updated.SetFeatCount(feat)
-	updated.SetFixCount(fix)
-	updated.SetDocsCount(docs)
-	updated.SetChoreCount(chore)
-	updated.SetOtherCommitCount(other)
+	if repo.SyncedAt.IsZero() {
+		updated.SetFeatCount(feat)
+		updated.SetFixCount(fix)
+		updated.SetDocsCount(docs)
+		updated.SetChoreCount(chore)
+		updated.SetOtherCommitCount(other)
+	} else {
+		updated.SetFeatCount(repo.FeatCount + feat)
+		updated.SetFixCount(repo.FixCount + fix)
+		updated.SetDocsCount(repo.DocsCount + docs)
+		updated.SetChoreCount(repo.ChoreCount + chore)
+		updated.SetOtherCommitCount(repo.OtherCommitCount + other)
+	}
 }
 
 func (s *Syncer) syncRelease(ctx context.Context, u *ent.User, repo *ent.Repository, updated *ent.RepositoryUpdateOne) {

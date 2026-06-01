@@ -45,7 +45,7 @@ var (
 	// RepositoriesColumns holds the columns for the "repositories" table.
 	RepositoriesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "github_id", Type: field.TypeInt64, Unique: true},
+		{Name: "github_id", Type: field.TypeInt64},
 		{Name: "owner", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
 		{Name: "full_name", Type: field.TypeString},

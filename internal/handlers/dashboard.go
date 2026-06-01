@@ -22,23 +22,23 @@ import (
 )
 
 type DORAMetrics struct {
-	TotalRepos          int
-	TotalReleases       int
-	TotalCommits        int
-	FeatCount           int
-	FixCount            int
-	DocsCount           int
-	ChoreCount          int
-	OtherCount          int
-	WorkflowSuccesses   int
-	WorkflowFailures    int
-	WorkflowPassRate    float64
-	AvgLeadTimeHours    float64
-	FeatPct             float64
-	FixPct              float64
-	DocsPct             float64
-	ChorePct            float64
-	ReleasesPerRepo     float64
+	TotalRepos        int
+	TotalReleases     int
+	TotalCommits      int
+	FeatCount         int
+	FixCount          int
+	DocsCount         int
+	ChoreCount        int
+	OtherCount        int
+	WorkflowSuccesses int
+	WorkflowFailures  int
+	WorkflowPassRate  float64
+	AvgLeadTimeHours  float64
+	FeatPct           float64
+	FixPct            float64
+	DocsPct           float64
+	ChorePct          float64
+	ReleasesPerRepo   float64
 }
 
 type DashboardHandler struct {
@@ -407,11 +407,11 @@ func (h *DashboardHandler) PRsTab(c *gin.Context) {
 	}
 
 	c.HTML(http.StatusOK, "prs_tab", gin.H{
-		"User":      u,
-		"PRs":       allPRs,
-		"Repos":     repos,
+		"User":       u,
+		"PRs":        allPRs,
+		"Repos":      repos,
 		"FilterRepo": filterRepo,
-		"ActiveTab": "prs",
+		"ActiveTab":  "prs",
 	})
 }
 

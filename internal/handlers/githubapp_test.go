@@ -40,16 +40,16 @@ func TestGitHubApp_HandleInstallation_Created(t *testing.T) {
 		},
 		"repositories": []map[string]interface{}{
 			{
-				"id":       200,
-				"name":     "app-repo-1",
+				"id":        200,
+				"name":      "app-repo-1",
 				"full_name": "testuser/app-repo-1",
-				"owner":    map[string]interface{}{"login": "testuser"},
+				"owner":     map[string]interface{}{"login": "testuser"},
 			},
 			{
-				"id":       201,
-				"name":     "app-repo-2",
+				"id":        201,
+				"name":      "app-repo-2",
 				"full_name": "testuser/app-repo-2",
-				"owner":    map[string]interface{}{"login": "testuser"},
+				"owner":     map[string]interface{}{"login": "testuser"},
 			},
 		},
 	}

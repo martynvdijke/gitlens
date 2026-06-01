@@ -48,9 +48,9 @@ func (h *SettingsHandler) Index(c *gin.Context) {
 	webhookURL := scheme + "://" + c.Request.Host + "/webhook/github"
 
 	c.HTML(http.StatusOK, "settings", gin.H{
-		"User":        u,
-		"Repos":       repos,
-		"WebhookURL":  webhookURL,
+		"User":       u,
+		"Repos":      repos,
+		"WebhookURL": webhookURL,
 	})
 }
 

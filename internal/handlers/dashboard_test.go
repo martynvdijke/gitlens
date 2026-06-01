@@ -939,10 +939,10 @@ func serveMetricsTabRequest(handler gin.HandlerFunc, path string, cookies ...*ht
 	w := httptest.NewRecorder()
 	engine := gin.New()
 	engine.SetHTMLTemplate(template.Must(template.New("").Funcs(template.FuncMap{
-		"printf":               func(format string, args ...interface{}) string { return "" },
-		"workflowIcon":         func(status string) string { return "" },
-		"workflowLabel":        func(status string) string { return "" },
-		"hasWorkflowRun":       func(status string) bool { return false },
+		"printf":         func(format string, args ...interface{}) string { return "" },
+		"workflowIcon":   func(status string) string { return "" },
+		"workflowLabel":  func(status string) string { return "" },
+		"hasWorkflowRun": func(status string) bool { return false },
 	}).Parse(`{{define "metrics_tab"}}<div class="metrics">{{if .Metrics}}<span class="total-repos">{{.Metrics.TotalRepos}}</span>{{end}}{{range .Repos}}<span class="repo-name">{{.FullName}}</span>{{end}}</div>{{end}}`)))
 	engine.GET("/metrics", handler)
 	req := httptest.NewRequest("GET", path, nil)
