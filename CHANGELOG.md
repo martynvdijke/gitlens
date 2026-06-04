@@ -1,3 +1,15 @@
+# [1.8.0](https://github.com/martynvdijke/gitlens/compare/v1.7.3...v1.8.0) (2026-06-04)
+
+
+### Bug Fixes
+
+* update Playwright test to use /charts/data instead of removed /charts route ([feb6329](https://github.com/martynvdijke/gitlens/commit/feb632926135a355d717a5ee7de88e2c2710dca2))
+
+
+### Features
+
+* interactive Chart.js metrics with time-range filtering ([d2b1b12](https://github.com/martynvdijke/gitlens/commit/d2b1b120fb2afcd6cd7d5fd035e2db8e3baf26cb)), closes [#repo-grid](https://github.com/martynvdijke/gitlens/issues/repo-grid)
+
 ## [1.7.3](https://github.com/martynvdijke/gitlens/compare/v1.7.2...v1.7.3) (2026-06-04)
 
 ## [1.7.2](https://github.com/martynvdijke/gitlens/compare/v1.7.1...v1.7.2) (2026-06-03)
