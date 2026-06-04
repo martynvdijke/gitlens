@@ -1024,11 +1024,11 @@ func TestIndex_RendersFullPage(t *testing.T) {
 	if !strings.Contains(body, `nav-link active`) {
 		t.Errorf("expected active-tab=repos, body: %s", body)
 	}
-	if !strings.Contains(body, `btn btn-success btn-sm`) {
-		t.Errorf("expected repos tab content, body: %s", body)
+	if !strings.Contains(body, `hx-get="/dashboard"`) {
+		t.Errorf("expected htmx lazy-load for repos, body: %s", body)
 	}
-	if !strings.Contains(body, "u/idx") {
-		t.Errorf("expected repo name in response, body: %s", body)
+	if !strings.Contains(body, "Loading repositories") {
+		t.Errorf("expected loading indicator, body: %s", body)
 	}
 }
 
@@ -1123,11 +1123,12 @@ func TestIndex_RendersNormalWhenHasRepos(t *testing.T) {
 		t.Fatalf("expected 200, got %d", w.Code)
 	}
 	body := w.Body.String()
-	// Should show repos tab (not the setup <h2> heading)
+	// Should NOT show setup heading
 	if strings.Contains(body, "<h2>Select Repositories</h2>") {
 		t.Errorf("did not expect setup heading when user has tracked repos, body: %s", body)
 	}
-	if !strings.Contains(body, "Import All") {
-		t.Errorf("expected Import All button when user has tracked repos, body: %s", body)
+	// Should show htmx lazy-load for repos instead of server-rendered content
+	if !strings.Contains(body, `hx-get="/dashboard"`) {
+		t.Errorf("expected htmx lazy-load for repos, body: %s", body)
 	}
 }

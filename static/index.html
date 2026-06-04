@@ -41,7 +41,13 @@
             {{if .ShowSetup}}
             {{template "available_repos" .}}
             {{else}}
-            {{template "repos_tab" .}}
+            <div hx-get="/dashboard" hx-trigger="load once" hx-swap="innerHTML" hx-target="#main-content">
+                <div class="d-flex justify-content-center py-5">
+                    <div class="spinner-border text-secondary" role="status">
+                        <span class="visually-hidden">Loading repositories...</span>
+                    </div>
+                </div>
+            </div>
             {{end}}
         </div>
         {{else}}
@@ -147,7 +153,6 @@
         <input type="search" class="form-control bg-transparent text-light border-secondary" placeholder="Search repositories..." hx-get="/repos" hx-trigger="keyup changed delay:300ms, search" hx-target="#repo-grid" hx-swap="outerHTML" hx-push-url="true" name="q" value="">
     </div>
 
-    <div id="ws-listener" hx-ext="ws" ws-connect="/ws" style="display:none"></div>
     {{template "repo_list" .}}
     {{end}}
 
@@ -741,6 +746,8 @@ loadChartData('');
         {{end}}
     </div>
     {{end}}
+
+    <div id="ws-listener" hx-ext="ws" ws-connect="/ws" style="display:none"></div>
 
     <footer class="text-center py-3 text-secondary small border-top border-secondary mt-4">
         <span>GitLens <span class="font-monospace">{{appVersion}}</span></span>

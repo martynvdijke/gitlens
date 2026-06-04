@@ -271,57 +271,65 @@ type prSummary struct {
 }
 
 // Index renders the full page with repos tab as default.
+// Repo list is lazy-loaded via htmx so the page (including footer) renders instantly.
 func (h *DashboardHandler) Index(c *gin.Context) {
 	var u *ent.User
-	var repos []*ent.Repository
 
 	sessionID, err := c.Cookie("gitlens_session")
 	if err == nil {
 		userID, ok := h.store.Get(sessionID)
 		if ok {
 			u, _ = h.client.User.Get(c.Request.Context(), int(userID))
-			if u != nil {
-				repos, _ = h.client.Repository.Query().
-					Where(repository.HasUserWith(user.ID(u.ID))).
-					Order(ent.Desc(repository.FieldUpdatedAt)).
-					All(c.Request.Context())
-			}
 		}
 	}
 
-	// Post-login: if user has no tracked repos, fetch available ones from GitHub
-	// and show the repo selector instead of an empty dashboard.
-	if u != nil && len(repos) == 0 {
-		ghRepos, err := h.gh.ListRepositories(u.AccessToken)
-		if err == nil {
-			available := make([]*github.Repository, 0, len(ghRepos))
-			for _, r := range ghRepos {
-				available = append(available, &github.Repository{
-					ID:            r.ID,
-					Owner:         r.Owner,
-					Name:          r.Name,
-					FullName:      r.FullName,
-					Description:   r.Description,
-					HTMLURL:       r.HTMLURL,
-					Language:      r.Language,
-					DefaultBranch: r.DefaultBranch,
+	if u != nil {
+		// Check if user needs setup (no tracked repos yet)
+		count, countErr := h.client.Repository.Query().
+			Where(repository.HasUserWith(user.ID(u.ID))).
+			Count(c.Request.Context())
+
+		if countErr == nil && count == 0 {
+			ghRepos, err := h.gh.ListRepositories(u.AccessToken)
+			if err == nil {
+				available := make([]*github.Repository, len(ghRepos))
+				for i, r := range ghRepos {
+					available[i] = &github.Repository{
+						ID:            r.ID,
+						Owner:         r.Owner,
+						Name:          r.Name,
+						FullName:      r.FullName,
+						Description:   r.Description,
+						HTMLURL:       r.HTMLURL,
+						Language:      r.Language,
+						DefaultBranch: r.DefaultBranch,
+					}
+				}
+				c.HTML(http.StatusOK, "index.html", gin.H{
+					"User":      u,
+					"Repos":     available,
+					"Metrics":   computeMetrics(nil),
+					"ActiveTab": "repos",
+					"ShowSetup": true,
 				})
+				return
 			}
-			c.HTML(http.StatusOK, "index.html", gin.H{
-				"User":      u,
-				"Repos":     available,
-				"Metrics":   computeMetrics(nil),
-				"ActiveTab": "repos",
-				"ShowSetup": true,
-			})
-			return
 		}
+
+		// Normal logged-in view — repos lazy-loaded via htmx on the client
+		c.HTML(http.StatusOK, "index.html", gin.H{
+			"User":      u,
+			"Repos":     []*ent.Repository{},
+			"Metrics":   computeMetrics(nil),
+			"ActiveTab": "repos",
+		})
+		return
 	}
 
 	c.HTML(http.StatusOK, "index.html", gin.H{
-		"User":      u,
-		"Repos":     repos,
-		"Metrics":   computeMetrics(repos),
+		"User":      nil,
+		"Repos":     nil,
+		"Metrics":   computeMetrics(nil),
 		"ActiveTab": "repos",
 	})
 }
