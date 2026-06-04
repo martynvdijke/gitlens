@@ -101,8 +101,8 @@ test.describe('SVG endpoint error handling', () => {
 });
 
 test.describe('Protected routes', () => {
-  test('redirects unauthenticated from charts', async ({ page }) => {
-    await page.goto('/charts');
+  test('redirects unauthenticated from charts data endpoint', async ({ page }) => {
+    await page.goto('/charts/data');
     await expect(page.locator('h2:has-text("Track your GitHub repositories")')).toBeVisible();
   });
 
