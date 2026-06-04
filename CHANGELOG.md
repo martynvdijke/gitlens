@@ -1,3 +1,10 @@
+## [1.8.1](https://github.com/martynvdijke/gitlens/compare/v1.8.0...v1.8.1) (2026-06-04)
+
+
+### Bug Fixes
+
+* ws-listener duplication on repo swaps and chart.js scripts in htmx content ([3fd5efa](https://github.com/martynvdijke/gitlens/commit/3fd5efabaeef6a71c88d0ea53306d9b255cfc02c))
+
 # [1.8.0](https://github.com/martynvdijke/gitlens/compare/v1.7.3...v1.8.0) (2026-06-04)
 
 
