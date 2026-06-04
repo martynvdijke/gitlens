@@ -231,7 +231,7 @@ func main() {
 		authed.POST("/settings/repos/select", settingsHandler.SelectRepos)
 		authed.DELETE("/repos/:id", settingsHandler.RemoveRepo)
 
-		authed.GET("/charts", chartHandler.Charts)
+		authed.GET("/charts/data", chartHandler.Data)
 		authed.GET("/feed", feedHandler.Feed)
 		authed.POST("/feed/filter", feedHandler.FeedFilter)
 		authed.POST("/repos/setup-webhooks", gitHubAppHandler.SetupAutoWebhooks)

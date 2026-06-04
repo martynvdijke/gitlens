@@ -373,5 +373,8 @@ func (s *Syncer) broadcastUpdate(repo *ent.Repository, u *ent.User) {
 	if err != nil {
 		return
 	}
-	s.hub.BroadcastToUser(int64(u.ID), buf.Bytes())
+	// Wrap in hx-swap-oob so HTMX replaces only the targeted repo card
+	// instead of replacing the entire #repo-grid innerHTML.
+	msg := fmt.Sprintf(`<div id="repo-card-%d" hx-swap-oob="outerHTML">%s</div>`, repo.ID, buf.String())
+	s.hub.BroadcastToUser(int64(u.ID), []byte(msg))
 }

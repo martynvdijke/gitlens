@@ -22,23 +22,23 @@ import (
 )
 
 type DORAMetrics struct {
-	TotalRepos        int
-	TotalReleases     int
-	TotalCommits      int
-	FeatCount         int
-	FixCount          int
-	DocsCount         int
-	ChoreCount        int
-	OtherCount        int
-	WorkflowSuccesses int
-	WorkflowFailures  int
-	WorkflowPassRate  float64
-	AvgLeadTimeHours  float64
-	FeatPct           float64
-	FixPct            float64
-	DocsPct           float64
-	ChorePct          float64
-	ReleasesPerRepo   float64
+	TotalRepos        int     `json:"totalRepos"`
+	TotalReleases     int     `json:"totalReleases"`
+	TotalCommits      int     `json:"totalCommits"`
+	FeatCount         int     `json:"featCount"`
+	FixCount          int     `json:"fixCount"`
+	DocsCount         int     `json:"docsCount"`
+	ChoreCount        int     `json:"choreCount"`
+	OtherCount        int     `json:"otherCount"`
+	WorkflowSuccesses int     `json:"workflowSuccesses"`
+	WorkflowFailures  int     `json:"workflowFailures"`
+	WorkflowPassRate  float64 `json:"workflowPassRate"`
+	AvgLeadTimeHours  float64 `json:"avgLeadTimeHours"`
+	FeatPct           float64 `json:"featPct"`
+	FixPct            float64 `json:"fixPct"`
+	DocsPct           float64 `json:"docsPct"`
+	ChorePct          float64 `json:"chorePct"`
+	ReleasesPerRepo   float64 `json:"releasesPerRepo"`
 }
 
 type DashboardHandler struct {
