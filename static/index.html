@@ -147,11 +147,11 @@
         <input type="search" class="form-control bg-transparent text-light border-secondary" placeholder="Search repositories..." hx-get="/repos" hx-trigger="keyup changed delay:300ms, search" hx-target="#repo-grid" hx-swap="outerHTML" hx-push-url="true" name="q" value="">
     </div>
 
+    <div id="ws-listener" hx-ext="ws" ws-connect="/ws" style="display:none"></div>
     {{template "repo_list" .}}
     {{end}}
 
     {{define "repo_list"}}
-    <div id="ws-listener" hx-ext="ws" ws-connect="/ws" style="display:none"></div>
     <div id="repo-grid">
     <div class="row g-3">
         {{range .Repos}}
@@ -418,6 +418,7 @@
     {{end}}
 
 {{define "charts"}}
+<div hx-ext="script">
 <div class="d-flex align-items-center gap-2 mb-3">
     <h6 class="fw-semibold mb-0">Charts</h6>
     <select id="chart-range" class="form-select form-select-sm bg-dark text-light border-secondary" style="width:auto" onchange="loadChartData(this.value)">
@@ -446,7 +447,7 @@
     </div>
 </div>
 <script>
-let chartInstances = {};
+var chartInstances = {};
 function loadChartData(since) {
     const url = since ? '/charts/data?since=' + since : '/charts/data';
     fetch(url).then(r => r.json()).then(data => {
@@ -499,8 +500,9 @@ function loadChartData(since) {
         });
     }).catch(e => console.error('Failed to load chart data:', e));
 }
-document.addEventListener('DOMContentLoaded', function() { loadChartData(''); });
+loadChartData('');
 </script>
+</div>
 {{end}}
 
 {{define "feed"}}
