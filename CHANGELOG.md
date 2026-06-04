@@ -1,3 +1,10 @@
+## [1.8.2](https://github.com/martynvdijke/gitlens/compare/v1.8.1...v1.8.2) (2026-06-04)
+
+
+### Bug Fixes
+
+* lazy-load repos on index page so footer renders instantly ([5eac54e](https://github.com/martynvdijke/gitlens/commit/5eac54ee5765fec58f61c2d3b49c8c9fce369321))
+
 ## [1.8.1](https://github.com/martynvdijke/gitlens/compare/v1.8.0...v1.8.1) (2026-06-04)
 
 
