@@ -10,7 +10,7 @@
     <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/darkly/bootstrap.min.css">
     <link rel="stylesheet" href="/static/style.css">
-    {{if and .User.UmamiURL .User.UmamiSiteID}}<script async defer src="{{.User.UmamiURL}}/script.js" data-website-id="{{.User.UmamiSiteID}}"></script>{{end}}
+    {{with .User}}{{if and .UmamiURL .UmamiSiteID}}<script async defer src="{{.UmamiURL}}/script.js" data-website-id="{{.UmamiSiteID}}"></script>{{end}}{{end}}
 </head>
 <body>
     <nav class="navbar navbar-expand border-bottom border-secondary">
