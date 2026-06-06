@@ -10,6 +10,7 @@
     <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/darkly/bootstrap.min.css">
     <link rel="stylesheet" href="/static/style.css">
+    {{if and .User.UmamiURL .User.UmamiSiteID}}<script async defer src="{{.User.UmamiURL}}/script.js" data-website-id="{{.User.UmamiSiteID}}"></script>{{end}}
 </head>
 <body>
     <nav class="navbar navbar-expand border-bottom border-secondary">
@@ -373,6 +374,27 @@
                 </button>
                 <span id="github-app-spinner" class="htmx-indicator small text-info">Registering...</span>
                 <span id="github-app-status" class="d-block mt-2 small"></span>
+            </div>
+        </div>
+
+        <div class="card border-secondary mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Umami Analytics</h5>
+                <p class="card-text text-secondary small">Configure self-hosted Umami analytics tracking. Leave both fields empty to disable.</p>
+                <form hx-post="/settings/umami" hx-target="#umami-status" hx-swap="innerHTML" class="d-flex flex-column gap-2">
+                    <div>
+                        <label class="form-label small text-secondary mb-1">Umami URL</label>
+                        <input type="text" name="umami_url" class="form-control form-control-sm bg-dark text-light border-secondary" placeholder="https://umami.example.com" value="{{.User.UmamiURL}}">
+                    </div>
+                    <div>
+                        <label class="form-label small text-secondary mb-1">Site ID</label>
+                        <input type="text" name="umami_site_id" class="form-control form-control-sm bg-dark text-light border-secondary" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" value="{{.User.UmamiSiteID}}">
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mt-1">
+                        <button type="submit" class="btn btn-sm btn-success">Save</button>
+                        <span id="umami-status"></span>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

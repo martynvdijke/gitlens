@@ -85,6 +85,16 @@ func SyncIntervalMinutes(v int) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldSyncIntervalMinutes, v))
 }
 
+// UmamiURL applies equality check predicate on the "umami_url" field. It's identical to UmamiURLEQ.
+func UmamiURL(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldUmamiURL, v))
+}
+
+// UmamiSiteID applies equality check predicate on the "umami_site_id" field. It's identical to UmamiSiteIDEQ.
+func UmamiSiteID(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldUmamiSiteID, v))
+}
+
 // SyncedAt applies equality check predicate on the "synced_at" field. It's identical to SyncedAtEQ.
 func SyncedAt(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldSyncedAt, v))
@@ -453,6 +463,156 @@ func SyncIntervalMinutesLT(v int) predicate.User {
 // SyncIntervalMinutesLTE applies the LTE predicate on the "sync_interval_minutes" field.
 func SyncIntervalMinutesLTE(v int) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldSyncIntervalMinutes, v))
+}
+
+// UmamiURLEQ applies the EQ predicate on the "umami_url" field.
+func UmamiURLEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldUmamiURL, v))
+}
+
+// UmamiURLNEQ applies the NEQ predicate on the "umami_url" field.
+func UmamiURLNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldUmamiURL, v))
+}
+
+// UmamiURLIn applies the In predicate on the "umami_url" field.
+func UmamiURLIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldUmamiURL, vs...))
+}
+
+// UmamiURLNotIn applies the NotIn predicate on the "umami_url" field.
+func UmamiURLNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldUmamiURL, vs...))
+}
+
+// UmamiURLGT applies the GT predicate on the "umami_url" field.
+func UmamiURLGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldUmamiURL, v))
+}
+
+// UmamiURLGTE applies the GTE predicate on the "umami_url" field.
+func UmamiURLGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldUmamiURL, v))
+}
+
+// UmamiURLLT applies the LT predicate on the "umami_url" field.
+func UmamiURLLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldUmamiURL, v))
+}
+
+// UmamiURLLTE applies the LTE predicate on the "umami_url" field.
+func UmamiURLLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldUmamiURL, v))
+}
+
+// UmamiURLContains applies the Contains predicate on the "umami_url" field.
+func UmamiURLContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldUmamiURL, v))
+}
+
+// UmamiURLHasPrefix applies the HasPrefix predicate on the "umami_url" field.
+func UmamiURLHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldUmamiURL, v))
+}
+
+// UmamiURLHasSuffix applies the HasSuffix predicate on the "umami_url" field.
+func UmamiURLHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldUmamiURL, v))
+}
+
+// UmamiURLIsNil applies the IsNil predicate on the "umami_url" field.
+func UmamiURLIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldUmamiURL))
+}
+
+// UmamiURLNotNil applies the NotNil predicate on the "umami_url" field.
+func UmamiURLNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldUmamiURL))
+}
+
+// UmamiURLEqualFold applies the EqualFold predicate on the "umami_url" field.
+func UmamiURLEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldUmamiURL, v))
+}
+
+// UmamiURLContainsFold applies the ContainsFold predicate on the "umami_url" field.
+func UmamiURLContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldUmamiURL, v))
+}
+
+// UmamiSiteIDEQ applies the EQ predicate on the "umami_site_id" field.
+func UmamiSiteIDEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldUmamiSiteID, v))
+}
+
+// UmamiSiteIDNEQ applies the NEQ predicate on the "umami_site_id" field.
+func UmamiSiteIDNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldUmamiSiteID, v))
+}
+
+// UmamiSiteIDIn applies the In predicate on the "umami_site_id" field.
+func UmamiSiteIDIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldUmamiSiteID, vs...))
+}
+
+// UmamiSiteIDNotIn applies the NotIn predicate on the "umami_site_id" field.
+func UmamiSiteIDNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldUmamiSiteID, vs...))
+}
+
+// UmamiSiteIDGT applies the GT predicate on the "umami_site_id" field.
+func UmamiSiteIDGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldUmamiSiteID, v))
+}
+
+// UmamiSiteIDGTE applies the GTE predicate on the "umami_site_id" field.
+func UmamiSiteIDGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldUmamiSiteID, v))
+}
+
+// UmamiSiteIDLT applies the LT predicate on the "umami_site_id" field.
+func UmamiSiteIDLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldUmamiSiteID, v))
+}
+
+// UmamiSiteIDLTE applies the LTE predicate on the "umami_site_id" field.
+func UmamiSiteIDLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldUmamiSiteID, v))
+}
+
+// UmamiSiteIDContains applies the Contains predicate on the "umami_site_id" field.
+func UmamiSiteIDContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldUmamiSiteID, v))
+}
+
+// UmamiSiteIDHasPrefix applies the HasPrefix predicate on the "umami_site_id" field.
+func UmamiSiteIDHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldUmamiSiteID, v))
+}
+
+// UmamiSiteIDHasSuffix applies the HasSuffix predicate on the "umami_site_id" field.
+func UmamiSiteIDHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldUmamiSiteID, v))
+}
+
+// UmamiSiteIDIsNil applies the IsNil predicate on the "umami_site_id" field.
+func UmamiSiteIDIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldUmamiSiteID))
+}
+
+// UmamiSiteIDNotNil applies the NotNil predicate on the "umami_site_id" field.
+func UmamiSiteIDNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldUmamiSiteID))
+}
+
+// UmamiSiteIDEqualFold applies the EqualFold predicate on the "umami_site_id" field.
+func UmamiSiteIDEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldUmamiSiteID, v))
+}
+
+// UmamiSiteIDContainsFold applies the ContainsFold predicate on the "umami_site_id" field.
+func UmamiSiteIDContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldUmamiSiteID, v))
 }
 
 // SyncedAtEQ applies the EQ predicate on the "synced_at" field.

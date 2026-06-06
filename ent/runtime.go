@@ -47,7 +47,7 @@ func init() {
 	// user.DefaultSyncIntervalMinutes holds the default value on creation for the sync_interval_minutes field.
 	user.DefaultSyncIntervalMinutes = userDescSyncIntervalMinutes.Default.(int)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[7].Descriptor()
+	userDescCreatedAt := userFields[9].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 }

@@ -26,6 +26,10 @@ const (
 	FieldAccessToken = "access_token"
 	// FieldSyncIntervalMinutes holds the string denoting the sync_interval_minutes field in the database.
 	FieldSyncIntervalMinutes = "sync_interval_minutes"
+	// FieldUmamiURL holds the string denoting the umami_url field in the database.
+	FieldUmamiURL = "umami_url"
+	// FieldUmamiSiteID holds the string denoting the umami_site_id field in the database.
+	FieldUmamiSiteID = "umami_site_id"
 	// FieldSyncedAt holds the string denoting the synced_at field in the database.
 	FieldSyncedAt = "synced_at"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -52,6 +56,8 @@ var Columns = []string{
 	FieldName,
 	FieldAccessToken,
 	FieldSyncIntervalMinutes,
+	FieldUmamiURL,
+	FieldUmamiSiteID,
 	FieldSyncedAt,
 	FieldCreatedAt,
 }
@@ -109,6 +115,16 @@ func ByAccessToken(opts ...sql.OrderTermOption) OrderOption {
 // BySyncIntervalMinutes orders the results by the sync_interval_minutes field.
 func BySyncIntervalMinutes(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSyncIntervalMinutes, opts...).ToFunc()
+}
+
+// ByUmamiURL orders the results by the umami_url field.
+func ByUmamiURL(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUmamiURL, opts...).ToFunc()
+}
+
+// ByUmamiSiteID orders the results by the umami_site_id field.
+func ByUmamiSiteID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUmamiSiteID, opts...).ToFunc()
 }
 
 // BySyncedAt orders the results by the synced_at field.

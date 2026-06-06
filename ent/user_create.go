@@ -81,6 +81,34 @@ func (_c *UserCreate) SetNillableSyncIntervalMinutes(v *int) *UserCreate {
 	return _c
 }
 
+// SetUmamiURL sets the "umami_url" field.
+func (_c *UserCreate) SetUmamiURL(v string) *UserCreate {
+	_c.mutation.SetUmamiURL(v)
+	return _c
+}
+
+// SetNillableUmamiURL sets the "umami_url" field if the given value is not nil.
+func (_c *UserCreate) SetNillableUmamiURL(v *string) *UserCreate {
+	if v != nil {
+		_c.SetUmamiURL(*v)
+	}
+	return _c
+}
+
+// SetUmamiSiteID sets the "umami_site_id" field.
+func (_c *UserCreate) SetUmamiSiteID(v string) *UserCreate {
+	_c.mutation.SetUmamiSiteID(v)
+	return _c
+}
+
+// SetNillableUmamiSiteID sets the "umami_site_id" field if the given value is not nil.
+func (_c *UserCreate) SetNillableUmamiSiteID(v *string) *UserCreate {
+	if v != nil {
+		_c.SetUmamiSiteID(*v)
+	}
+	return _c
+}
+
 // SetSyncedAt sets the "synced_at" field.
 func (_c *UserCreate) SetSyncedAt(v time.Time) *UserCreate {
 	_c.mutation.SetSyncedAt(v)
@@ -235,6 +263,14 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.SyncIntervalMinutes(); ok {
 		_spec.SetField(user.FieldSyncIntervalMinutes, field.TypeInt, value)
 		_node.SyncIntervalMinutes = value
+	}
+	if value, ok := _c.mutation.UmamiURL(); ok {
+		_spec.SetField(user.FieldUmamiURL, field.TypeString, value)
+		_node.UmamiURL = value
+	}
+	if value, ok := _c.mutation.UmamiSiteID(); ok {
+		_spec.SetField(user.FieldUmamiSiteID, field.TypeString, value)
+		_node.UmamiSiteID = value
 	}
 	if value, ok := _c.mutation.SyncedAt(); ok {
 		_spec.SetField(user.FieldSyncedAt, field.TypeTime, value)

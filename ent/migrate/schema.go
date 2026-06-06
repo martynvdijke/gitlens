@@ -102,6 +102,8 @@ var (
 		{Name: "name", Type: field.TypeString, Nullable: true},
 		{Name: "access_token", Type: field.TypeString},
 		{Name: "sync_interval_minutes", Type: field.TypeInt, Default: 15},
+		{Name: "umami_url", Type: field.TypeString, Nullable: true},
+		{Name: "umami_site_id", Type: field.TypeString, Nullable: true},
 		{Name: "synced_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 	}

@@ -3723,6 +3723,8 @@ type UserMutation struct {
 	access_token             *string
 	sync_interval_minutes    *int
 	addsync_interval_minutes *int
+	umami_url                *string
+	umami_site_id            *string
 	synced_at                *time.Time
 	created_at               *time.Time
 	clearedFields            map[string]struct{}
@@ -4114,6 +4116,104 @@ func (m *UserMutation) ResetSyncIntervalMinutes() {
 	m.addsync_interval_minutes = nil
 }
 
+// SetUmamiURL sets the "umami_url" field.
+func (m *UserMutation) SetUmamiURL(s string) {
+	m.umami_url = &s
+}
+
+// UmamiURL returns the value of the "umami_url" field in the mutation.
+func (m *UserMutation) UmamiURL() (r string, exists bool) {
+	v := m.umami_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUmamiURL returns the old "umami_url" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldUmamiURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUmamiURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUmamiURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUmamiURL: %w", err)
+	}
+	return oldValue.UmamiURL, nil
+}
+
+// ClearUmamiURL clears the value of the "umami_url" field.
+func (m *UserMutation) ClearUmamiURL() {
+	m.umami_url = nil
+	m.clearedFields[user.FieldUmamiURL] = struct{}{}
+}
+
+// UmamiURLCleared returns if the "umami_url" field was cleared in this mutation.
+func (m *UserMutation) UmamiURLCleared() bool {
+	_, ok := m.clearedFields[user.FieldUmamiURL]
+	return ok
+}
+
+// ResetUmamiURL resets all changes to the "umami_url" field.
+func (m *UserMutation) ResetUmamiURL() {
+	m.umami_url = nil
+	delete(m.clearedFields, user.FieldUmamiURL)
+}
+
+// SetUmamiSiteID sets the "umami_site_id" field.
+func (m *UserMutation) SetUmamiSiteID(s string) {
+	m.umami_site_id = &s
+}
+
+// UmamiSiteID returns the value of the "umami_site_id" field in the mutation.
+func (m *UserMutation) UmamiSiteID() (r string, exists bool) {
+	v := m.umami_site_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUmamiSiteID returns the old "umami_site_id" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldUmamiSiteID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUmamiSiteID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUmamiSiteID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUmamiSiteID: %w", err)
+	}
+	return oldValue.UmamiSiteID, nil
+}
+
+// ClearUmamiSiteID clears the value of the "umami_site_id" field.
+func (m *UserMutation) ClearUmamiSiteID() {
+	m.umami_site_id = nil
+	m.clearedFields[user.FieldUmamiSiteID] = struct{}{}
+}
+
+// UmamiSiteIDCleared returns if the "umami_site_id" field was cleared in this mutation.
+func (m *UserMutation) UmamiSiteIDCleared() bool {
+	_, ok := m.clearedFields[user.FieldUmamiSiteID]
+	return ok
+}
+
+// ResetUmamiSiteID resets all changes to the "umami_site_id" field.
+func (m *UserMutation) ResetUmamiSiteID() {
+	m.umami_site_id = nil
+	delete(m.clearedFields, user.FieldUmamiSiteID)
+}
+
 // SetSyncedAt sets the "synced_at" field.
 func (m *UserMutation) SetSyncedAt(t time.Time) {
 	m.synced_at = &t
@@ -4287,7 +4387,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 10)
 	if m.github_id != nil {
 		fields = append(fields, user.FieldGithubID)
 	}
@@ -4305,6 +4405,12 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.sync_interval_minutes != nil {
 		fields = append(fields, user.FieldSyncIntervalMinutes)
+	}
+	if m.umami_url != nil {
+		fields = append(fields, user.FieldUmamiURL)
+	}
+	if m.umami_site_id != nil {
+		fields = append(fields, user.FieldUmamiSiteID)
 	}
 	if m.synced_at != nil {
 		fields = append(fields, user.FieldSyncedAt)
@@ -4332,6 +4438,10 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.AccessToken()
 	case user.FieldSyncIntervalMinutes:
 		return m.SyncIntervalMinutes()
+	case user.FieldUmamiURL:
+		return m.UmamiURL()
+	case user.FieldUmamiSiteID:
+		return m.UmamiSiteID()
 	case user.FieldSyncedAt:
 		return m.SyncedAt()
 	case user.FieldCreatedAt:
@@ -4357,6 +4467,10 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldAccessToken(ctx)
 	case user.FieldSyncIntervalMinutes:
 		return m.OldSyncIntervalMinutes(ctx)
+	case user.FieldUmamiURL:
+		return m.OldUmamiURL(ctx)
+	case user.FieldUmamiSiteID:
+		return m.OldUmamiSiteID(ctx)
 	case user.FieldSyncedAt:
 		return m.OldSyncedAt(ctx)
 	case user.FieldCreatedAt:
@@ -4411,6 +4525,20 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSyncIntervalMinutes(v)
+		return nil
+	case user.FieldUmamiURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUmamiURL(v)
+		return nil
+	case user.FieldUmamiSiteID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUmamiSiteID(v)
 		return nil
 	case user.FieldSyncedAt:
 		v, ok := value.(time.Time)
@@ -4489,6 +4617,12 @@ func (m *UserMutation) ClearedFields() []string {
 	if m.FieldCleared(user.FieldName) {
 		fields = append(fields, user.FieldName)
 	}
+	if m.FieldCleared(user.FieldUmamiURL) {
+		fields = append(fields, user.FieldUmamiURL)
+	}
+	if m.FieldCleared(user.FieldUmamiSiteID) {
+		fields = append(fields, user.FieldUmamiSiteID)
+	}
 	if m.FieldCleared(user.FieldSyncedAt) {
 		fields = append(fields, user.FieldSyncedAt)
 	}
@@ -4511,6 +4645,12 @@ func (m *UserMutation) ClearField(name string) error {
 		return nil
 	case user.FieldName:
 		m.ClearName()
+		return nil
+	case user.FieldUmamiURL:
+		m.ClearUmamiURL()
+		return nil
+	case user.FieldUmamiSiteID:
+		m.ClearUmamiSiteID()
 		return nil
 	case user.FieldSyncedAt:
 		m.ClearSyncedAt()
@@ -4540,6 +4680,12 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldSyncIntervalMinutes:
 		m.ResetSyncIntervalMinutes()
+		return nil
+	case user.FieldUmamiURL:
+		m.ResetUmamiURL()
+		return nil
+	case user.FieldUmamiSiteID:
+		m.ResetUmamiSiteID()
 		return nil
 	case user.FieldSyncedAt:
 		m.ResetSyncedAt()

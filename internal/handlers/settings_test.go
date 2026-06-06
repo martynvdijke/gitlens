@@ -196,3 +196,84 @@ func TestSettingsHandler_SelectRepos_NoReposSelected(t *testing.T) {
 		t.Fatalf("expected error message, got: %s", w.Body.String())
 	}
 }
+
+func TestSettingsHandler_UpdateUmami_Success(t *testing.T) {
+	handler, _ := newTestSettingsHandler(t, "")
+	client := handler.client
+	u, _ := client.User.Create().SetGithubID(900).SetLogin("umami1").SetAccessToken("tok").Save(context.Background())
+
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Set("user_id", int64(u.ID))
+	c.Request = httptest.NewRequest("POST", "/test", strings.NewReader("umami_url=https://umami.example.com&umami_site_id=abc-123"))
+	c.Request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	handler.UpdateUmami(c)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d, body: %s", w.Code, w.Body.String())
+	}
+	if !strings.Contains(w.Body.String(), "saved") {
+		t.Fatalf("expected success message, got: %s", w.Body.String())
+	}
+
+	updated, _ := client.User.Get(context.Background(), int(u.ID))
+	if updated.UmamiURL != "https://umami.example.com" {
+		t.Fatalf("expected umami_url 'https://umami.example.com', got %q", updated.UmamiURL)
+	}
+	if updated.UmamiSiteID != "abc-123" {
+		t.Fatalf("expected umami_site_id 'abc-123', got %q", updated.UmamiSiteID)
+	}
+}
+
+func TestSettingsHandler_UpdateUmami_Clear(t *testing.T) {
+	handler, _ := newTestSettingsHandler(t, "")
+	client := handler.client
+	u, _ := client.User.Create().SetGithubID(901).SetLogin("umami2").SetAccessToken("tok").
+		SetUmamiURL("https://umami.example.com").SetUmamiSiteID("abc-123").
+		Save(context.Background())
+
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Set("user_id", int64(u.ID))
+	c.Request = httptest.NewRequest("POST", "/test", strings.NewReader("umami_url=&umami_site_id="))
+	c.Request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	handler.UpdateUmami(c)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d, body: %s", w.Code, w.Body.String())
+	}
+	if !strings.Contains(w.Body.String(), "cleared") {
+		t.Fatalf("expected clear message, got: %s", w.Body.String())
+	}
+
+	updated, _ := client.User.Get(context.Background(), int(u.ID))
+	if updated.UmamiURL != "" {
+		t.Fatalf("expected empty umami_url, got %q", updated.UmamiURL)
+	}
+	if updated.UmamiSiteID != "" {
+		t.Fatalf("expected empty umami_site_id, got %q", updated.UmamiSiteID)
+	}
+}
+
+func TestSettingsHandler_UpdateUmami_PartialInput(t *testing.T) {
+	handler, _ := newTestSettingsHandler(t, "")
+	client := handler.client
+	u, _ := client.User.Create().SetGithubID(902).SetLogin("umami3").SetAccessToken("tok").Save(context.Background())
+
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Set("user_id", int64(u.ID))
+	c.Request = httptest.NewRequest("POST", "/test", strings.NewReader("umami_url=https://umami.example.com&umami_site_id="))
+	c.Request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	handler.UpdateUmami(c)
+
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d, body: %s", w.Code, w.Body.String())
+	}
+	if !strings.Contains(w.Body.String(), "Both Umami URL and Site ID are required") {
+		t.Fatalf("expected error about both fields required, got: %s", w.Body.String())
+	}
+}

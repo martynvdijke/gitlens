@@ -139,6 +139,46 @@ func (_u *UserUpdate) AddSyncIntervalMinutes(v int) *UserUpdate {
 	return _u
 }
 
+// SetUmamiURL sets the "umami_url" field.
+func (_u *UserUpdate) SetUmamiURL(v string) *UserUpdate {
+	_u.mutation.SetUmamiURL(v)
+	return _u
+}
+
+// SetNillableUmamiURL sets the "umami_url" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableUmamiURL(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetUmamiURL(*v)
+	}
+	return _u
+}
+
+// ClearUmamiURL clears the value of the "umami_url" field.
+func (_u *UserUpdate) ClearUmamiURL() *UserUpdate {
+	_u.mutation.ClearUmamiURL()
+	return _u
+}
+
+// SetUmamiSiteID sets the "umami_site_id" field.
+func (_u *UserUpdate) SetUmamiSiteID(v string) *UserUpdate {
+	_u.mutation.SetUmamiSiteID(v)
+	return _u
+}
+
+// SetNillableUmamiSiteID sets the "umami_site_id" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableUmamiSiteID(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetUmamiSiteID(*v)
+	}
+	return _u
+}
+
+// ClearUmamiSiteID clears the value of the "umami_site_id" field.
+func (_u *UserUpdate) ClearUmamiSiteID() *UserUpdate {
+	_u.mutation.ClearUmamiSiteID()
+	return _u
+}
+
 // SetSyncedAt sets the "synced_at" field.
 func (_u *UserUpdate) SetSyncedAt(v time.Time) *UserUpdate {
 	_u.mutation.SetSyncedAt(v)
@@ -279,6 +319,18 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.AddedSyncIntervalMinutes(); ok {
 		_spec.AddField(user.FieldSyncIntervalMinutes, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.UmamiURL(); ok {
+		_spec.SetField(user.FieldUmamiURL, field.TypeString, value)
+	}
+	if _u.mutation.UmamiURLCleared() {
+		_spec.ClearField(user.FieldUmamiURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.UmamiSiteID(); ok {
+		_spec.SetField(user.FieldUmamiSiteID, field.TypeString, value)
+	}
+	if _u.mutation.UmamiSiteIDCleared() {
+		_spec.ClearField(user.FieldUmamiSiteID, field.TypeString)
 	}
 	if value, ok := _u.mutation.SyncedAt(); ok {
 		_spec.SetField(user.FieldSyncedAt, field.TypeTime, value)
@@ -464,6 +516,46 @@ func (_u *UserUpdateOne) AddSyncIntervalMinutes(v int) *UserUpdateOne {
 	return _u
 }
 
+// SetUmamiURL sets the "umami_url" field.
+func (_u *UserUpdateOne) SetUmamiURL(v string) *UserUpdateOne {
+	_u.mutation.SetUmamiURL(v)
+	return _u
+}
+
+// SetNillableUmamiURL sets the "umami_url" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableUmamiURL(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetUmamiURL(*v)
+	}
+	return _u
+}
+
+// ClearUmamiURL clears the value of the "umami_url" field.
+func (_u *UserUpdateOne) ClearUmamiURL() *UserUpdateOne {
+	_u.mutation.ClearUmamiURL()
+	return _u
+}
+
+// SetUmamiSiteID sets the "umami_site_id" field.
+func (_u *UserUpdateOne) SetUmamiSiteID(v string) *UserUpdateOne {
+	_u.mutation.SetUmamiSiteID(v)
+	return _u
+}
+
+// SetNillableUmamiSiteID sets the "umami_site_id" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableUmamiSiteID(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetUmamiSiteID(*v)
+	}
+	return _u
+}
+
+// ClearUmamiSiteID clears the value of the "umami_site_id" field.
+func (_u *UserUpdateOne) ClearUmamiSiteID() *UserUpdateOne {
+	_u.mutation.ClearUmamiSiteID()
+	return _u
+}
+
 // SetSyncedAt sets the "synced_at" field.
 func (_u *UserUpdateOne) SetSyncedAt(v time.Time) *UserUpdateOne {
 	_u.mutation.SetSyncedAt(v)
@@ -634,6 +726,18 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if value, ok := _u.mutation.AddedSyncIntervalMinutes(); ok {
 		_spec.AddField(user.FieldSyncIntervalMinutes, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.UmamiURL(); ok {
+		_spec.SetField(user.FieldUmamiURL, field.TypeString, value)
+	}
+	if _u.mutation.UmamiURLCleared() {
+		_spec.ClearField(user.FieldUmamiURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.UmamiSiteID(); ok {
+		_spec.SetField(user.FieldUmamiSiteID, field.TypeString, value)
+	}
+	if _u.mutation.UmamiSiteIDCleared() {
+		_spec.ClearField(user.FieldUmamiSiteID, field.TypeString)
 	}
 	if value, ok := _u.mutation.SyncedAt(); ok {
 		_spec.SetField(user.FieldSyncedAt, field.TypeTime, value)

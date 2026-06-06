@@ -227,6 +227,7 @@ func main() {
 
 		authed.GET("/settings", middleware.HTMXOnly(), settingsHandler.Index)
 		authed.POST("/settings/interval", settingsHandler.UpdateInterval)
+		authed.POST("/settings/umami", settingsHandler.UpdateUmami)
 		authed.GET("/settings/repos/available", settingsHandler.AvailableRepos)
 		authed.POST("/settings/repos/select", settingsHandler.SelectRepos)
 		authed.DELETE("/repos/:id", settingsHandler.RemoveRepo)

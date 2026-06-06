@@ -75,6 +75,45 @@ func (h *SettingsHandler) UpdateInterval(c *gin.Context) {
 	c.String(http.StatusOK, "Sync interval updated to %d minutes", minutes)
 }
 
+func (h *SettingsHandler) UpdateUmami(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	umamiURL := c.PostForm("umami_url")
+	umamiSiteID := c.PostForm("umami_site_id")
+
+	// Both or none — clear config if both empty
+	if umamiURL == "" && umamiSiteID == "" {
+		_, err := h.client.User.UpdateOneID(int(userID)).
+			ClearUmamiURL().
+			ClearUmamiSiteID().
+			Save(c.Request.Context())
+		if err != nil {
+			log.Printf("Error clearing umami config: %v", err)
+			c.String(http.StatusInternalServerError, "Failed to clear Umami configuration")
+			return
+		}
+		c.String(http.StatusOK, "Umami analytics configuration cleared")
+		return
+	}
+
+	// Partial input is not allowed
+	if umamiURL == "" || umamiSiteID == "" {
+		c.String(http.StatusBadRequest, "Both Umami URL and Site ID are required to enable analytics")
+		return
+	}
+
+	_, err := h.client.User.UpdateOneID(int(userID)).
+		SetUmamiURL(umamiURL).
+		SetUmamiSiteID(umamiSiteID).
+		Save(c.Request.Context())
+	if err != nil {
+		log.Printf("Error updating umami config: %v", err)
+		c.String(http.StatusInternalServerError, "Failed to update Umami configuration")
+		return
+	}
+
+	c.String(http.StatusOK, "Umami analytics configuration saved")
+}
+
 func (h *SettingsHandler) AvailableRepos(c *gin.Context) {
 	userID := c.GetInt64("user_id")
 	u, err := h.client.User.Get(c.Request.Context(), int(userID))

@@ -29,6 +29,10 @@ type User struct {
 	AccessToken string `json:"access_token,omitempty"`
 	// SyncIntervalMinutes holds the value of the "sync_interval_minutes" field.
 	SyncIntervalMinutes int `json:"sync_interval_minutes,omitempty"`
+	// UmamiURL holds the value of the "umami_url" field.
+	UmamiURL string `json:"umami_url,omitempty"`
+	// UmamiSiteID holds the value of the "umami_site_id" field.
+	UmamiSiteID string `json:"umami_site_id,omitempty"`
 	// SyncedAt holds the value of the "synced_at" field.
 	SyncedAt time.Time `json:"synced_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -64,7 +68,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case user.FieldID, user.FieldGithubID, user.FieldSyncIntervalMinutes:
 			values[i] = new(sql.NullInt64)
-		case user.FieldLogin, user.FieldAvatarURL, user.FieldName, user.FieldAccessToken:
+		case user.FieldLogin, user.FieldAvatarURL, user.FieldName, user.FieldAccessToken, user.FieldUmamiURL, user.FieldUmamiSiteID:
 			values[i] = new(sql.NullString)
 		case user.FieldSyncedAt, user.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -124,6 +128,18 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field sync_interval_minutes", values[i])
 			} else if value.Valid {
 				_m.SyncIntervalMinutes = int(value.Int64)
+			}
+		case user.FieldUmamiURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field umami_url", values[i])
+			} else if value.Valid {
+				_m.UmamiURL = value.String
+			}
+		case user.FieldUmamiSiteID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field umami_site_id", values[i])
+			} else if value.Valid {
+				_m.UmamiSiteID = value.String
 			}
 		case user.FieldSyncedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -195,6 +211,12 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("sync_interval_minutes=")
 	builder.WriteString(fmt.Sprintf("%v", _m.SyncIntervalMinutes))
+	builder.WriteString(", ")
+	builder.WriteString("umami_url=")
+	builder.WriteString(_m.UmamiURL)
+	builder.WriteString(", ")
+	builder.WriteString("umami_site_id=")
+	builder.WriteString(_m.UmamiSiteID)
 	builder.WriteString(", ")
 	builder.WriteString("synced_at=")
 	builder.WriteString(_m.SyncedAt.Format(time.ANSIC))
