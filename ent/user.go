@@ -33,6 +33,8 @@ type User struct {
 	UmamiURL string `json:"umami_url,omitempty"`
 	// UmamiSiteID holds the value of the "umami_site_id" field.
 	UmamiSiteID string `json:"umami_site_id,omitempty"`
+	// IsAdmin holds the value of the "is_admin" field.
+	IsAdmin bool `json:"is_admin,omitempty"`
 	// SyncedAt holds the value of the "synced_at" field.
 	SyncedAt time.Time `json:"synced_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -66,6 +68,8 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case user.FieldIsAdmin:
+			values[i] = new(sql.NullBool)
 		case user.FieldID, user.FieldGithubID, user.FieldSyncIntervalMinutes:
 			values[i] = new(sql.NullInt64)
 		case user.FieldLogin, user.FieldAvatarURL, user.FieldName, user.FieldAccessToken, user.FieldUmamiURL, user.FieldUmamiSiteID:
@@ -140,6 +144,12 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field umami_site_id", values[i])
 			} else if value.Valid {
 				_m.UmamiSiteID = value.String
+			}
+		case user.FieldIsAdmin:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field is_admin", values[i])
+			} else if value.Valid {
+				_m.IsAdmin = value.Bool
 			}
 		case user.FieldSyncedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -217,6 +227,9 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("umami_site_id=")
 	builder.WriteString(_m.UmamiSiteID)
+	builder.WriteString(", ")
+	builder.WriteString("is_admin=")
+	builder.WriteString(fmt.Sprintf("%v", _m.IsAdmin))
 	builder.WriteString(", ")
 	builder.WriteString("synced_at=")
 	builder.WriteString(_m.SyncedAt.Format(time.ANSIC))

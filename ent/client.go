@@ -11,6 +11,7 @@ import (
 
 	"gitlens/ent/migrate"
 
+	"gitlens/ent/adminconfig"
 	"gitlens/ent/event"
 	"gitlens/ent/repository"
 	"gitlens/ent/user"
@@ -26,6 +27,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// AdminConfig is the client for interacting with the AdminConfig builders.
+	AdminConfig *AdminConfigClient
 	// Event is the client for interacting with the Event builders.
 	Event *EventClient
 	// Repository is the client for interacting with the Repository builders.
@@ -43,6 +46,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.AdminConfig = NewAdminConfigClient(c.config)
 	c.Event = NewEventClient(c.config)
 	c.Repository = NewRepositoryClient(c.config)
 	c.User = NewUserClient(c.config)
@@ -136,11 +140,12 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:        ctx,
-		config:     cfg,
-		Event:      NewEventClient(cfg),
-		Repository: NewRepositoryClient(cfg),
-		User:       NewUserClient(cfg),
+		ctx:         ctx,
+		config:      cfg,
+		AdminConfig: NewAdminConfigClient(cfg),
+		Event:       NewEventClient(cfg),
+		Repository:  NewRepositoryClient(cfg),
+		User:        NewUserClient(cfg),
 	}, nil
 }
 
@@ -158,18 +163,19 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:        ctx,
-		config:     cfg,
-		Event:      NewEventClient(cfg),
-		Repository: NewRepositoryClient(cfg),
-		User:       NewUserClient(cfg),
+		ctx:         ctx,
+		config:      cfg,
+		AdminConfig: NewAdminConfigClient(cfg),
+		Event:       NewEventClient(cfg),
+		Repository:  NewRepositoryClient(cfg),
+		User:        NewUserClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Event.
+//		AdminConfig.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -191,6 +197,7 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.AdminConfig.Use(hooks...)
 	c.Event.Use(hooks...)
 	c.Repository.Use(hooks...)
 	c.User.Use(hooks...)
@@ -199,6 +206,7 @@ func (c *Client) Use(hooks ...Hook) {
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
+	c.AdminConfig.Intercept(interceptors...)
 	c.Event.Intercept(interceptors...)
 	c.Repository.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
@@ -207,6 +215,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *AdminConfigMutation:
+		return c.AdminConfig.mutate(ctx, m)
 	case *EventMutation:
 		return c.Event.mutate(ctx, m)
 	case *RepositoryMutation:
@@ -215,6 +225,139 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.User.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// AdminConfigClient is a client for the AdminConfig schema.
+type AdminConfigClient struct {
+	config
+}
+
+// NewAdminConfigClient returns a client for the AdminConfig from the given config.
+func NewAdminConfigClient(c config) *AdminConfigClient {
+	return &AdminConfigClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `adminconfig.Hooks(f(g(h())))`.
+func (c *AdminConfigClient) Use(hooks ...Hook) {
+	c.hooks.AdminConfig = append(c.hooks.AdminConfig, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `adminconfig.Intercept(f(g(h())))`.
+func (c *AdminConfigClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AdminConfig = append(c.inters.AdminConfig, interceptors...)
+}
+
+// Create returns a builder for creating a AdminConfig entity.
+func (c *AdminConfigClient) Create() *AdminConfigCreate {
+	mutation := newAdminConfigMutation(c.config, OpCreate)
+	return &AdminConfigCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AdminConfig entities.
+func (c *AdminConfigClient) CreateBulk(builders ...*AdminConfigCreate) *AdminConfigCreateBulk {
+	return &AdminConfigCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AdminConfigClient) MapCreateBulk(slice any, setFunc func(*AdminConfigCreate, int)) *AdminConfigCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AdminConfigCreateBulk{err: fmt.Errorf("calling to AdminConfigClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AdminConfigCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AdminConfigCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AdminConfig.
+func (c *AdminConfigClient) Update() *AdminConfigUpdate {
+	mutation := newAdminConfigMutation(c.config, OpUpdate)
+	return &AdminConfigUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AdminConfigClient) UpdateOne(_m *AdminConfig) *AdminConfigUpdateOne {
+	mutation := newAdminConfigMutation(c.config, OpUpdateOne, withAdminConfig(_m))
+	return &AdminConfigUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AdminConfigClient) UpdateOneID(id int) *AdminConfigUpdateOne {
+	mutation := newAdminConfigMutation(c.config, OpUpdateOne, withAdminConfigID(id))
+	return &AdminConfigUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AdminConfig.
+func (c *AdminConfigClient) Delete() *AdminConfigDelete {
+	mutation := newAdminConfigMutation(c.config, OpDelete)
+	return &AdminConfigDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AdminConfigClient) DeleteOne(_m *AdminConfig) *AdminConfigDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AdminConfigClient) DeleteOneID(id int) *AdminConfigDeleteOne {
+	builder := c.Delete().Where(adminconfig.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AdminConfigDeleteOne{builder}
+}
+
+// Query returns a query builder for AdminConfig.
+func (c *AdminConfigClient) Query() *AdminConfigQuery {
+	return &AdminConfigQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAdminConfig},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a AdminConfig entity by its id.
+func (c *AdminConfigClient) Get(ctx context.Context, id int) (*AdminConfig, error) {
+	return c.Query().Where(adminconfig.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AdminConfigClient) GetX(ctx context.Context, id int) *AdminConfig {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *AdminConfigClient) Hooks() []Hook {
+	return c.hooks.AdminConfig
+}
+
+// Interceptors returns the client interceptors.
+func (c *AdminConfigClient) Interceptors() []Interceptor {
+	return c.inters.AdminConfig
+}
+
+func (c *AdminConfigClient) mutate(ctx context.Context, m *AdminConfigMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AdminConfigCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AdminConfigUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AdminConfigUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AdminConfigDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown AdminConfig mutation op: %q", m.Op())
 	}
 }
 
@@ -652,9 +795,9 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Event, Repository, User []ent.Hook
+		AdminConfig, Event, Repository, User []ent.Hook
 	}
 	inters struct {
-		Event, Repository, User []ent.Interceptor
+		AdminConfig, Event, Repository, User []ent.Interceptor
 	}
 )

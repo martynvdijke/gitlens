@@ -109,6 +109,20 @@ func (_c *UserCreate) SetNillableUmamiSiteID(v *string) *UserCreate {
 	return _c
 }
 
+// SetIsAdmin sets the "is_admin" field.
+func (_c *UserCreate) SetIsAdmin(v bool) *UserCreate {
+	_c.mutation.SetIsAdmin(v)
+	return _c
+}
+
+// SetNillableIsAdmin sets the "is_admin" field if the given value is not nil.
+func (_c *UserCreate) SetNillableIsAdmin(v *bool) *UserCreate {
+	if v != nil {
+		_c.SetIsAdmin(*v)
+	}
+	return _c
+}
+
 // SetSyncedAt sets the "synced_at" field.
 func (_c *UserCreate) SetSyncedAt(v time.Time) *UserCreate {
 	_c.mutation.SetSyncedAt(v)
@@ -191,6 +205,10 @@ func (_c *UserCreate) defaults() {
 		v := user.DefaultSyncIntervalMinutes
 		_c.mutation.SetSyncIntervalMinutes(v)
 	}
+	if _, ok := _c.mutation.IsAdmin(); !ok {
+		v := user.DefaultIsAdmin
+		_c.mutation.SetIsAdmin(v)
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := user.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
@@ -210,6 +228,9 @@ func (_c *UserCreate) check() error {
 	}
 	if _, ok := _c.mutation.SyncIntervalMinutes(); !ok {
 		return &ValidationError{Name: "sync_interval_minutes", err: errors.New(`ent: missing required field "User.sync_interval_minutes"`)}
+	}
+	if _, ok := _c.mutation.IsAdmin(); !ok {
+		return &ValidationError{Name: "is_admin", err: errors.New(`ent: missing required field "User.is_admin"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
@@ -271,6 +292,10 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.UmamiSiteID(); ok {
 		_spec.SetField(user.FieldUmamiSiteID, field.TypeString, value)
 		_node.UmamiSiteID = value
+	}
+	if value, ok := _c.mutation.IsAdmin(); ok {
+		_spec.SetField(user.FieldIsAdmin, field.TypeBool, value)
+		_node.IsAdmin = value
 	}
 	if value, ok := _c.mutation.SyncedAt(); ok {
 		_spec.SetField(user.FieldSyncedAt, field.TypeTime, value)

@@ -12,6 +12,8 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// AdminConfig is the client for interacting with the AdminConfig builders.
+	AdminConfig *AdminConfigClient
 	// Event is the client for interacting with the Event builders.
 	Event *EventClient
 	// Repository is the client for interacting with the Repository builders.
@@ -149,6 +151,7 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.AdminConfig = NewAdminConfigClient(tx.config)
 	tx.Event = NewEventClient(tx.config)
 	tx.Repository = NewRepositoryClient(tx.config)
 	tx.User = NewUserClient(tx.config)
@@ -161,7 +164,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: Event.QueryXXX(), the query will be executed
+// applies a query, for example: AdminConfig.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

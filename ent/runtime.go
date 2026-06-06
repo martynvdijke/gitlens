@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"gitlens/ent/adminconfig"
 	"gitlens/ent/event"
 	"gitlens/ent/repository"
 	"gitlens/ent/schema"
@@ -14,6 +15,34 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	adminconfigFields := schema.AdminConfig{}.Fields()
+	_ = adminconfigFields
+	// adminconfigDescTracesEnabled is the schema descriptor for traces_enabled field.
+	adminconfigDescTracesEnabled := adminconfigFields[2].Descriptor()
+	// adminconfig.DefaultTracesEnabled holds the default value on creation for the traces_enabled field.
+	adminconfig.DefaultTracesEnabled = adminconfigDescTracesEnabled.Default.(bool)
+	// adminconfigDescMetricsEnabled is the schema descriptor for metrics_enabled field.
+	adminconfigDescMetricsEnabled := adminconfigFields[3].Descriptor()
+	// adminconfig.DefaultMetricsEnabled holds the default value on creation for the metrics_enabled field.
+	adminconfig.DefaultMetricsEnabled = adminconfigDescMetricsEnabled.Default.(bool)
+	// adminconfigDescLogsEnabled is the schema descriptor for logs_enabled field.
+	adminconfigDescLogsEnabled := adminconfigFields[4].Descriptor()
+	// adminconfig.DefaultLogsEnabled holds the default value on creation for the logs_enabled field.
+	adminconfig.DefaultLogsEnabled = adminconfigDescLogsEnabled.Default.(bool)
+	// adminconfigDescLogSeverity is the schema descriptor for log_severity field.
+	adminconfigDescLogSeverity := adminconfigFields[5].Descriptor()
+	// adminconfig.DefaultLogSeverity holds the default value on creation for the log_severity field.
+	adminconfig.DefaultLogSeverity = adminconfigDescLogSeverity.Default.(string)
+	// adminconfigDescUpdatedAt is the schema descriptor for updated_at field.
+	adminconfigDescUpdatedAt := adminconfigFields[6].Descriptor()
+	// adminconfig.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	adminconfig.DefaultUpdatedAt = adminconfigDescUpdatedAt.Default.(func() time.Time)
+	// adminconfig.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	adminconfig.UpdateDefaultUpdatedAt = adminconfigDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// adminconfigDescID is the schema descriptor for id field.
+	adminconfigDescID := adminconfigFields[0].Descriptor()
+	// adminconfig.DefaultID holds the default value on creation for the id field.
+	adminconfig.DefaultID = adminconfigDescID.Default.(int)
 	eventFields := schema.Event{}.Fields()
 	_ = eventFields
 	// eventDescCreatedAt is the schema descriptor for created_at field.
@@ -46,8 +75,12 @@ func init() {
 	userDescSyncIntervalMinutes := userFields[5].Descriptor()
 	// user.DefaultSyncIntervalMinutes holds the default value on creation for the sync_interval_minutes field.
 	user.DefaultSyncIntervalMinutes = userDescSyncIntervalMinutes.Default.(int)
+	// userDescIsAdmin is the schema descriptor for is_admin field.
+	userDescIsAdmin := userFields[8].Descriptor()
+	// user.DefaultIsAdmin holds the default value on creation for the is_admin field.
+	user.DefaultIsAdmin = userDescIsAdmin.Default.(bool)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[9].Descriptor()
+	userDescCreatedAt := userFields[10].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 }

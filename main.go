@@ -22,6 +22,7 @@ import (
 	"gitlens/internal/github"
 	"gitlens/internal/handlers"
 	"gitlens/internal/middleware"
+	"gitlens/internal/otel"
 	"gitlens/internal/sync"
 	"gitlens/internal/ws"
 
@@ -52,6 +53,8 @@ func main() {
 	}
 
 	sessionStore := middleware.NewSessionStore(db)
+
+	otelManager := otel.NewManager(client)
 
 	ghClient := github.NewClient(
 		os.Getenv("GITHUB_CLIENT_ID"),
@@ -194,6 +197,7 @@ func main() {
 	gitHubAppHandler := handlers.NewGitHubAppHandler(client)
 	webhookHandler := handlers.NewWebhookHandler(client, syncer, os.Getenv("GITHUB_WEBHOOK_SECRET"))
 	feedHandler := handlers.NewFeedHandler(client)
+	adminHandler := handlers.NewAdminHandler(client, otelManager)
 
 	r := gin.Default()
 
@@ -236,6 +240,15 @@ func main() {
 		authed.GET("/feed", feedHandler.Feed)
 		authed.POST("/feed/filter", feedHandler.FeedFilter)
 		authed.POST("/repos/setup-webhooks", gitHubAppHandler.SetupAutoWebhooks)
+
+		admin := authed.Group("/admin")
+		admin.Use(middleware.AdminRequired(client))
+		{
+			admin.GET("", adminHandler.Index)
+			admin.POST("/otel", adminHandler.UpdateOTEL)
+			admin.GET("/users", adminHandler.ListUsers)
+			admin.POST("/users/:id/toggle-admin", adminHandler.ToggleAdmin)
+		}
 	}
 
 	r.GET("/ws", func(c *gin.Context) {
@@ -284,5 +297,9 @@ func main() {
 	defer shutdownCancel()
 	if err := srv.Shutdown(shutdownCtx); err != nil {
 		log.Fatalf("Server shutdown error: %v", err)
+	}
+
+	if err := otelManager.Shutdown(shutdownCtx); err != nil {
+		log.Printf("OTEL shutdown error: %v", err)
 	}
 }

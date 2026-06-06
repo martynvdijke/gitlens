@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"gitlens/ent/adminconfig"
 	"gitlens/ent/event"
 	"gitlens/ent/predicate"
 	"gitlens/ent/repository"
@@ -26,10 +27,635 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeEvent      = "Event"
-	TypeRepository = "Repository"
-	TypeUser       = "User"
+	TypeAdminConfig = "AdminConfig"
+	TypeEvent       = "Event"
+	TypeRepository  = "Repository"
+	TypeUser        = "User"
 )
+
+// AdminConfigMutation represents an operation that mutates the AdminConfig nodes in the graph.
+type AdminConfigMutation struct {
+	config
+	op              Op
+	typ             string
+	id              *int
+	otel_endpoint   *string
+	traces_enabled  *bool
+	metrics_enabled *bool
+	logs_enabled    *bool
+	log_severity    *string
+	updated_at      *time.Time
+	clearedFields   map[string]struct{}
+	done            bool
+	oldValue        func(context.Context) (*AdminConfig, error)
+	predicates      []predicate.AdminConfig
+}
+
+var _ ent.Mutation = (*AdminConfigMutation)(nil)
+
+// adminconfigOption allows management of the mutation configuration using functional options.
+type adminconfigOption func(*AdminConfigMutation)
+
+// newAdminConfigMutation creates new mutation for the AdminConfig entity.
+func newAdminConfigMutation(c config, op Op, opts ...adminconfigOption) *AdminConfigMutation {
+	m := &AdminConfigMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeAdminConfig,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withAdminConfigID sets the ID field of the mutation.
+func withAdminConfigID(id int) adminconfigOption {
+	return func(m *AdminConfigMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *AdminConfig
+		)
+		m.oldValue = func(ctx context.Context) (*AdminConfig, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().AdminConfig.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withAdminConfig sets the old AdminConfig of the mutation.
+func withAdminConfig(node *AdminConfig) adminconfigOption {
+	return func(m *AdminConfigMutation) {
+		m.oldValue = func(context.Context) (*AdminConfig, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m AdminConfigMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m AdminConfigMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of AdminConfig entities.
+func (m *AdminConfigMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *AdminConfigMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *AdminConfigMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().AdminConfig.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetOtelEndpoint sets the "otel_endpoint" field.
+func (m *AdminConfigMutation) SetOtelEndpoint(s string) {
+	m.otel_endpoint = &s
+}
+
+// OtelEndpoint returns the value of the "otel_endpoint" field in the mutation.
+func (m *AdminConfigMutation) OtelEndpoint() (r string, exists bool) {
+	v := m.otel_endpoint
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOtelEndpoint returns the old "otel_endpoint" field's value of the AdminConfig entity.
+// If the AdminConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AdminConfigMutation) OldOtelEndpoint(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOtelEndpoint is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOtelEndpoint requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOtelEndpoint: %w", err)
+	}
+	return oldValue.OtelEndpoint, nil
+}
+
+// ClearOtelEndpoint clears the value of the "otel_endpoint" field.
+func (m *AdminConfigMutation) ClearOtelEndpoint() {
+	m.otel_endpoint = nil
+	m.clearedFields[adminconfig.FieldOtelEndpoint] = struct{}{}
+}
+
+// OtelEndpointCleared returns if the "otel_endpoint" field was cleared in this mutation.
+func (m *AdminConfigMutation) OtelEndpointCleared() bool {
+	_, ok := m.clearedFields[adminconfig.FieldOtelEndpoint]
+	return ok
+}
+
+// ResetOtelEndpoint resets all changes to the "otel_endpoint" field.
+func (m *AdminConfigMutation) ResetOtelEndpoint() {
+	m.otel_endpoint = nil
+	delete(m.clearedFields, adminconfig.FieldOtelEndpoint)
+}
+
+// SetTracesEnabled sets the "traces_enabled" field.
+func (m *AdminConfigMutation) SetTracesEnabled(b bool) {
+	m.traces_enabled = &b
+}
+
+// TracesEnabled returns the value of the "traces_enabled" field in the mutation.
+func (m *AdminConfigMutation) TracesEnabled() (r bool, exists bool) {
+	v := m.traces_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTracesEnabled returns the old "traces_enabled" field's value of the AdminConfig entity.
+// If the AdminConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AdminConfigMutation) OldTracesEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTracesEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTracesEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTracesEnabled: %w", err)
+	}
+	return oldValue.TracesEnabled, nil
+}
+
+// ResetTracesEnabled resets all changes to the "traces_enabled" field.
+func (m *AdminConfigMutation) ResetTracesEnabled() {
+	m.traces_enabled = nil
+}
+
+// SetMetricsEnabled sets the "metrics_enabled" field.
+func (m *AdminConfigMutation) SetMetricsEnabled(b bool) {
+	m.metrics_enabled = &b
+}
+
+// MetricsEnabled returns the value of the "metrics_enabled" field in the mutation.
+func (m *AdminConfigMutation) MetricsEnabled() (r bool, exists bool) {
+	v := m.metrics_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMetricsEnabled returns the old "metrics_enabled" field's value of the AdminConfig entity.
+// If the AdminConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AdminConfigMutation) OldMetricsEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMetricsEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMetricsEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMetricsEnabled: %w", err)
+	}
+	return oldValue.MetricsEnabled, nil
+}
+
+// ResetMetricsEnabled resets all changes to the "metrics_enabled" field.
+func (m *AdminConfigMutation) ResetMetricsEnabled() {
+	m.metrics_enabled = nil
+}
+
+// SetLogsEnabled sets the "logs_enabled" field.
+func (m *AdminConfigMutation) SetLogsEnabled(b bool) {
+	m.logs_enabled = &b
+}
+
+// LogsEnabled returns the value of the "logs_enabled" field in the mutation.
+func (m *AdminConfigMutation) LogsEnabled() (r bool, exists bool) {
+	v := m.logs_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLogsEnabled returns the old "logs_enabled" field's value of the AdminConfig entity.
+// If the AdminConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AdminConfigMutation) OldLogsEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLogsEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLogsEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLogsEnabled: %w", err)
+	}
+	return oldValue.LogsEnabled, nil
+}
+
+// ResetLogsEnabled resets all changes to the "logs_enabled" field.
+func (m *AdminConfigMutation) ResetLogsEnabled() {
+	m.logs_enabled = nil
+}
+
+// SetLogSeverity sets the "log_severity" field.
+func (m *AdminConfigMutation) SetLogSeverity(s string) {
+	m.log_severity = &s
+}
+
+// LogSeverity returns the value of the "log_severity" field in the mutation.
+func (m *AdminConfigMutation) LogSeverity() (r string, exists bool) {
+	v := m.log_severity
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLogSeverity returns the old "log_severity" field's value of the AdminConfig entity.
+// If the AdminConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AdminConfigMutation) OldLogSeverity(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLogSeverity is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLogSeverity requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLogSeverity: %w", err)
+	}
+	return oldValue.LogSeverity, nil
+}
+
+// ResetLogSeverity resets all changes to the "log_severity" field.
+func (m *AdminConfigMutation) ResetLogSeverity() {
+	m.log_severity = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *AdminConfigMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *AdminConfigMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the AdminConfig entity.
+// If the AdminConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AdminConfigMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *AdminConfigMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// Where appends a list predicates to the AdminConfigMutation builder.
+func (m *AdminConfigMutation) Where(ps ...predicate.AdminConfig) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the AdminConfigMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *AdminConfigMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.AdminConfig, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *AdminConfigMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *AdminConfigMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (AdminConfig).
+func (m *AdminConfigMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *AdminConfigMutation) Fields() []string {
+	fields := make([]string, 0, 6)
+	if m.otel_endpoint != nil {
+		fields = append(fields, adminconfig.FieldOtelEndpoint)
+	}
+	if m.traces_enabled != nil {
+		fields = append(fields, adminconfig.FieldTracesEnabled)
+	}
+	if m.metrics_enabled != nil {
+		fields = append(fields, adminconfig.FieldMetricsEnabled)
+	}
+	if m.logs_enabled != nil {
+		fields = append(fields, adminconfig.FieldLogsEnabled)
+	}
+	if m.log_severity != nil {
+		fields = append(fields, adminconfig.FieldLogSeverity)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, adminconfig.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *AdminConfigMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case adminconfig.FieldOtelEndpoint:
+		return m.OtelEndpoint()
+	case adminconfig.FieldTracesEnabled:
+		return m.TracesEnabled()
+	case adminconfig.FieldMetricsEnabled:
+		return m.MetricsEnabled()
+	case adminconfig.FieldLogsEnabled:
+		return m.LogsEnabled()
+	case adminconfig.FieldLogSeverity:
+		return m.LogSeverity()
+	case adminconfig.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *AdminConfigMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case adminconfig.FieldOtelEndpoint:
+		return m.OldOtelEndpoint(ctx)
+	case adminconfig.FieldTracesEnabled:
+		return m.OldTracesEnabled(ctx)
+	case adminconfig.FieldMetricsEnabled:
+		return m.OldMetricsEnabled(ctx)
+	case adminconfig.FieldLogsEnabled:
+		return m.OldLogsEnabled(ctx)
+	case adminconfig.FieldLogSeverity:
+		return m.OldLogSeverity(ctx)
+	case adminconfig.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown AdminConfig field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AdminConfigMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case adminconfig.FieldOtelEndpoint:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOtelEndpoint(v)
+		return nil
+	case adminconfig.FieldTracesEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTracesEnabled(v)
+		return nil
+	case adminconfig.FieldMetricsEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMetricsEnabled(v)
+		return nil
+	case adminconfig.FieldLogsEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLogsEnabled(v)
+		return nil
+	case adminconfig.FieldLogSeverity:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLogSeverity(v)
+		return nil
+	case adminconfig.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown AdminConfig field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *AdminConfigMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *AdminConfigMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AdminConfigMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown AdminConfig numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *AdminConfigMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(adminconfig.FieldOtelEndpoint) {
+		fields = append(fields, adminconfig.FieldOtelEndpoint)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *AdminConfigMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *AdminConfigMutation) ClearField(name string) error {
+	switch name {
+	case adminconfig.FieldOtelEndpoint:
+		m.ClearOtelEndpoint()
+		return nil
+	}
+	return fmt.Errorf("unknown AdminConfig nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *AdminConfigMutation) ResetField(name string) error {
+	switch name {
+	case adminconfig.FieldOtelEndpoint:
+		m.ResetOtelEndpoint()
+		return nil
+	case adminconfig.FieldTracesEnabled:
+		m.ResetTracesEnabled()
+		return nil
+	case adminconfig.FieldMetricsEnabled:
+		m.ResetMetricsEnabled()
+		return nil
+	case adminconfig.FieldLogsEnabled:
+		m.ResetLogsEnabled()
+		return nil
+	case adminconfig.FieldLogSeverity:
+		m.ResetLogSeverity()
+		return nil
+	case adminconfig.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown AdminConfig field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *AdminConfigMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *AdminConfigMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *AdminConfigMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *AdminConfigMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *AdminConfigMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *AdminConfigMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *AdminConfigMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown AdminConfig unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *AdminConfigMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown AdminConfig edge %s", name)
+}
 
 // EventMutation represents an operation that mutates the Event nodes in the graph.
 type EventMutation struct {
@@ -3725,6 +4351,7 @@ type UserMutation struct {
 	addsync_interval_minutes *int
 	umami_url                *string
 	umami_site_id            *string
+	is_admin                 *bool
 	synced_at                *time.Time
 	created_at               *time.Time
 	clearedFields            map[string]struct{}
@@ -4214,6 +4841,42 @@ func (m *UserMutation) ResetUmamiSiteID() {
 	delete(m.clearedFields, user.FieldUmamiSiteID)
 }
 
+// SetIsAdmin sets the "is_admin" field.
+func (m *UserMutation) SetIsAdmin(b bool) {
+	m.is_admin = &b
+}
+
+// IsAdmin returns the value of the "is_admin" field in the mutation.
+func (m *UserMutation) IsAdmin() (r bool, exists bool) {
+	v := m.is_admin
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsAdmin returns the old "is_admin" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldIsAdmin(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsAdmin is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsAdmin requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsAdmin: %w", err)
+	}
+	return oldValue.IsAdmin, nil
+}
+
+// ResetIsAdmin resets all changes to the "is_admin" field.
+func (m *UserMutation) ResetIsAdmin() {
+	m.is_admin = nil
+}
+
 // SetSyncedAt sets the "synced_at" field.
 func (m *UserMutation) SetSyncedAt(t time.Time) {
 	m.synced_at = &t
@@ -4387,7 +5050,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 11)
 	if m.github_id != nil {
 		fields = append(fields, user.FieldGithubID)
 	}
@@ -4411,6 +5074,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.umami_site_id != nil {
 		fields = append(fields, user.FieldUmamiSiteID)
+	}
+	if m.is_admin != nil {
+		fields = append(fields, user.FieldIsAdmin)
 	}
 	if m.synced_at != nil {
 		fields = append(fields, user.FieldSyncedAt)
@@ -4442,6 +5108,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.UmamiURL()
 	case user.FieldUmamiSiteID:
 		return m.UmamiSiteID()
+	case user.FieldIsAdmin:
+		return m.IsAdmin()
 	case user.FieldSyncedAt:
 		return m.SyncedAt()
 	case user.FieldCreatedAt:
@@ -4471,6 +5139,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldUmamiURL(ctx)
 	case user.FieldUmamiSiteID:
 		return m.OldUmamiSiteID(ctx)
+	case user.FieldIsAdmin:
+		return m.OldIsAdmin(ctx)
 	case user.FieldSyncedAt:
 		return m.OldSyncedAt(ctx)
 	case user.FieldCreatedAt:
@@ -4539,6 +5209,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUmamiSiteID(v)
+		return nil
+	case user.FieldIsAdmin:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsAdmin(v)
 		return nil
 	case user.FieldSyncedAt:
 		v, ok := value.(time.Time)
@@ -4686,6 +5363,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldUmamiSiteID:
 		m.ResetUmamiSiteID()
+		return nil
+	case user.FieldIsAdmin:
+		m.ResetIsAdmin()
 		return nil
 	case user.FieldSyncedAt:
 		m.ResetSyncedAt()

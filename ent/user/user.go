@@ -30,6 +30,8 @@ const (
 	FieldUmamiURL = "umami_url"
 	// FieldUmamiSiteID holds the string denoting the umami_site_id field in the database.
 	FieldUmamiSiteID = "umami_site_id"
+	// FieldIsAdmin holds the string denoting the is_admin field in the database.
+	FieldIsAdmin = "is_admin"
 	// FieldSyncedAt holds the string denoting the synced_at field in the database.
 	FieldSyncedAt = "synced_at"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -58,6 +60,7 @@ var Columns = []string{
 	FieldSyncIntervalMinutes,
 	FieldUmamiURL,
 	FieldUmamiSiteID,
+	FieldIsAdmin,
 	FieldSyncedAt,
 	FieldCreatedAt,
 }
@@ -75,6 +78,8 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultSyncIntervalMinutes holds the default value on creation for the "sync_interval_minutes" field.
 	DefaultSyncIntervalMinutes int
+	// DefaultIsAdmin holds the default value on creation for the "is_admin" field.
+	DefaultIsAdmin bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 )
@@ -125,6 +130,11 @@ func ByUmamiURL(opts ...sql.OrderTermOption) OrderOption {
 // ByUmamiSiteID orders the results by the umami_site_id field.
 func ByUmamiSiteID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUmamiSiteID, opts...).ToFunc()
+}
+
+// ByIsAdmin orders the results by the is_admin field.
+func ByIsAdmin(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsAdmin, opts...).ToFunc()
 }
 
 // BySyncedAt orders the results by the synced_at field.

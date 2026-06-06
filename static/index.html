@@ -135,6 +135,15 @@
                 Settings
             </a>
         </li>
+        {{if .User.IsAdmin}}
+        <li class="nav-item">
+            <a href="/admin" class="nav-link {{if eq .ActiveTab "admin"}}active{{end}}"
+               hx-get="/admin" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+                Admin
+            </a>
+        </li>
+        {{end}}
     </ul>
     {{end}}
 
@@ -777,3 +786,125 @@ loadChartData('');
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
 </body>
 </html>
+
+{{define "admin_panel"}}
+<div class="admin-panel">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2 class="h4 fw-semibold mb-0">Admin Panel</h2>
+    </div>
+
+    <ul class="nav nav-pills mb-4 gap-2" id="admin-tabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active btn-sm" id="otel-tab" data-bs-toggle="pill" data-bs-target="#otel-panel" type="button" role="tab">OTEL Export</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link btn-sm" id="users-tab" data-bs-toggle="pill" data-bs-target="#users-panel" type="button" role="tab" hx-get="/admin/users" hx-target="#users-panel" hx-trigger="show.bs.tab">Users</button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="otel-panel" role="tabpanel">
+            {{template "admin_otel_form" .}}
+        </div>
+        <div class="tab-pane fade" id="users-panel" role="tabpanel">
+            <p class="text-secondary small">Click the Users tab to load the user list.</p>
+        </div>
+    </div>
+</div>
+{{end}}
+
+{{define "admin_otel_form"}}
+<div class="card border-secondary">
+    <div class="card-body">
+        <h5 class="card-title">OpenTelemetry Export</h5>
+        <p class="card-text text-secondary small">Configure OTLP export for traces, metrics, and logs. Leave endpoint empty to disable all exporting.</p>
+        <form hx-post="/admin/otel" hx-target="#otel-panel" hx-swap="innerHTML">
+            <div class="mb-3">
+                <label class="form-label small text-secondary">OTLP Endpoint</label>
+                <input type="text" name="otel_endpoint" class="form-control form-control-sm bg-dark text-light border-secondary" placeholder="localhost:4318" value="{{if .Config}}{{.Config.OtelEndpoint}}{{end}}">
+                <div class="form-text text-secondary small">e.g. <code>localhost:4318</code> for traces/metrics HTTP endpoint</div>
+            </div>
+
+            <div class="mb-3 d-flex gap-4 flex-wrap">
+                <div class="form-check">
+                    <input type="checkbox" name="traces_enabled" class="form-check-input" id="traces-check" {{if .Config}}{{if .Config.TracesEnabled}}checked{{end}}{{end}}>
+                    <label class="form-check-label small" for="traces-check">Traces</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" name="metrics_enabled" class="form-check-input" id="metrics-check" {{if .Config}}{{if .Config.MetricsEnabled}}checked{{end}}{{end}}>
+                    <label class="form-check-label small" for="metrics-check">Metrics</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" name="logs_enabled" class="form-check-input" id="logs-check" {{if .Config}}{{if .Config.LogsEnabled}}checked{{end}}{{end}}>
+                    <label class="form-check-label small" for="logs-check">Logs</label>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label small text-secondary">Log Severity Threshold</label>
+                <select name="log_severity" class="form-select form-select-sm bg-dark text-light border-secondary" style="width:auto">
+                    <option value="debug" {{if and .Config (eq .Config.LogSeverity "debug")}}selected{{end}}>Debug</option>
+                    <option value="info" {{if and .Config (eq .Config.LogSeverity "info")}}selected{{end}}>Info</option>
+                    <option value="warning" {{if or (not .Config) (eq .Config.LogSeverity "warning")}}selected{{end}}>Warning</option>
+                    <option value="error" {{if and .Config (eq .Config.LogSeverity "error")}}selected{{end}}>Error</option>
+                </select>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <button type="submit" class="btn btn-sm btn-success">Save</button>
+                <span id="otel-status"></span>
+            </div>
+        </form>
+    </div>
+</div>
+{{end}}
+
+{{define "admin_users_tab"}}
+<div class="card border-secondary">
+    <div class="card-body p-0">
+        <table class="table table-dark table-striped table-hover mb-0 align-middle">
+            <thead class="table-secondary">
+                <tr>
+                    <th style="width:36px"></th>
+                    <th>Login</th>
+                    <th>GitHub ID</th>
+                    <th style="width:100px">Admin</th>
+                    <th style="width:120px">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Users}}
+                <tr id="user-row-{{.ID}}">
+                    <td>
+                        {{if .AvatarURL}}
+                        <img src="{{.AvatarURL}}" alt="" class="rounded-circle" width="24" height="24">
+                        {{end}}
+                    </td>
+                    <td class="small">{{.Login}}</td>
+                    <td class="small text-secondary">{{.GithubID}}</td>
+                    <td>
+                        {{if .IsAdmin}}
+                        <span class="badge bg-success">Admin</span>
+                        {{else}}
+                        <span class="badge bg-secondary">User</span>
+                        {{end}}
+                    </td>
+                    <td>
+                        {{if ne (printf "%d" .ID) (printf "%d" $.UserID)}}
+                        <button class="btn btn-sm {{if .IsAdmin}}btn-outline-warning{{else}}btn-outline-success{{end}}"
+                                hx-post="/admin/users/{{.ID}}/toggle-admin"
+                                hx-target="#user-row-{{.ID}}"
+                                hx-swap="outerHTML">
+                            {{if .IsAdmin}}Demote{{else}}Promote{{end}}
+                        </button>
+                        {{else}}
+                        <span class="text-secondary small fst-italic">You</span>
+                        {{end}}
+                    </td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div>
+</div>
+{{end}}

@@ -22,6 +22,7 @@ func (User) Fields() []ent.Field {
 		field.Int("sync_interval_minutes").Default(15),
 		field.String("umami_url").Optional(),
 		field.String("umami_site_id").Optional(),
+		field.Bool("is_admin").Default(false),
 		field.Time("synced_at").Optional(),
 		field.Time("created_at").Default(time.Now),
 	}

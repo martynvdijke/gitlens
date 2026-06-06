@@ -8,6 +8,22 @@ import (
 )
 
 var (
+	// AdminConfigsColumns holds the columns for the "admin_configs" table.
+	AdminConfigsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "otel_endpoint", Type: field.TypeString, Nullable: true},
+		{Name: "traces_enabled", Type: field.TypeBool, Default: false},
+		{Name: "metrics_enabled", Type: field.TypeBool, Default: false},
+		{Name: "logs_enabled", Type: field.TypeBool, Default: false},
+		{Name: "log_severity", Type: field.TypeString, Default: "warning"},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// AdminConfigsTable holds the schema information for the "admin_configs" table.
+	AdminConfigsTable = &schema.Table{
+		Name:       "admin_configs",
+		Columns:    AdminConfigsColumns,
+		PrimaryKey: []*schema.Column{AdminConfigsColumns[0]},
+	}
 	// EventsColumns holds the columns for the "events" table.
 	EventsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -104,6 +120,7 @@ var (
 		{Name: "sync_interval_minutes", Type: field.TypeInt, Default: 15},
 		{Name: "umami_url", Type: field.TypeString, Nullable: true},
 		{Name: "umami_site_id", Type: field.TypeString, Nullable: true},
+		{Name: "is_admin", Type: field.TypeBool, Default: false},
 		{Name: "synced_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 	}
@@ -115,6 +132,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AdminConfigsTable,
 		EventsTable,
 		RepositoriesTable,
 		UsersTable,

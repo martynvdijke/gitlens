@@ -57,13 +57,21 @@ func (h *AuthHandler) Callback(c *gin.Context) {
 
 	u, err := h.client.User.Query().Where(user.GithubID(ghUser.ID)).Only(c.Request.Context())
 	if ent.IsNotFound(err) {
-		u, err = h.client.User.Create().
+		count, _ := h.client.User.Query().Count(c.Request.Context())
+
+		create := h.client.User.Create().
 			SetGithubID(ghUser.ID).
 			SetLogin(ghUser.Login).
 			SetAvatarURL(ghUser.AvatarURL).
 			SetName(ghUser.Name).
-			SetAccessToken(token).
-			Save(c.Request.Context())
+			SetAccessToken(token)
+
+		if count == 0 {
+			create.SetIsAdmin(true)
+			log.Printf("First user detected — promoting %s to admin", ghUser.Login)
+		}
+
+		u, err = create.Save(c.Request.Context())
 		if err != nil {
 			log.Printf("User create error: %v", err)
 			c.HTML(http.StatusInternalServerError, "index.html", gin.H{"Error": "Failed to create user"})

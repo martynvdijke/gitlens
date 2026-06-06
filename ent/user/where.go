@@ -95,6 +95,11 @@ func UmamiSiteID(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldUmamiSiteID, v))
 }
 
+// IsAdmin applies equality check predicate on the "is_admin" field. It's identical to IsAdminEQ.
+func IsAdmin(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldIsAdmin, v))
+}
+
 // SyncedAt applies equality check predicate on the "synced_at" field. It's identical to SyncedAtEQ.
 func SyncedAt(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldSyncedAt, v))
@@ -613,6 +618,16 @@ func UmamiSiteIDEqualFold(v string) predicate.User {
 // UmamiSiteIDContainsFold applies the ContainsFold predicate on the "umami_site_id" field.
 func UmamiSiteIDContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldUmamiSiteID, v))
+}
+
+// IsAdminEQ applies the EQ predicate on the "is_admin" field.
+func IsAdminEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldIsAdmin, v))
+}
+
+// IsAdminNEQ applies the NEQ predicate on the "is_admin" field.
+func IsAdminNEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldIsAdmin, v))
 }
 
 // SyncedAtEQ applies the EQ predicate on the "synced_at" field.
