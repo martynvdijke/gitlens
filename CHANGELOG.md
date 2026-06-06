@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/martynvdijke/gitlens/compare/v1.9.0...v1.10.0) (2026-06-06)
+
+
+### Features
+
+* add admin panel with OTEL export, user management, and first-user auto-admin promotion ([6ef156f](https://github.com/martynvdijke/gitlens/commit/6ef156f176cbb149ccdd5cc81b5abfa5f0ff36c7))
+
 # [1.9.0](https://github.com/martynvdijke/gitlens/compare/v1.8.4...v1.9.0) (2026-06-06)
 
 
