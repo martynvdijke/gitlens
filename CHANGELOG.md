@@ -1,3 +1,15 @@
+# [1.9.0](https://github.com/martynvdijke/gitlens/compare/v1.8.4...v1.9.0) (2026-06-06)
+
+
+### Bug Fixes
+
+* wrap Umami script tag in nil-safe {{with .User}} block to prevent template render panic on unauthenticated pages ([a662637](https://github.com/martynvdijke/gitlens/commit/a66263797e58f935bfed3385fc7b078eb21df8dc))
+
+
+### Features
+
+* add self-hosted Umami analytics support in settings ([27e29f0](https://github.com/martynvdijke/gitlens/commit/27e29f0c54c0663171a229bcaad8caaf82cf10e8))
+
 ## [1.8.4](https://github.com/martynvdijke/gitlens/compare/v1.8.3...v1.8.4) (2026-06-06)
 
 ## [1.8.3](https://github.com/martynvdijke/gitlens/compare/v1.8.2...v1.8.3) (2026-06-05)
