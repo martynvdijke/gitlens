@@ -1,6 +1,7 @@
 package github
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -813,5 +814,269 @@ func TestParseCommitType_Whitespace(t *testing.T) {
 func TestParseCommitType_NoColon(t *testing.T) {
 	if tp := ParseCommitType("just a message"); tp != "other" {
 		t.Errorf("expected other, got %s", tp)
+	}
+}
+
+func TestFindDependencyDashboard_Found(t *testing.T) {
+	page := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		page++
+		w.Header().Set("Content-Type", "application/json")
+		if page == 1 {
+			w.Write([]byte(`[
+				{"number":1,"title":"Bug report","body":"Something is broken","state":"open"},
+				{"number":2,"title":"Dependency Dashboard","body":"## Pending\n- [ ] Update deps","state":"open"},
+				{"number":3,"title":"Feature request","body":"Add new feature","state":"open"}
+			]`))
+		} else {
+			w.Write([]byte(`[]`))
+		}
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	num, body, err := c.FindDependencyDashboard("token", "user", "repo")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if num != 2 {
+		t.Errorf("expected issue number 2, got %d", num)
+	}
+	if !strings.Contains(body, "Update deps") {
+		t.Errorf("expected body to contain 'Update deps', got %s", body)
+	}
+}
+
+func TestFindDependencyDashboard_NotFound(t *testing.T) {
+	page := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		page++
+		w.Header().Set("Content-Type", "application/json")
+		if page == 1 {
+			w.Write([]byte(`[
+				{"number":1,"title":"Bug report","body":"Something is broken","state":"open"},
+				{"number":2,"title":"Feature request","body":"Add new feature","state":"open"}
+			]`))
+		} else {
+			w.Write([]byte(`[]`))
+		}
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	_, _, err := c.FindDependencyDashboard("token", "user", "repo")
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if !strings.Contains(err.Error(), "no Dependency Dashboard issue found") {
+		t.Errorf("unexpected error message: %v", err)
+	}
+}
+
+func TestFindDependencyDashboard_NoIssues(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`[]`))
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	_, _, err := c.FindDependencyDashboard("token", "user", "repo")
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if !strings.Contains(err.Error(), "no Dependency Dashboard issue found") {
+		t.Errorf("unexpected error message: %v", err)
+	}
+}
+
+func TestUpdateIssueBody_Success(t *testing.T) {
+	var receivedBody string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "PATCH" {
+			t.Errorf("expected PATCH, got %s", r.Method)
+		}
+		if r.URL.Path != "/repos/user/repo/issues/42" {
+			t.Errorf("unexpected path: %s", r.URL.Path)
+		}
+		var payload struct {
+			Body string `json:"body"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			t.Fatalf("failed to decode request body: %v", err)
+		}
+		receivedBody = payload.Body
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"number":42}`))
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	err := c.UpdateIssueBody("token", "user", "repo", 42, "Updated body content")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if receivedBody != "Updated body content" {
+		t.Errorf("expected 'Updated body content', got %s", receivedBody)
+	}
+}
+
+func TestUpdateIssueBody_APIError(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte(`{"message":"Not Found"}`))
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	err := c.UpdateIssueBody("token", "user", "repo", 999, "body")
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+}
+
+func TestRebaseAllOpenPRs_Success(t *testing.T) {
+	var updatedBody string
+	issuePage := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "GET" && strings.Contains(r.URL.Path, "/issues") {
+			issuePage++
+			w.Header().Set("Content-Type", "application/json")
+			if issuePage == 1 {
+				w.Write([]byte(`[
+					{"number":1,"title":"Bug report","body":"Something is broken","state":"open"},
+					{"number":2,"title":"Dependency Dashboard","body":"## Pending\n- [ ] Rebase all open PRs <!-- rebase-all-open-prs-checkbox -->\n- [ ] Other task","state":"open"}
+				]`))
+			} else {
+				w.Write([]byte(`[]`))
+			}
+		} else if r.Method == "PATCH" {
+			var payload struct {
+				Body string `json:"body"`
+			}
+			if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+				t.Fatalf("failed to decode request body: %v", err)
+			}
+			updatedBody = payload.Body
+			w.Header().Set("Content-Type", "application/json")
+			w.Write([]byte(`{"number":2}`))
+		}
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	err := c.RebaseAllOpenPRs("token", "user", "repo")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(updatedBody, "- [x] Rebase all open PRs") {
+		t.Errorf("expected checkbox to be checked, got: %s", updatedBody)
+	}
+	if strings.Contains(updatedBody, "- [ ] Rebase all open PRs") {
+		t.Errorf("expected unchecked checkbox to be replaced, got: %s", updatedBody)
+	}
+}
+
+func TestRebaseAllOpenPRs_AlreadyChecked(t *testing.T) {
+	updateCalled := false
+	issuePage := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "GET" && strings.Contains(r.URL.Path, "/issues") {
+			issuePage++
+			w.Header().Set("Content-Type", "application/json")
+			if issuePage == 1 {
+				w.Write([]byte(`[
+					{"number":2,"title":"Dependency Dashboard","body":"## Pending\n- [x] Rebase all open PRs <!-- rebase-all-open-prs-checkbox -->","state":"open"}
+				]`))
+			} else {
+				w.Write([]byte(`[]`))
+			}
+		} else if r.Method == "PATCH" {
+			updateCalled = true
+			w.Header().Set("Content-Type", "application/json")
+			w.Write([]byte(`{"number":2}`))
+		}
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	err := c.RebaseAllOpenPRs("token", "user", "repo")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if updateCalled {
+		t.Error("expected UpdateIssueBody not to be called when checkbox already checked")
+	}
+}
+
+func TestRebaseAllOpenPRs_MarkerNotFound(t *testing.T) {
+	issuePage := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "GET" && strings.Contains(r.URL.Path, "/issues") {
+			issuePage++
+			w.Header().Set("Content-Type", "application/json")
+			if issuePage == 1 {
+				w.Write([]byte(`[
+					{"number":2,"title":"Dependency Dashboard","body":"## Pending\n- [ ] Some other task","state":"open"}
+				]`))
+			} else {
+				w.Write([]byte(`[]`))
+			}
+		}
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	err := c.RebaseAllOpenPRs("token", "user", "repo")
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if !strings.Contains(err.Error(), "rebase-all checkbox marker not found") {
+		t.Errorf("unexpected error message: %v", err)
+	}
+}
+
+func TestRebaseAllOpenPRs_NoDashboard(t *testing.T) {
+	issuePage := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "GET" && strings.Contains(r.URL.Path, "/issues") {
+			issuePage++
+			w.Header().Set("Content-Type", "application/json")
+			if issuePage == 1 {
+				w.Write([]byte(`[
+					{"number":1,"title":"Bug report","body":"Something is broken","state":"open"}
+				]`))
+			} else {
+				w.Write([]byte(`[]`))
+			}
+		}
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	err := c.RebaseAllOpenPRs("token", "user", "repo")
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if !strings.Contains(err.Error(), "no Dependency Dashboard issue found") {
+		t.Errorf("unexpected error message: %v", err)
 	}
 }

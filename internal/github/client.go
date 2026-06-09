@@ -145,6 +145,13 @@ type ghPullRequest struct {
 	Merged         bool   `json:"merged"`
 }
 
+type ghIssue struct {
+	Number int    `json:"number"`
+	Title  string `json:"title"`
+	Body   string `json:"body"`
+	State  string `json:"state"`
+}
+
 func (c *Client) doRequest(method, urlStr, token string, body io.Reader) (*http.Response, error) {
 	req, err := http.NewRequest(method, urlStr, body)
 	if err != nil {
@@ -629,4 +636,101 @@ func (c *Client) GetWorkflowStatus(token, owner, repo, branch string) (*Workflow
 		ID:         run.ID,
 		Conclusion: run.Conclusion,
 	}, nil
+}
+
+// FindDependencyDashboard locates the Renovate Dependency Dashboard issue in a repository.
+// It searches for an open issue with the title "Dependency Dashboard" and returns its number and body.
+func (c *Client) FindDependencyDashboard(token, owner, repo string) (issueNumber int, body string, err error) {
+	page := 1
+	for {
+		u := fmt.Sprintf("%s/repos/%s/%s/issues?state=open&per_page=100&page=%d", c.APIURL, owner, repo, page)
+		resp, err := c.doRequest("GET", u, token, nil)
+		if err != nil {
+			return 0, "", err
+		}
+
+		var issues []ghIssue
+		if err := json.NewDecoder(resp.Body).Decode(&issues); err != nil {
+			resp.Body.Close()
+			return 0, "", fmt.Errorf("decoding issues: %w", err)
+		}
+		resp.Body.Close()
+
+		if len(issues) == 0 {
+			break
+		}
+
+		for _, issue := range issues {
+			if issue.Title == "Dependency Dashboard" {
+				return issue.Number, issue.Body, nil
+			}
+		}
+
+		page++
+	}
+
+	return 0, "", fmt.Errorf("no Dependency Dashboard issue found in %s/%s", owner, repo)
+}
+
+// UpdateIssueBody updates the body of a GitHub issue using the PATCH method.
+func (c *Client) UpdateIssueBody(token, owner, repo string, issueNumber int, body string) error {
+	u := fmt.Sprintf("%s/repos/%s/%s/issues/%d", c.APIURL, owner, repo, issueNumber)
+	payload := struct {
+		Body string `json:"body"`
+	}{Body: body}
+
+	var buf strings.Builder
+	if err := json.NewEncoder(&buf).Encode(payload); err != nil {
+		return fmt.Errorf("encoding update request: %w", err)
+	}
+
+	resp, err := c.doRequest("PATCH", u, token, strings.NewReader(buf.String()))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return nil
+}
+
+// RebaseAllOpenPRs triggers Renovate to rebase all open PRs by checking the rebase-all checkbox
+// in the Dependency Dashboard issue. It finds the issue, locates the checkbox marker, and updates it.
+func (c *Client) RebaseAllOpenPRs(token, owner, repo string) error {
+	issueNumber, body, err := c.FindDependencyDashboard(token, owner, repo)
+	if err != nil {
+		return err
+	}
+
+	const marker = "<!-- rebase-all-open-prs-checkbox -->"
+	lines := strings.Split(body, "\n")
+	found := false
+	updated := false
+
+	for i, line := range lines {
+		if strings.Contains(line, marker) {
+			found = true
+			// Check if already checked
+			if strings.Contains(line, "- [x]") || strings.Contains(line, "- [X]") {
+				// Already checked, no-op
+				return nil
+			}
+			// Replace unchecked checkbox with checked
+			if strings.Contains(line, "- [ ]") {
+				lines[i] = strings.Replace(line, "- [ ]", "- [x]", 1)
+				updated = true
+			}
+			break
+		}
+	}
+
+	if !found {
+		return fmt.Errorf("rebase-all checkbox marker not found in Dependency Dashboard issue")
+	}
+
+	if !updated {
+		return fmt.Errorf("could not update rebase-all checkbox in Dependency Dashboard issue")
+	}
+
+	newBody := strings.Join(lines, "\n")
+	return c.UpdateIssueBody(token, owner, repo, issueNumber, newBody)
 }

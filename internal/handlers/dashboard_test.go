@@ -1132,3 +1132,234 @@ func TestIndex_RendersNormalWhenHasRepos(t *testing.T) {
 		t.Errorf("expected htmx lazy-load for repos, body: %s", body)
 	}
 }
+
+// ─── RenovateRebaseAll Tests ─────────────────────────────────────────
+
+func TestRenovateRebaseAll_InvalidRepoID(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().
+		SetGithubID(1200).SetLogin("rebaseinvalid").SetAccessToken("tok").Save(context.Background())
+
+	sessionID := store.Set(int64(u.ID))
+	w := httptest.NewRecorder()
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.POST("/repos/:id/renovate/rebase-all", func(c *gin.Context) {
+		c.Set("user_id", int64(u.ID))
+		handler.RenovateRebaseAll(c)
+	})
+	req := httptest.NewRequest("POST", "/repos/invalid/renovate/rebase-all", http.NoBody)
+	req.AddCookie(&http.Cookie{Name: "gitlens_session", Value: sessionID})
+	engine.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected 400 for invalid repo ID, got %d", w.Code)
+	}
+}
+
+func TestRenovateRebaseAll_RepoNotFound(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().
+		SetGithubID(1201).SetLogin("rebasenotfound").SetAccessToken("tok").Save(context.Background())
+
+	sessionID := store.Set(int64(u.ID))
+	w := httptest.NewRecorder()
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.POST("/repos/:id/renovate/rebase-all", func(c *gin.Context) {
+		c.Set("user_id", int64(u.ID))
+		handler.RenovateRebaseAll(c)
+	})
+	req := httptest.NewRequest("POST", "/repos/99999/renovate/rebase-all", http.NoBody)
+	req.AddCookie(&http.Cookie{Name: "gitlens_session", Value: sessionID})
+	engine.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNotFound {
+		t.Errorf("expected 404 for non-existent repo, got %d", w.Code)
+	}
+}
+
+func TestRenovateRebaseAll_Success(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, err := client.User.Create().
+		SetGithubID(1202).SetLogin("rebasesuccess").SetAccessToken("tok").
+		Save(context.Background())
+	if err != nil {
+		t.Fatalf("create user: %v", err)
+	}
+
+	r, err := client.Repository.Create().
+		SetGithubID(100).SetOwner("user").SetName("rebasetest").
+		SetFullName("user/rebasetest").SetHTMLURL("https://github.com/user/rebasetest").
+		SetDefaultBranch("main").SetUserID(u.ID).
+		Save(context.Background())
+	if err != nil {
+		t.Fatalf("create repo: %v", err)
+	}
+
+	callCount := 0
+	apiSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		callCount++
+		w.Header().Set("Content-Type", "application/json")
+		if strings.Contains(r.URL.Path, "/issues") && r.Method == "GET" {
+			w.Write([]byte(`[
+				{"number":5,"title":"Dependency Dashboard","body":"## Pending\n- [ ] Rebase all open PRs <!-- rebase-all-open-prs-checkbox -->","state":"open"}
+			]`))
+		} else if strings.Contains(r.URL.Path, "/issues") && r.Method == "PATCH" {
+			w.Write([]byte(`{"number":5,"title":"Dependency Dashboard"}`))
+		} else {
+			t.Logf("Unexpected API call: %s %s", r.Method, r.URL.Path)
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer apiSrv.Close()
+	handler.gh.APIURL = apiSrv.URL
+
+	sessionID := store.Set(int64(u.ID))
+	w := httptest.NewRecorder()
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.POST("/repos/:id/renovate/rebase-all", func(c *gin.Context) {
+		c.Set("user_id", int64(u.ID))
+		handler.RenovateRebaseAll(c)
+	})
+	req := httptest.NewRequest("POST", fmt.Sprintf("/repos/%d/renovate/rebase-all", r.ID), http.NoBody)
+	req.AddCookie(&http.Cookie{Name: "gitlens_session", Value: sessionID})
+	engine.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	if !strings.Contains(w.Body.String(), "Renovate rebase-all triggered successfully") {
+		t.Errorf("expected success message, got: %s", w.Body.String())
+	}
+	if callCount != 2 {
+		t.Errorf("expected 2 API calls (list issues + update issue), got %d", callCount)
+	}
+}
+
+func TestRenovateRebaseAll_GitHubError(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().
+		SetGithubID(1203).SetLogin("rebasegherr").SetAccessToken("tok").
+		Save(context.Background())
+
+	r, _ := client.Repository.Create().
+		SetGithubID(101).SetOwner("user").SetName("rebaseerr").
+		SetFullName("user/rebaseerr").SetHTMLURL("https://github.com/user/rebaseerr").
+		SetDefaultBranch("main").SetUserID(u.ID).
+		Save(context.Background())
+
+	apiSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
+	defer apiSrv.Close()
+	handler.gh.APIURL = apiSrv.URL
+
+	sessionID := store.Set(int64(u.ID))
+	w := httptest.NewRecorder()
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.POST("/repos/:id/renovate/rebase-all", func(c *gin.Context) {
+		c.Set("user_id", int64(u.ID))
+		handler.RenovateRebaseAll(c)
+	})
+	req := httptest.NewRequest("POST", fmt.Sprintf("/repos/%d/renovate/rebase-all", r.ID), http.NoBody)
+	req.AddCookie(&http.Cookie{Name: "gitlens_session", Value: sessionID})
+	engine.ServeHTTP(w, req)
+
+	if w.Code != http.StatusInternalServerError {
+		t.Errorf("expected 500 for GitHub API error, got %d: %s", w.Code, w.Body.String())
+	}
+	if !strings.Contains(w.Body.String(), "Failed to trigger Renovate rebase") {
+		t.Errorf("expected failure message, got: %s", w.Body.String())
+	}
+}
+
+func TestRenovateRebaseAll_NoDashboard(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().
+		SetGithubID(1204).SetLogin("rebasenodash").SetAccessToken("tok").
+		Save(context.Background())
+
+	r, _ := client.Repository.Create().
+		SetGithubID(102).SetOwner("user").SetName("nodash").
+		SetFullName("user/nodash").SetHTMLURL("https://github.com/user/nodash").
+		SetDefaultBranch("main").SetUserID(u.ID).
+		Save(context.Background())
+
+	pageCount := 0
+	apiSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		pageCount++
+		w.Header().Set("Content-Type", "application/json")
+		if pageCount == 1 {
+			w.Write([]byte(`[
+				{"number":1,"title":"Bug report","body":"Something is broken","state":"open"}
+			]`))
+		} else {
+			w.Write([]byte(`[]`))
+		}
+	}))
+	defer apiSrv.Close()
+	handler.gh.APIURL = apiSrv.URL
+
+	sessionID := store.Set(int64(u.ID))
+	w := httptest.NewRecorder()
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.POST("/repos/:id/renovate/rebase-all", func(c *gin.Context) {
+		c.Set("user_id", int64(u.ID))
+		handler.RenovateRebaseAll(c)
+	})
+	req := httptest.NewRequest("POST", fmt.Sprintf("/repos/%d/renovate/rebase-all", r.ID), http.NoBody)
+	req.AddCookie(&http.Cookie{Name: "gitlens_session", Value: sessionID})
+	engine.ServeHTTP(w, req)
+
+	if w.Code != http.StatusInternalServerError {
+		t.Errorf("expected 500 for missing dashboard, got %d: %s", w.Code, w.Body.String())
+	}
+	if !strings.Contains(w.Body.String(), "no Dependency Dashboard issue found") {
+		t.Errorf("expected dashboard-not-found message, got: %s", w.Body.String())
+	}
+}
+
+func TestRenovateRebaseAll_CheckboxAlreadyChecked(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().
+		SetGithubID(1205).SetLogin("rebasechecked").SetAccessToken("tok").
+		Save(context.Background())
+
+	r, _ := client.Repository.Create().
+		SetGithubID(103).SetOwner("user").SetName("alreadychecked").
+		SetFullName("user/alreadychecked").SetHTMLURL("https://github.com/user/alreadychecked").
+		SetDefaultBranch("main").SetUserID(u.ID).
+		Save(context.Background())
+
+	apiSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`[
+			{"number":10,"title":"Dependency Dashboard","body":"## Pending\n- [x] Rebase all open PRs <!-- rebase-all-open-prs-checkbox -->","state":"open"}
+		]`))
+	}))
+	defer apiSrv.Close()
+	handler.gh.APIURL = apiSrv.URL
+
+	sessionID := store.Set(int64(u.ID))
+	w := httptest.NewRecorder()
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.POST("/repos/:id/renovate/rebase-all", func(c *gin.Context) {
+		c.Set("user_id", int64(u.ID))
+		handler.RenovateRebaseAll(c)
+	})
+	req := httptest.NewRequest("POST", fmt.Sprintf("/repos/%d/renovate/rebase-all", r.ID), http.NoBody)
+	req.AddCookie(&http.Cookie{Name: "gitlens_session", Value: sessionID})
+	engine.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200 (already checked is a no-op success), got %d: %s", w.Code, w.Body.String())
+	}
+	if !strings.Contains(w.Body.String(), "Renovate rebase-all triggered successfully") {
+		t.Errorf("expected success message for already-checked, got: %s", w.Body.String())
+	}
+}

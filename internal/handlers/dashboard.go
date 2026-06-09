@@ -653,3 +653,39 @@ func (h *DashboardHandler) MergeAllPRs(c *gin.Context) {
 		c.String(http.StatusOK, "All %d PR(s) merged successfully!", len(prs))
 	}
 }
+
+func (h *DashboardHandler) RenovateRebaseAll(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	repoID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.String(http.StatusBadRequest, "Invalid repo ID")
+		return
+	}
+
+	ctx := c.Request.Context()
+	r, err := h.client.Repository.Query().
+		Where(
+			repository.ID(repoID),
+			repository.HasUserWith(user.ID(int(userID))),
+		).
+		Only(ctx)
+	if err != nil {
+		c.String(http.StatusNotFound, "Repository not found")
+		return
+	}
+
+	u, err := h.client.User.Get(ctx, int(userID))
+	if err != nil {
+		c.String(http.StatusInternalServerError, "User not found")
+		return
+	}
+
+	err = h.gh.RebaseAllOpenPRs(u.AccessToken, r.Owner, r.Name)
+	if err != nil {
+		log.Printf("Error triggering Renovate rebase-all on %s: %v", r.FullName, err)
+		c.String(http.StatusInternalServerError, "Failed to trigger Renovate rebase: %v", err)
+		return
+	}
+
+	c.String(http.StatusOK, "Renovate rebase-all triggered successfully for %s!", r.FullName)
+}

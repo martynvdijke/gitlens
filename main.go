@@ -228,6 +228,7 @@ func main() {
 		authed.GET("/repos/:id/prs", dashHandler.ListPullRequests)
 		authed.POST("/repos/:id/prs/:number/merge", dashHandler.MergePR)
 		authed.POST("/repos/:id/prs/merge-all", dashHandler.MergeAllPRs)
+		authed.POST("/repos/:id/renovate/rebase-all", dashHandler.RenovateRebaseAll)
 
 		authed.GET("/settings", middleware.HTMXOnly(), settingsHandler.Index)
 		authed.POST("/settings/interval", settingsHandler.UpdateInterval)
