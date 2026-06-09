@@ -1,3 +1,17 @@
+# [1.11.0](https://github.com/martynvdijke/gitlens/compare/v1.10.0...v1.11.0) (2026-06-09)
+
+
+### Bug Fixes
+
+* use correct input githubToken for otel-cicd-action@v4 (not otelToken) ([80f3e5c](https://github.com/martynvdijke/gitlens/commit/80f3e5c97b3dad9ed0c7d6407d18fd6c93dced9c))
+* use githubToken instead of otelToken for otel-cicd-action@v4 ([d21ef33](https://github.com/martynvdijke/gitlens/commit/d21ef33c3ad69da736b54808af3742f225d7ee82))
+
+
+### Features
+
+* add otlpAuthorization input for Bearer auth ([bfdec3e](https://github.com/martynvdijke/gitlens/commit/bfdec3efa653689c3721818203e9d89450e9dcf7))
+* add Renovate Dependency Dashboard rebase-all support ([392b879](https://github.com/martynvdijke/gitlens/commit/392b879a00118c1f5203a93d848b561482c0ee0a))
+
 # [1.10.0](https://github.com/martynvdijke/gitlens/compare/v1.9.0...v1.10.0) (2026-06-06)
 
 
