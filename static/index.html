@@ -215,8 +215,8 @@
                     <div class="p-2 bg-dark rounded border border-secondary">
                         <div class="text-uppercase small text-secondary mb-1 stat-label">Latest Commit</div>
                         <div class="stat-value">
-                            {{if .LatestCommitSHA}}
-                            <code class="text-light small">{{shortSHA .LatestCommitSHA}}</code>
+                            {{if .LatestCommitSha}}
+                            <code class="text-light small">{{shortSHA .LatestCommitSha}}</code>
                             <div class="text-light small text-truncate">{{truncate .LatestCommitMessage 60}}</div>
                             {{if not .LatestCommitDate.IsZero}}<div class="text-secondary small">{{formatTime .LatestCommitDate}}</div>{{end}}
                             {{else}}
@@ -264,8 +264,8 @@
                     <div class="p-2 bg-dark rounded border border-secondary">
                         <div class="text-uppercase small text-secondary mb-1 stat-label">Pull Requests</div>
                         <div class="stat-value">
-                            {{if .OpenPRCount}}
-                            <span class="text-info fw-semibold small">{{.OpenPRCount}} open</span>
+                            {{if .OpenPrCount}}
+                            <span class="text-info fw-semibold small">{{.OpenPrCount}} open</span>
                             <button class="btn btn-sm btn-outline-info ms-1" hx-get="/repos/{{.ID}}/prs" hx-target="#prs-{{.ID}}" hx-swap="innerHTML" hx-indicator="#pr-spinner-{{.ID}}">View PRs</button>
                             <span id="pr-spinner-{{.ID}}" class="htmx-indicator small text-info">Loading...</span>
                             {{else}}
