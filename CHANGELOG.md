@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/martynvdijke/gitlens/compare/v1.11.1...v1.12.0) (2026-06-10)
+
+
+### Features
+
+* optimize front index page for mobile readability ([4cbffad](https://github.com/martynvdijke/gitlens/commit/4cbffad848903c5348f324f30cc5ff08152798c8))
+
 ## [1.11.1](https://github.com/martynvdijke/gitlens/compare/v1.11.0...v1.11.1) (2026-06-10)
 
 
