@@ -152,12 +152,61 @@
     }
 }
 
-/* Mobile: landing page hero */
+/* Mobile: landing page hero optimizations */
 @media (max-width: 576px) {
-    .display-5 {
-        font-size: 1.75rem;
+    .landing-hero .display-5 {
+        font-size: 2rem;
+        line-height: 1.2;
     }
-    .lead {
-        font-size: 0.95rem;
+    .landing-hero .lead {
+        font-size: 1.05rem;
+        max-width: 100% !important;
+        padding: 0 0.5rem;
+    }
+    .landing-hero .landing-cta {
+        width: 100%;
+        justify-content: center;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+    .landing-hero .py-5 {
+        padding-top: 2.5rem !important;
+        padding-bottom: 2rem !important;
+    }
+}
+
+/* Mobile: landing page feature cards readability */
+@media (max-width: 576px) {
+    .landing-features {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+    .landing-features .card-body {
+        padding: 1.25rem;
+    }
+    .landing-features .card-title {
+        font-size: 1.1rem;
+    }
+    .landing-features .card-text {
+        font-size: 0.925rem;
+        line-height: 1.5;
+    }
+    .landing-features .card-body svg {
+        width: 28px;
+        height: 28px;
+    }
+}
+
+/* Mobile: navbar user area spacing */
+@media (max-width: 576px) {
+    .navbar .container-fluid {
+        gap: 0.25rem;
+    }
+    .navbar .text-secondary.small {
+        display: none;
+    }
+    .navbar .btn-outline-danger {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
     }
 }
