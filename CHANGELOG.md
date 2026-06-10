@@ -1,3 +1,10 @@
+## [1.11.1](https://github.com/martynvdijke/gitlens/compare/v1.11.0...v1.11.1) (2026-06-10)
+
+
+### Bug Fixes
+
+* correct template field names to match ent-generated struct case ([1233c7a](https://github.com/martynvdijke/gitlens/commit/1233c7a177cf36c9b80af38e57676986e274fa75))
+
 # [1.11.0](https://github.com/martynvdijke/gitlens/compare/v1.10.0...v1.11.0) (2026-06-09)
 
 
