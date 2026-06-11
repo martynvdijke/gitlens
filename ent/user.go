@@ -39,6 +39,20 @@ type User struct {
 	SyncedAt time.Time `json:"synced_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
+	// ForgejoID holds the value of the "forgejo_id" field.
+	ForgejoID int64 `json:"forgejo_id,omitempty"`
+	// ForgejoLogin holds the value of the "forgejo_login" field.
+	ForgejoLogin string `json:"forgejo_login,omitempty"`
+	// ForgejoAvatarURL holds the value of the "forgejo_avatar_url" field.
+	ForgejoAvatarURL string `json:"forgejo_avatar_url,omitempty"`
+	// ForgejoName holds the value of the "forgejo_name" field.
+	ForgejoName string `json:"forgejo_name,omitempty"`
+	// ForgejoAccessToken holds the value of the "forgejo_access_token" field.
+	ForgejoAccessToken string `json:"forgejo_access_token,omitempty"`
+	// ForgejoURL holds the value of the "forgejo_url" field.
+	ForgejoURL string `json:"forgejo_url,omitempty"`
+	// DismissedForgejoWarningFor holds the value of the "dismissed_forgejo_warning_for" field.
+	DismissedForgejoWarningFor string `json:"dismissed_forgejo_warning_for,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"edges"`
@@ -70,9 +84,9 @@ func (*User) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case user.FieldIsAdmin:
 			values[i] = new(sql.NullBool)
-		case user.FieldID, user.FieldGithubID, user.FieldSyncIntervalMinutes:
+		case user.FieldID, user.FieldGithubID, user.FieldSyncIntervalMinutes, user.FieldForgejoID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldLogin, user.FieldAvatarURL, user.FieldName, user.FieldAccessToken, user.FieldUmamiURL, user.FieldUmamiSiteID:
+		case user.FieldLogin, user.FieldAvatarURL, user.FieldName, user.FieldAccessToken, user.FieldUmamiURL, user.FieldUmamiSiteID, user.FieldForgejoLogin, user.FieldForgejoAvatarURL, user.FieldForgejoName, user.FieldForgejoAccessToken, user.FieldForgejoURL, user.FieldDismissedForgejoWarningFor:
 			values[i] = new(sql.NullString)
 		case user.FieldSyncedAt, user.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -163,6 +177,48 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
 			}
+		case user.FieldForgejoID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field forgejo_id", values[i])
+			} else if value.Valid {
+				_m.ForgejoID = value.Int64
+			}
+		case user.FieldForgejoLogin:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field forgejo_login", values[i])
+			} else if value.Valid {
+				_m.ForgejoLogin = value.String
+			}
+		case user.FieldForgejoAvatarURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field forgejo_avatar_url", values[i])
+			} else if value.Valid {
+				_m.ForgejoAvatarURL = value.String
+			}
+		case user.FieldForgejoName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field forgejo_name", values[i])
+			} else if value.Valid {
+				_m.ForgejoName = value.String
+			}
+		case user.FieldForgejoAccessToken:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field forgejo_access_token", values[i])
+			} else if value.Valid {
+				_m.ForgejoAccessToken = value.String
+			}
+		case user.FieldForgejoURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field forgejo_url", values[i])
+			} else if value.Valid {
+				_m.ForgejoURL = value.String
+			}
+		case user.FieldDismissedForgejoWarningFor:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field dismissed_forgejo_warning_for", values[i])
+			} else if value.Valid {
+				_m.DismissedForgejoWarningFor = value.String
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -236,6 +292,27 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("forgejo_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ForgejoID))
+	builder.WriteString(", ")
+	builder.WriteString("forgejo_login=")
+	builder.WriteString(_m.ForgejoLogin)
+	builder.WriteString(", ")
+	builder.WriteString("forgejo_avatar_url=")
+	builder.WriteString(_m.ForgejoAvatarURL)
+	builder.WriteString(", ")
+	builder.WriteString("forgejo_name=")
+	builder.WriteString(_m.ForgejoName)
+	builder.WriteString(", ")
+	builder.WriteString("forgejo_access_token=")
+	builder.WriteString(_m.ForgejoAccessToken)
+	builder.WriteString(", ")
+	builder.WriteString("forgejo_url=")
+	builder.WriteString(_m.ForgejoURL)
+	builder.WriteString(", ")
+	builder.WriteString("dismissed_forgejo_warning_for=")
+	builder.WriteString(_m.DismissedForgejoWarningFor)
 	builder.WriteByte(')')
 	return builder.String()
 }

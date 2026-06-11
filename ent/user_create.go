@@ -151,6 +151,104 @@ func (_c *UserCreate) SetNillableCreatedAt(v *time.Time) *UserCreate {
 	return _c
 }
 
+// SetForgejoID sets the "forgejo_id" field.
+func (_c *UserCreate) SetForgejoID(v int64) *UserCreate {
+	_c.mutation.SetForgejoID(v)
+	return _c
+}
+
+// SetNillableForgejoID sets the "forgejo_id" field if the given value is not nil.
+func (_c *UserCreate) SetNillableForgejoID(v *int64) *UserCreate {
+	if v != nil {
+		_c.SetForgejoID(*v)
+	}
+	return _c
+}
+
+// SetForgejoLogin sets the "forgejo_login" field.
+func (_c *UserCreate) SetForgejoLogin(v string) *UserCreate {
+	_c.mutation.SetForgejoLogin(v)
+	return _c
+}
+
+// SetNillableForgejoLogin sets the "forgejo_login" field if the given value is not nil.
+func (_c *UserCreate) SetNillableForgejoLogin(v *string) *UserCreate {
+	if v != nil {
+		_c.SetForgejoLogin(*v)
+	}
+	return _c
+}
+
+// SetForgejoAvatarURL sets the "forgejo_avatar_url" field.
+func (_c *UserCreate) SetForgejoAvatarURL(v string) *UserCreate {
+	_c.mutation.SetForgejoAvatarURL(v)
+	return _c
+}
+
+// SetNillableForgejoAvatarURL sets the "forgejo_avatar_url" field if the given value is not nil.
+func (_c *UserCreate) SetNillableForgejoAvatarURL(v *string) *UserCreate {
+	if v != nil {
+		_c.SetForgejoAvatarURL(*v)
+	}
+	return _c
+}
+
+// SetForgejoName sets the "forgejo_name" field.
+func (_c *UserCreate) SetForgejoName(v string) *UserCreate {
+	_c.mutation.SetForgejoName(v)
+	return _c
+}
+
+// SetNillableForgejoName sets the "forgejo_name" field if the given value is not nil.
+func (_c *UserCreate) SetNillableForgejoName(v *string) *UserCreate {
+	if v != nil {
+		_c.SetForgejoName(*v)
+	}
+	return _c
+}
+
+// SetForgejoAccessToken sets the "forgejo_access_token" field.
+func (_c *UserCreate) SetForgejoAccessToken(v string) *UserCreate {
+	_c.mutation.SetForgejoAccessToken(v)
+	return _c
+}
+
+// SetNillableForgejoAccessToken sets the "forgejo_access_token" field if the given value is not nil.
+func (_c *UserCreate) SetNillableForgejoAccessToken(v *string) *UserCreate {
+	if v != nil {
+		_c.SetForgejoAccessToken(*v)
+	}
+	return _c
+}
+
+// SetForgejoURL sets the "forgejo_url" field.
+func (_c *UserCreate) SetForgejoURL(v string) *UserCreate {
+	_c.mutation.SetForgejoURL(v)
+	return _c
+}
+
+// SetNillableForgejoURL sets the "forgejo_url" field if the given value is not nil.
+func (_c *UserCreate) SetNillableForgejoURL(v *string) *UserCreate {
+	if v != nil {
+		_c.SetForgejoURL(*v)
+	}
+	return _c
+}
+
+// SetDismissedForgejoWarningFor sets the "dismissed_forgejo_warning_for" field.
+func (_c *UserCreate) SetDismissedForgejoWarningFor(v string) *UserCreate {
+	_c.mutation.SetDismissedForgejoWarningFor(v)
+	return _c
+}
+
+// SetNillableDismissedForgejoWarningFor sets the "dismissed_forgejo_warning_for" field if the given value is not nil.
+func (_c *UserCreate) SetNillableDismissedForgejoWarningFor(v *string) *UserCreate {
+	if v != nil {
+		_c.SetDismissedForgejoWarningFor(*v)
+	}
+	return _c
+}
+
 // AddRepositoryIDs adds the "repositories" edge to the Repository entity by IDs.
 func (_c *UserCreate) AddRepositoryIDs(ids ...int) *UserCreate {
 	_c.mutation.AddRepositoryIDs(ids...)
@@ -304,6 +402,34 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if value, ok := _c.mutation.ForgejoID(); ok {
+		_spec.SetField(user.FieldForgejoID, field.TypeInt64, value)
+		_node.ForgejoID = value
+	}
+	if value, ok := _c.mutation.ForgejoLogin(); ok {
+		_spec.SetField(user.FieldForgejoLogin, field.TypeString, value)
+		_node.ForgejoLogin = value
+	}
+	if value, ok := _c.mutation.ForgejoAvatarURL(); ok {
+		_spec.SetField(user.FieldForgejoAvatarURL, field.TypeString, value)
+		_node.ForgejoAvatarURL = value
+	}
+	if value, ok := _c.mutation.ForgejoName(); ok {
+		_spec.SetField(user.FieldForgejoName, field.TypeString, value)
+		_node.ForgejoName = value
+	}
+	if value, ok := _c.mutation.ForgejoAccessToken(); ok {
+		_spec.SetField(user.FieldForgejoAccessToken, field.TypeString, value)
+		_node.ForgejoAccessToken = value
+	}
+	if value, ok := _c.mutation.ForgejoURL(); ok {
+		_spec.SetField(user.FieldForgejoURL, field.TypeString, value)
+		_node.ForgejoURL = value
+	}
+	if value, ok := _c.mutation.DismissedForgejoWarningFor(); ok {
+		_spec.SetField(user.FieldDismissedForgejoWarningFor, field.TypeString, value)
+		_node.DismissedForgejoWarningFor = value
 	}
 	if nodes := _c.mutation.RepositoriesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

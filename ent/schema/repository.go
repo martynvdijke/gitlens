@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 )
 
 type Repository struct {
@@ -46,6 +47,17 @@ func (Repository) Fields() []ent.Field {
 		field.Time("synced_at").Optional(),
 		field.Time("created_at").Default(time.Now),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
+
+		// Provider discriminator: "github" (default) or "forgejo".
+		field.String("provider").Default("github"),
+
+		// Forgejo-specific fields. Populated when provider=="forgejo".
+		field.Int64("forgejo_id").Optional(),
+		field.String("forgejo_owner").Optional(),
+		field.String("forgejo_name").Optional(),
+		field.String("forgejo_full_name").Optional(),
+		field.String("forgejo_html_url").Optional(),
+		field.String("forgejo_url").Optional(),
 	}
 }
 
@@ -54,3 +66,18 @@ func (Repository) Edges() []ent.Edge {
 		edge.From("user", User.Type).Ref("repositories").Unique().Required(),
 	}
 }
+
+// Composite unique indexes so the same github_id / forgejo_id can be
+// tracked by multiple users but not duplicated for the same user. The
+// edge FK is referenced via .Edges("user") so the underlying column
+// doesn't need to be re-declared as a field.
+func (Repository) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("github_id").Edges("user").Unique(),
+		index.Fields("forgejo_id").Edges("user").Unique(),
+		// forgejo_full_name is queried when computing the
+		// cross-provider warning; an index keeps the lookup fast.
+		index.Fields("forgejo_full_name"),
+	}
+}
+

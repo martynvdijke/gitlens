@@ -704,6 +704,147 @@ func (_u *RepositoryUpdate) SetUpdatedAt(v time.Time) *RepositoryUpdate {
 	return _u
 }
 
+// SetProvider sets the "provider" field.
+func (_u *RepositoryUpdate) SetProvider(v string) *RepositoryUpdate {
+	_u.mutation.SetProvider(v)
+	return _u
+}
+
+// SetNillableProvider sets the "provider" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillableProvider(v *string) *RepositoryUpdate {
+	if v != nil {
+		_u.SetProvider(*v)
+	}
+	return _u
+}
+
+// SetForgejoID sets the "forgejo_id" field.
+func (_u *RepositoryUpdate) SetForgejoID(v int64) *RepositoryUpdate {
+	_u.mutation.ResetForgejoID()
+	_u.mutation.SetForgejoID(v)
+	return _u
+}
+
+// SetNillableForgejoID sets the "forgejo_id" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillableForgejoID(v *int64) *RepositoryUpdate {
+	if v != nil {
+		_u.SetForgejoID(*v)
+	}
+	return _u
+}
+
+// AddForgejoID adds value to the "forgejo_id" field.
+func (_u *RepositoryUpdate) AddForgejoID(v int64) *RepositoryUpdate {
+	_u.mutation.AddForgejoID(v)
+	return _u
+}
+
+// ClearForgejoID clears the value of the "forgejo_id" field.
+func (_u *RepositoryUpdate) ClearForgejoID() *RepositoryUpdate {
+	_u.mutation.ClearForgejoID()
+	return _u
+}
+
+// SetForgejoOwner sets the "forgejo_owner" field.
+func (_u *RepositoryUpdate) SetForgejoOwner(v string) *RepositoryUpdate {
+	_u.mutation.SetForgejoOwner(v)
+	return _u
+}
+
+// SetNillableForgejoOwner sets the "forgejo_owner" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillableForgejoOwner(v *string) *RepositoryUpdate {
+	if v != nil {
+		_u.SetForgejoOwner(*v)
+	}
+	return _u
+}
+
+// ClearForgejoOwner clears the value of the "forgejo_owner" field.
+func (_u *RepositoryUpdate) ClearForgejoOwner() *RepositoryUpdate {
+	_u.mutation.ClearForgejoOwner()
+	return _u
+}
+
+// SetForgejoName sets the "forgejo_name" field.
+func (_u *RepositoryUpdate) SetForgejoName(v string) *RepositoryUpdate {
+	_u.mutation.SetForgejoName(v)
+	return _u
+}
+
+// SetNillableForgejoName sets the "forgejo_name" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillableForgejoName(v *string) *RepositoryUpdate {
+	if v != nil {
+		_u.SetForgejoName(*v)
+	}
+	return _u
+}
+
+// ClearForgejoName clears the value of the "forgejo_name" field.
+func (_u *RepositoryUpdate) ClearForgejoName() *RepositoryUpdate {
+	_u.mutation.ClearForgejoName()
+	return _u
+}
+
+// SetForgejoFullName sets the "forgejo_full_name" field.
+func (_u *RepositoryUpdate) SetForgejoFullName(v string) *RepositoryUpdate {
+	_u.mutation.SetForgejoFullName(v)
+	return _u
+}
+
+// SetNillableForgejoFullName sets the "forgejo_full_name" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillableForgejoFullName(v *string) *RepositoryUpdate {
+	if v != nil {
+		_u.SetForgejoFullName(*v)
+	}
+	return _u
+}
+
+// ClearForgejoFullName clears the value of the "forgejo_full_name" field.
+func (_u *RepositoryUpdate) ClearForgejoFullName() *RepositoryUpdate {
+	_u.mutation.ClearForgejoFullName()
+	return _u
+}
+
+// SetForgejoHTMLURL sets the "forgejo_html_url" field.
+func (_u *RepositoryUpdate) SetForgejoHTMLURL(v string) *RepositoryUpdate {
+	_u.mutation.SetForgejoHTMLURL(v)
+	return _u
+}
+
+// SetNillableForgejoHTMLURL sets the "forgejo_html_url" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillableForgejoHTMLURL(v *string) *RepositoryUpdate {
+	if v != nil {
+		_u.SetForgejoHTMLURL(*v)
+	}
+	return _u
+}
+
+// ClearForgejoHTMLURL clears the value of the "forgejo_html_url" field.
+func (_u *RepositoryUpdate) ClearForgejoHTMLURL() *RepositoryUpdate {
+	_u.mutation.ClearForgejoHTMLURL()
+	return _u
+}
+
+// SetForgejoURL sets the "forgejo_url" field.
+func (_u *RepositoryUpdate) SetForgejoURL(v string) *RepositoryUpdate {
+	_u.mutation.SetForgejoURL(v)
+	return _u
+}
+
+// SetNillableForgejoURL sets the "forgejo_url" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillableForgejoURL(v *string) *RepositoryUpdate {
+	if v != nil {
+		_u.SetForgejoURL(*v)
+	}
+	return _u
+}
+
+// ClearForgejoURL clears the value of the "forgejo_url" field.
+func (_u *RepositoryUpdate) ClearForgejoURL() *RepositoryUpdate {
+	_u.mutation.ClearForgejoURL()
+	return _u
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (_u *RepositoryUpdate) SetUserID(id int) *RepositoryUpdate {
 	_u.mutation.SetUserID(id)
@@ -988,6 +1129,48 @@ func (_u *RepositoryUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(repository.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.Provider(); ok {
+		_spec.SetField(repository.FieldProvider, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ForgejoID(); ok {
+		_spec.SetField(repository.FieldForgejoID, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedForgejoID(); ok {
+		_spec.AddField(repository.FieldForgejoID, field.TypeInt64, value)
+	}
+	if _u.mutation.ForgejoIDCleared() {
+		_spec.ClearField(repository.FieldForgejoID, field.TypeInt64)
+	}
+	if value, ok := _u.mutation.ForgejoOwner(); ok {
+		_spec.SetField(repository.FieldForgejoOwner, field.TypeString, value)
+	}
+	if _u.mutation.ForgejoOwnerCleared() {
+		_spec.ClearField(repository.FieldForgejoOwner, field.TypeString)
+	}
+	if value, ok := _u.mutation.ForgejoName(); ok {
+		_spec.SetField(repository.FieldForgejoName, field.TypeString, value)
+	}
+	if _u.mutation.ForgejoNameCleared() {
+		_spec.ClearField(repository.FieldForgejoName, field.TypeString)
+	}
+	if value, ok := _u.mutation.ForgejoFullName(); ok {
+		_spec.SetField(repository.FieldForgejoFullName, field.TypeString, value)
+	}
+	if _u.mutation.ForgejoFullNameCleared() {
+		_spec.ClearField(repository.FieldForgejoFullName, field.TypeString)
+	}
+	if value, ok := _u.mutation.ForgejoHTMLURL(); ok {
+		_spec.SetField(repository.FieldForgejoHTMLURL, field.TypeString, value)
+	}
+	if _u.mutation.ForgejoHTMLURLCleared() {
+		_spec.ClearField(repository.FieldForgejoHTMLURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.ForgejoURL(); ok {
+		_spec.SetField(repository.FieldForgejoURL, field.TypeString, value)
+	}
+	if _u.mutation.ForgejoURLCleared() {
+		_spec.ClearField(repository.FieldForgejoURL, field.TypeString)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1713,6 +1896,147 @@ func (_u *RepositoryUpdateOne) SetUpdatedAt(v time.Time) *RepositoryUpdateOne {
 	return _u
 }
 
+// SetProvider sets the "provider" field.
+func (_u *RepositoryUpdateOne) SetProvider(v string) *RepositoryUpdateOne {
+	_u.mutation.SetProvider(v)
+	return _u
+}
+
+// SetNillableProvider sets the "provider" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillableProvider(v *string) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetProvider(*v)
+	}
+	return _u
+}
+
+// SetForgejoID sets the "forgejo_id" field.
+func (_u *RepositoryUpdateOne) SetForgejoID(v int64) *RepositoryUpdateOne {
+	_u.mutation.ResetForgejoID()
+	_u.mutation.SetForgejoID(v)
+	return _u
+}
+
+// SetNillableForgejoID sets the "forgejo_id" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillableForgejoID(v *int64) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetForgejoID(*v)
+	}
+	return _u
+}
+
+// AddForgejoID adds value to the "forgejo_id" field.
+func (_u *RepositoryUpdateOne) AddForgejoID(v int64) *RepositoryUpdateOne {
+	_u.mutation.AddForgejoID(v)
+	return _u
+}
+
+// ClearForgejoID clears the value of the "forgejo_id" field.
+func (_u *RepositoryUpdateOne) ClearForgejoID() *RepositoryUpdateOne {
+	_u.mutation.ClearForgejoID()
+	return _u
+}
+
+// SetForgejoOwner sets the "forgejo_owner" field.
+func (_u *RepositoryUpdateOne) SetForgejoOwner(v string) *RepositoryUpdateOne {
+	_u.mutation.SetForgejoOwner(v)
+	return _u
+}
+
+// SetNillableForgejoOwner sets the "forgejo_owner" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillableForgejoOwner(v *string) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetForgejoOwner(*v)
+	}
+	return _u
+}
+
+// ClearForgejoOwner clears the value of the "forgejo_owner" field.
+func (_u *RepositoryUpdateOne) ClearForgejoOwner() *RepositoryUpdateOne {
+	_u.mutation.ClearForgejoOwner()
+	return _u
+}
+
+// SetForgejoName sets the "forgejo_name" field.
+func (_u *RepositoryUpdateOne) SetForgejoName(v string) *RepositoryUpdateOne {
+	_u.mutation.SetForgejoName(v)
+	return _u
+}
+
+// SetNillableForgejoName sets the "forgejo_name" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillableForgejoName(v *string) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetForgejoName(*v)
+	}
+	return _u
+}
+
+// ClearForgejoName clears the value of the "forgejo_name" field.
+func (_u *RepositoryUpdateOne) ClearForgejoName() *RepositoryUpdateOne {
+	_u.mutation.ClearForgejoName()
+	return _u
+}
+
+// SetForgejoFullName sets the "forgejo_full_name" field.
+func (_u *RepositoryUpdateOne) SetForgejoFullName(v string) *RepositoryUpdateOne {
+	_u.mutation.SetForgejoFullName(v)
+	return _u
+}
+
+// SetNillableForgejoFullName sets the "forgejo_full_name" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillableForgejoFullName(v *string) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetForgejoFullName(*v)
+	}
+	return _u
+}
+
+// ClearForgejoFullName clears the value of the "forgejo_full_name" field.
+func (_u *RepositoryUpdateOne) ClearForgejoFullName() *RepositoryUpdateOne {
+	_u.mutation.ClearForgejoFullName()
+	return _u
+}
+
+// SetForgejoHTMLURL sets the "forgejo_html_url" field.
+func (_u *RepositoryUpdateOne) SetForgejoHTMLURL(v string) *RepositoryUpdateOne {
+	_u.mutation.SetForgejoHTMLURL(v)
+	return _u
+}
+
+// SetNillableForgejoHTMLURL sets the "forgejo_html_url" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillableForgejoHTMLURL(v *string) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetForgejoHTMLURL(*v)
+	}
+	return _u
+}
+
+// ClearForgejoHTMLURL clears the value of the "forgejo_html_url" field.
+func (_u *RepositoryUpdateOne) ClearForgejoHTMLURL() *RepositoryUpdateOne {
+	_u.mutation.ClearForgejoHTMLURL()
+	return _u
+}
+
+// SetForgejoURL sets the "forgejo_url" field.
+func (_u *RepositoryUpdateOne) SetForgejoURL(v string) *RepositoryUpdateOne {
+	_u.mutation.SetForgejoURL(v)
+	return _u
+}
+
+// SetNillableForgejoURL sets the "forgejo_url" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillableForgejoURL(v *string) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetForgejoURL(*v)
+	}
+	return _u
+}
+
+// ClearForgejoURL clears the value of the "forgejo_url" field.
+func (_u *RepositoryUpdateOne) ClearForgejoURL() *RepositoryUpdateOne {
+	_u.mutation.ClearForgejoURL()
+	return _u
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (_u *RepositoryUpdateOne) SetUserID(id int) *RepositoryUpdateOne {
 	_u.mutation.SetUserID(id)
@@ -2027,6 +2351,48 @@ func (_u *RepositoryUpdateOne) sqlSave(ctx context.Context) (_node *Repository, 
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(repository.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.Provider(); ok {
+		_spec.SetField(repository.FieldProvider, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ForgejoID(); ok {
+		_spec.SetField(repository.FieldForgejoID, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedForgejoID(); ok {
+		_spec.AddField(repository.FieldForgejoID, field.TypeInt64, value)
+	}
+	if _u.mutation.ForgejoIDCleared() {
+		_spec.ClearField(repository.FieldForgejoID, field.TypeInt64)
+	}
+	if value, ok := _u.mutation.ForgejoOwner(); ok {
+		_spec.SetField(repository.FieldForgejoOwner, field.TypeString, value)
+	}
+	if _u.mutation.ForgejoOwnerCleared() {
+		_spec.ClearField(repository.FieldForgejoOwner, field.TypeString)
+	}
+	if value, ok := _u.mutation.ForgejoName(); ok {
+		_spec.SetField(repository.FieldForgejoName, field.TypeString, value)
+	}
+	if _u.mutation.ForgejoNameCleared() {
+		_spec.ClearField(repository.FieldForgejoName, field.TypeString)
+	}
+	if value, ok := _u.mutation.ForgejoFullName(); ok {
+		_spec.SetField(repository.FieldForgejoFullName, field.TypeString, value)
+	}
+	if _u.mutation.ForgejoFullNameCleared() {
+		_spec.ClearField(repository.FieldForgejoFullName, field.TypeString)
+	}
+	if value, ok := _u.mutation.ForgejoHTMLURL(); ok {
+		_spec.SetField(repository.FieldForgejoHTMLURL, field.TypeString, value)
+	}
+	if _u.mutation.ForgejoHTMLURLCleared() {
+		_spec.ClearField(repository.FieldForgejoHTMLURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.ForgejoURL(); ok {
+		_spec.SetField(repository.FieldForgejoURL, field.TypeString, value)
+	}
+	if _u.mutation.ForgejoURLCleared() {
+		_spec.ClearField(repository.FieldForgejoURL, field.TypeString)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

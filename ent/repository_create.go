@@ -421,6 +421,104 @@ func (_c *RepositoryCreate) SetNillableUpdatedAt(v *time.Time) *RepositoryCreate
 	return _c
 }
 
+// SetProvider sets the "provider" field.
+func (_c *RepositoryCreate) SetProvider(v string) *RepositoryCreate {
+	_c.mutation.SetProvider(v)
+	return _c
+}
+
+// SetNillableProvider sets the "provider" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillableProvider(v *string) *RepositoryCreate {
+	if v != nil {
+		_c.SetProvider(*v)
+	}
+	return _c
+}
+
+// SetForgejoID sets the "forgejo_id" field.
+func (_c *RepositoryCreate) SetForgejoID(v int64) *RepositoryCreate {
+	_c.mutation.SetForgejoID(v)
+	return _c
+}
+
+// SetNillableForgejoID sets the "forgejo_id" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillableForgejoID(v *int64) *RepositoryCreate {
+	if v != nil {
+		_c.SetForgejoID(*v)
+	}
+	return _c
+}
+
+// SetForgejoOwner sets the "forgejo_owner" field.
+func (_c *RepositoryCreate) SetForgejoOwner(v string) *RepositoryCreate {
+	_c.mutation.SetForgejoOwner(v)
+	return _c
+}
+
+// SetNillableForgejoOwner sets the "forgejo_owner" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillableForgejoOwner(v *string) *RepositoryCreate {
+	if v != nil {
+		_c.SetForgejoOwner(*v)
+	}
+	return _c
+}
+
+// SetForgejoName sets the "forgejo_name" field.
+func (_c *RepositoryCreate) SetForgejoName(v string) *RepositoryCreate {
+	_c.mutation.SetForgejoName(v)
+	return _c
+}
+
+// SetNillableForgejoName sets the "forgejo_name" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillableForgejoName(v *string) *RepositoryCreate {
+	if v != nil {
+		_c.SetForgejoName(*v)
+	}
+	return _c
+}
+
+// SetForgejoFullName sets the "forgejo_full_name" field.
+func (_c *RepositoryCreate) SetForgejoFullName(v string) *RepositoryCreate {
+	_c.mutation.SetForgejoFullName(v)
+	return _c
+}
+
+// SetNillableForgejoFullName sets the "forgejo_full_name" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillableForgejoFullName(v *string) *RepositoryCreate {
+	if v != nil {
+		_c.SetForgejoFullName(*v)
+	}
+	return _c
+}
+
+// SetForgejoHTMLURL sets the "forgejo_html_url" field.
+func (_c *RepositoryCreate) SetForgejoHTMLURL(v string) *RepositoryCreate {
+	_c.mutation.SetForgejoHTMLURL(v)
+	return _c
+}
+
+// SetNillableForgejoHTMLURL sets the "forgejo_html_url" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillableForgejoHTMLURL(v *string) *RepositoryCreate {
+	if v != nil {
+		_c.SetForgejoHTMLURL(*v)
+	}
+	return _c
+}
+
+// SetForgejoURL sets the "forgejo_url" field.
+func (_c *RepositoryCreate) SetForgejoURL(v string) *RepositoryCreate {
+	_c.mutation.SetForgejoURL(v)
+	return _c
+}
+
+// SetNillableForgejoURL sets the "forgejo_url" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillableForgejoURL(v *string) *RepositoryCreate {
+	if v != nil {
+		_c.SetForgejoURL(*v)
+	}
+	return _c
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (_c *RepositoryCreate) SetUserID(id int) *RepositoryCreate {
 	_c.mutation.SetUserID(id)
@@ -483,6 +581,10 @@ func (_c *RepositoryCreate) defaults() {
 		v := repository.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := _c.mutation.Provider(); !ok {
+		v := repository.DefaultProvider
+		_c.mutation.SetProvider(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -510,6 +612,9 @@ func (_c *RepositoryCreate) check() error {
 	}
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Repository.updated_at"`)}
+	}
+	if _, ok := _c.mutation.Provider(); !ok {
+		return &ValidationError{Name: "provider", err: errors.New(`ent: missing required field "Repository.provider"`)}
 	}
 	if len(_c.mutation.UserIDs()) == 0 {
 		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "Repository.user"`)}
@@ -667,6 +772,34 @@ func (_c *RepositoryCreate) createSpec() (*Repository, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(repository.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if value, ok := _c.mutation.Provider(); ok {
+		_spec.SetField(repository.FieldProvider, field.TypeString, value)
+		_node.Provider = value
+	}
+	if value, ok := _c.mutation.ForgejoID(); ok {
+		_spec.SetField(repository.FieldForgejoID, field.TypeInt64, value)
+		_node.ForgejoID = value
+	}
+	if value, ok := _c.mutation.ForgejoOwner(); ok {
+		_spec.SetField(repository.FieldForgejoOwner, field.TypeString, value)
+		_node.ForgejoOwner = value
+	}
+	if value, ok := _c.mutation.ForgejoName(); ok {
+		_spec.SetField(repository.FieldForgejoName, field.TypeString, value)
+		_node.ForgejoName = value
+	}
+	if value, ok := _c.mutation.ForgejoFullName(); ok {
+		_spec.SetField(repository.FieldForgejoFullName, field.TypeString, value)
+		_node.ForgejoFullName = value
+	}
+	if value, ok := _c.mutation.ForgejoHTMLURL(); ok {
+		_spec.SetField(repository.FieldForgejoHTMLURL, field.TypeString, value)
+		_node.ForgejoHTMLURL = value
+	}
+	if value, ok := _c.mutation.ForgejoURL(); ok {
+		_spec.SetField(repository.FieldForgejoURL, field.TypeString, value)
+		_node.ForgejoURL = value
 	}
 	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

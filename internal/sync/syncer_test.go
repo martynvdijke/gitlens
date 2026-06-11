@@ -12,6 +12,7 @@ import (
 	"gitlens/ent/enttest"
 	"gitlens/ent/repository"
 	"gitlens/internal/github"
+	"gitlens/internal/provider"
 	"gitlens/internal/ws"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -22,7 +23,7 @@ func newTestSyncer(t *testing.T) (*Syncer, *ent.Client) {
 	client := enttest.Open(t, "sqlite3", "file:"+t.TempDir()+"/test.db?_fk=1")
 	ghClient := github.NewClient("", "")
 	hub := ws.NewHub()
-	syncer := NewSyncer(client, ghClient, hub)
+	syncer := NewSyncer(client, ghClient, map[string]provider.Provider{"github": provider.NewGitHubAdapter(ghClient)}, hub)
 	return syncer, client
 }
 

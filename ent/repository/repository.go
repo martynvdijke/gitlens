@@ -78,6 +78,20 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldProvider holds the string denoting the provider field in the database.
+	FieldProvider = "provider"
+	// FieldForgejoID holds the string denoting the forgejo_id field in the database.
+	FieldForgejoID = "forgejo_id"
+	// FieldForgejoOwner holds the string denoting the forgejo_owner field in the database.
+	FieldForgejoOwner = "forgejo_owner"
+	// FieldForgejoName holds the string denoting the forgejo_name field in the database.
+	FieldForgejoName = "forgejo_name"
+	// FieldForgejoFullName holds the string denoting the forgejo_full_name field in the database.
+	FieldForgejoFullName = "forgejo_full_name"
+	// FieldForgejoHTMLURL holds the string denoting the forgejo_html_url field in the database.
+	FieldForgejoHTMLURL = "forgejo_html_url"
+	// FieldForgejoURL holds the string denoting the forgejo_url field in the database.
+	FieldForgejoURL = "forgejo_url"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the repository in the database.
@@ -126,6 +140,13 @@ var Columns = []string{
 	FieldSyncedAt,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldProvider,
+	FieldForgejoID,
+	FieldForgejoOwner,
+	FieldForgejoName,
+	FieldForgejoFullName,
+	FieldForgejoHTMLURL,
+	FieldForgejoURL,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "repositories"
@@ -160,6 +181,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultProvider holds the default value on creation for the "provider" field.
+	DefaultProvider string
 )
 
 // OrderOption defines the ordering options for the Repository queries.
@@ -328,6 +351,41 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByProvider orders the results by the provider field.
+func ByProvider(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProvider, opts...).ToFunc()
+}
+
+// ByForgejoID orders the results by the forgejo_id field.
+func ByForgejoID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldForgejoID, opts...).ToFunc()
+}
+
+// ByForgejoOwner orders the results by the forgejo_owner field.
+func ByForgejoOwner(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldForgejoOwner, opts...).ToFunc()
+}
+
+// ByForgejoName orders the results by the forgejo_name field.
+func ByForgejoName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldForgejoName, opts...).ToFunc()
+}
+
+// ByForgejoFullName orders the results by the forgejo_full_name field.
+func ByForgejoFullName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldForgejoFullName, opts...).ToFunc()
+}
+
+// ByForgejoHTMLURL orders the results by the forgejo_html_url field.
+func ByForgejoHTMLURL(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldForgejoHTMLURL, opts...).ToFunc()
+}
+
+// ByForgejoURL orders the results by the forgejo_url field.
+func ByForgejoURL(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldForgejoURL, opts...).ToFunc()
 }
 
 // ByUserField orders the results by user field.

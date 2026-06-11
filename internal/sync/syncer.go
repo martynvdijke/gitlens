@@ -14,21 +14,24 @@ import (
 	"gitlens/ent/repository"
 	"gitlens/ent/user"
 	"gitlens/internal/github"
+	"gitlens/internal/provider"
 	"gitlens/internal/ws"
 )
 
 type Syncer struct {
-	client *ent.Client
-	gh     *github.Client
-	hub    *ws.Hub
-	tmpl   *template.Template
+	client    *ent.Client
+	gh        *github.Client
+	providers map[string]provider.Provider
+	hub       *ws.Hub
+	tmpl      *template.Template
 }
 
-func NewSyncer(client *ent.Client, gh *github.Client, hub *ws.Hub) *Syncer {
+func NewSyncer(client *ent.Client, gh *github.Client, providers map[string]provider.Provider, hub *ws.Hub) *Syncer {
 	return &Syncer{
-		client: client,
-		gh:     gh,
-		hub:    hub,
+		client:    client,
+		gh:        gh,
+		providers: providers,
+		hub:       hub,
 	}
 }
 
@@ -76,11 +79,36 @@ func (s *Syncer) syncUserRepos(ctx context.Context, u *ent.User) {
 	_, _ = s.client.User.UpdateOne(u).SetSyncedAt(time.Now()).Save(ctx)
 }
 
+// getProvider returns the appropriate Provider for the repo, plus the
+// user's access token for that provider.
+func (s *Syncer) getProvider(u *ent.User, repo *ent.Repository) (provider.Provider, string) {
+	providerName := repo.Provider
+	if providerName == "" {
+		providerName = "github"
+	}
+	p, ok := s.providers[providerName]
+	if !ok || p == nil {
+		// Fall back to GitHub for back-compat
+		p = s.providers["github"]
+		providerName = "github"
+	}
+	var token string
+	switch providerName {
+	case "forgejo":
+		token = u.ForgejoAccessToken
+	default:
+		token = u.AccessToken
+	}
+	return p, token
+}
+
 func (s *Syncer) SyncOne(ctx context.Context, repo *ent.Repository) *ent.Repository {
 	u, err := repo.QueryUser().Only(ctx)
 	if err != nil {
 		return repo
 	}
+
+	p, token := s.getProvider(u, repo)
 
 	// Snapshot before state for event detection
 	beforeReleaseTag := repo.LatestReleaseTag
@@ -89,10 +117,10 @@ func (s *Syncer) SyncOne(ctx context.Context, repo *ent.Repository) *ent.Reposit
 
 	updated := s.client.Repository.UpdateOne(repo)
 
-	s.syncCommits(ctx, u, repo, updated)
-	s.syncRelease(ctx, u, repo, updated)
-	s.syncWorkflows(ctx, u, repo, updated)
-	s.syncPullRequests(ctx, u, repo, updated)
+	s.syncCommits(ctx, p, token, u, repo, updated)
+	s.syncRelease(ctx, p, token, u, repo, updated)
+	s.syncWorkflows(ctx, p, token, repo, updated)
+	s.syncPullRequests(ctx, p, token, repo, updated)
 
 	if !repo.LatestCommitDate.IsZero() && !repo.LatestReleaseDate.IsZero() {
 		leadHours := repo.LatestReleaseDate.Sub(repo.LatestCommitDate).Hours()
@@ -115,12 +143,12 @@ func (s *Syncer) SyncOne(ctx context.Context, repo *ent.Repository) *ent.Reposit
 	return repo
 }
 
-func (s *Syncer) syncCommits(ctx context.Context, u *ent.User, repo *ent.Repository, updated *ent.RepositoryUpdateOne) {
+func (s *Syncer) syncCommits(ctx context.Context, p provider.Provider, token string, u *ent.User, repo *ent.Repository, updated *ent.RepositoryUpdateOne) {
 	var since time.Time
 	if !repo.SyncedAt.IsZero() {
 		since = repo.SyncedAt
 	}
-	commits, err := s.gh.GetCommitsSince(u.AccessToken, repo.Owner, repo.Name, repo.DefaultBranch, since, 500)
+	commits, err := p.GetCommitsSince(ctx, token, repo.Owner, repo.Name, repo.DefaultBranch, since, 500)
 	if err != nil {
 		log.Printf("Error fetching commits for %s: %v", repo.FullName, err)
 		return
@@ -170,8 +198,8 @@ func (s *Syncer) syncCommits(ctx context.Context, u *ent.User, repo *ent.Reposit
 	}
 }
 
-func (s *Syncer) syncRelease(ctx context.Context, u *ent.User, repo *ent.Repository, updated *ent.RepositoryUpdateOne) {
-	releases, err := s.gh.ListReleases(u.AccessToken, repo.Owner, repo.Name)
+func (s *Syncer) syncRelease(ctx context.Context, p provider.Provider, token string, u *ent.User, repo *ent.Repository, updated *ent.RepositoryUpdateOne) {
+	releases, err := p.ListReleases(ctx, token, repo.Owner, repo.Name)
 	if err != nil {
 		log.Printf("Error fetching releases for %s: %v", repo.FullName, err)
 		return
@@ -184,9 +212,9 @@ func (s *Syncer) syncRelease(ctx context.Context, u *ent.User, repo *ent.Reposit
 		updated.SetLatestReleaseDate(releases[0].PublishedAt)
 
 		// Get the latest completed workflow run for the release (try tag, then default branch)
-		run, err := s.gh.GetLatestWorkflowRun(u.AccessToken, repo.Owner, repo.Name, releases[0].TagName)
+		run, err := p.GetLatestWorkflowRun(ctx, token, repo.Owner, repo.Name, releases[0].TagName)
 		if err != nil {
-			run, err = s.gh.GetLatestWorkflowRun(u.AccessToken, repo.Owner, repo.Name, repo.DefaultBranch)
+			run, err = p.GetLatestWorkflowRun(ctx, token, repo.Owner, repo.Name, repo.DefaultBranch)
 		}
 		if err == nil {
 			updated.SetLatestReleaseConclusion(run.Conclusion)
@@ -196,8 +224,8 @@ func (s *Syncer) syncRelease(ctx context.Context, u *ent.User, repo *ent.Reposit
 	}
 }
 
-func (s *Syncer) syncPullRequests(ctx context.Context, u *ent.User, repo *ent.Repository, updated *ent.RepositoryUpdateOne) {
-	prs, err := s.gh.ListPullRequests(u.AccessToken, repo.Owner, repo.Name)
+func (s *Syncer) syncPullRequests(ctx context.Context, p provider.Provider, token string, repo *ent.Repository, updated *ent.RepositoryUpdateOne) {
+	prs, err := p.ListPullRequests(ctx, token, repo.Owner, repo.Name)
 	if err != nil {
 		log.Printf("Error fetching pull requests for %s: %v", repo.FullName, err)
 		return
@@ -236,8 +264,15 @@ func (s *Syncer) syncPullRequests(ctx context.Context, u *ent.User, repo *ent.Re
 	}
 }
 
-func (s *Syncer) syncWorkflows(ctx context.Context, u *ent.User, repo *ent.Repository, updated *ent.RepositoryUpdateOne) {
-	runs, err := s.gh.GetWorkflowRuns(u.AccessToken, repo.Owner, repo.Name, repo.DefaultBranch, 30)
+func (s *Syncer) syncWorkflows(ctx context.Context, p provider.Provider, token string, repo *ent.Repository, updated *ent.RepositoryUpdateOne) {
+	// Forgejo Actions is opt-in; we report "unknown" without an HTTP call.
+	if repo.Provider == "forgejo" {
+		updated.SetWorkflowStatus("unknown")
+		return
+	}
+	// The github client has GetWorkflowRuns which is not part of the
+	// Provider interface (GitHub-specific). Fall back to s.gh for now.
+	runs, err := s.gh.GetWorkflowRuns(token, repo.Owner, repo.Name, repo.DefaultBranch, 30)
 	if err != nil {
 		log.Printf("Error fetching workflows for %s: %v", repo.FullName, err)
 		return
@@ -333,7 +368,8 @@ func (s *Syncer) recordWorkflowFailureEvent(ctx context.Context, repo *ent.Repos
 }
 
 func (s *Syncer) recordPRMergeEvents(ctx context.Context, u *ent.User, repo *ent.Repository) {
-	mergedPRs, err := s.gh.ListRecentlyMergedPRs(u.AccessToken, repo.Owner, repo.Name)
+	p, token := s.getProvider(u, repo)
+	mergedPRs, err := p.ListRecentlyMergedPRs(ctx, token, repo.Owner, repo.Name)
 	if err != nil {
 		log.Printf("Error fetching merged PRs for %s: %v", repo.FullName, err)
 		return

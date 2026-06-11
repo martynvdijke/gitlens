@@ -12,6 +12,7 @@ import (
 
 	"gitlens/ent/enttest"
 	"gitlens/internal/github"
+	"gitlens/internal/provider"
 	"gitlens/internal/sync"
 	"gitlens/internal/ws"
 
@@ -25,7 +26,7 @@ func newTestWebhookHandler(t *testing.T, secret string) *WebhookHandler {
 	ghClient := github.NewClient("", "")
 	hub := ws.NewHub()
 	go hub.Run()
-	syncer := sync.NewSyncer(client, ghClient, hub)
+	syncer := sync.NewSyncer(client, ghClient, map[string]provider.Provider{"github": provider.NewGitHubAdapter(ghClient)}, hub)
 	return NewWebhookHandler(client, syncer, secret)
 }
 

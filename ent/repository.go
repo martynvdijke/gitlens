@@ -82,6 +82,20 @@ type Repository struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Provider holds the value of the "provider" field.
+	Provider string `json:"provider,omitempty"`
+	// ForgejoID holds the value of the "forgejo_id" field.
+	ForgejoID int64 `json:"forgejo_id,omitempty"`
+	// ForgejoOwner holds the value of the "forgejo_owner" field.
+	ForgejoOwner string `json:"forgejo_owner,omitempty"`
+	// ForgejoName holds the value of the "forgejo_name" field.
+	ForgejoName string `json:"forgejo_name,omitempty"`
+	// ForgejoFullName holds the value of the "forgejo_full_name" field.
+	ForgejoFullName string `json:"forgejo_full_name,omitempty"`
+	// ForgejoHTMLURL holds the value of the "forgejo_html_url" field.
+	ForgejoHTMLURL string `json:"forgejo_html_url,omitempty"`
+	// ForgejoURL holds the value of the "forgejo_url" field.
+	ForgejoURL string `json:"forgejo_url,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RepositoryQuery when eager-loading is set.
 	Edges             RepositoryEdges `json:"edges"`
@@ -116,9 +130,9 @@ func (*Repository) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case repository.FieldAvgLeadTimeHours:
 			values[i] = new(sql.NullFloat64)
-		case repository.FieldID, repository.FieldGithubID, repository.FieldWorkflowRunID, repository.FieldTotalCommitsFetched, repository.FieldFeatCount, repository.FieldFixCount, repository.FieldDocsCount, repository.FieldChoreCount, repository.FieldOtherCommitCount, repository.FieldReleaseCount, repository.FieldWorkflowSuccessCount, repository.FieldWorkflowFailureCount, repository.FieldOpenPrCount:
+		case repository.FieldID, repository.FieldGithubID, repository.FieldWorkflowRunID, repository.FieldTotalCommitsFetched, repository.FieldFeatCount, repository.FieldFixCount, repository.FieldDocsCount, repository.FieldChoreCount, repository.FieldOtherCommitCount, repository.FieldReleaseCount, repository.FieldWorkflowSuccessCount, repository.FieldWorkflowFailureCount, repository.FieldOpenPrCount, repository.FieldForgejoID:
 			values[i] = new(sql.NullInt64)
-		case repository.FieldOwner, repository.FieldName, repository.FieldFullName, repository.FieldDescription, repository.FieldHTMLURL, repository.FieldLanguage, repository.FieldDefaultBranch, repository.FieldLatestCommitSha, repository.FieldLatestCommitMessage, repository.FieldLatestReleaseTag, repository.FieldLatestReleaseName, repository.FieldWorkflowStatus, repository.FieldPullRequests, repository.FieldLatestReleaseConclusion:
+		case repository.FieldOwner, repository.FieldName, repository.FieldFullName, repository.FieldDescription, repository.FieldHTMLURL, repository.FieldLanguage, repository.FieldDefaultBranch, repository.FieldLatestCommitSha, repository.FieldLatestCommitMessage, repository.FieldLatestReleaseTag, repository.FieldLatestReleaseName, repository.FieldWorkflowStatus, repository.FieldPullRequests, repository.FieldLatestReleaseConclusion, repository.FieldProvider, repository.FieldForgejoOwner, repository.FieldForgejoName, repository.FieldForgejoFullName, repository.FieldForgejoHTMLURL, repository.FieldForgejoURL:
 			values[i] = new(sql.NullString)
 		case repository.FieldLatestCommitDate, repository.FieldLatestReleaseDate, repository.FieldSyncedAt, repository.FieldCreatedAt, repository.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -337,6 +351,48 @@ func (_m *Repository) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
+		case repository.FieldProvider:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider", values[i])
+			} else if value.Valid {
+				_m.Provider = value.String
+			}
+		case repository.FieldForgejoID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field forgejo_id", values[i])
+			} else if value.Valid {
+				_m.ForgejoID = value.Int64
+			}
+		case repository.FieldForgejoOwner:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field forgejo_owner", values[i])
+			} else if value.Valid {
+				_m.ForgejoOwner = value.String
+			}
+		case repository.FieldForgejoName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field forgejo_name", values[i])
+			} else if value.Valid {
+				_m.ForgejoName = value.String
+			}
+		case repository.FieldForgejoFullName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field forgejo_full_name", values[i])
+			} else if value.Valid {
+				_m.ForgejoFullName = value.String
+			}
+		case repository.FieldForgejoHTMLURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field forgejo_html_url", values[i])
+			} else if value.Valid {
+				_m.ForgejoHTMLURL = value.String
+			}
+		case repository.FieldForgejoURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field forgejo_url", values[i])
+			} else if value.Valid {
+				_m.ForgejoURL = value.String
+			}
 		case repository.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field user_repositories", value)
@@ -480,6 +536,27 @@ func (_m *Repository) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("provider=")
+	builder.WriteString(_m.Provider)
+	builder.WriteString(", ")
+	builder.WriteString("forgejo_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ForgejoID))
+	builder.WriteString(", ")
+	builder.WriteString("forgejo_owner=")
+	builder.WriteString(_m.ForgejoOwner)
+	builder.WriteString(", ")
+	builder.WriteString("forgejo_name=")
+	builder.WriteString(_m.ForgejoName)
+	builder.WriteString(", ")
+	builder.WriteString("forgejo_full_name=")
+	builder.WriteString(_m.ForgejoFullName)
+	builder.WriteString(", ")
+	builder.WriteString("forgejo_html_url=")
+	builder.WriteString(_m.ForgejoHTMLURL)
+	builder.WriteString(", ")
+	builder.WriteString("forgejo_url=")
+	builder.WriteString(_m.ForgejoURL)
 	builder.WriteByte(')')
 	return builder.String()
 }

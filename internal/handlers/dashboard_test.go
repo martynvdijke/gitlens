@@ -16,6 +16,7 @@ import (
 	"gitlens/ent/user"
 	"gitlens/internal/github"
 	"gitlens/internal/middleware"
+	"gitlens/internal/provider"
 	"gitlens/internal/sync"
 	"gitlens/internal/ws"
 
@@ -29,7 +30,7 @@ func newTestDashboardHandler(t *testing.T) (*DashboardHandler, *middleware.Sessi
 	store := middleware.NewSessionStore(testSessionDB(t))
 	ghClient := github.NewClient("", "")
 	hub := ws.NewHub()
-	syncer := sync.NewSyncer(client, ghClient, hub)
+	syncer := sync.NewSyncer(client, ghClient, map[string]provider.Provider{"github": provider.NewGitHubAdapter(ghClient)}, hub)
 	h := NewDashboardHandler(client, store, ghClient, syncer)
 	h.bgCtx = t.Context()
 	return h, store, client
@@ -998,6 +999,7 @@ func serveIndexRequest(handler gin.HandlerFunc, path string, cookies ...*http.Co
 		"contains":             func(s, substr string) bool { return strings.Contains(s, substr) },
 		"timeSince":            func(t time.Time) string { return "" },
 		"eventIcon":            func(eventType string) string { return "" },
+		"sub":                  func(a, b int) int { return a - b },
 	})
 	template.Must(tmpl.ParseFiles("../../static/index.html"))
 	engine.SetHTMLTemplate(tmpl)

@@ -69,6 +69,10 @@ func init() {
 	repository.DefaultUpdatedAt = repositoryDescUpdatedAt.Default.(func() time.Time)
 	// repository.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	repository.UpdateDefaultUpdatedAt = repositoryDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// repositoryDescProvider is the schema descriptor for provider field.
+	repositoryDescProvider := repositoryFields[32].Descriptor()
+	// repository.DefaultProvider holds the default value on creation for the provider field.
+	repository.DefaultProvider = repositoryDescProvider.Default.(string)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescSyncIntervalMinutes is the schema descriptor for sync_interval_minutes field.

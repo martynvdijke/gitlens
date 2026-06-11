@@ -19,10 +19,12 @@ import (
 	"gitlens/ent/migrate"
 	"gitlens/ent/repository"
 	"gitlens/ent/user"
+	"gitlens/internal/forgejo"
 	"gitlens/internal/github"
 	"gitlens/internal/handlers"
 	"gitlens/internal/middleware"
 	"gitlens/internal/otel"
+	"gitlens/internal/provider"
 	"gitlens/internal/sync"
 	"gitlens/internal/ws"
 
@@ -48,6 +50,12 @@ func main() {
 	client := ent.NewClient(ent.Driver(drv))
 	defer client.Close()
 
+	// One-shot dedup before adding the composite unique index.
+	// See ent/migrate/dedupe.go.
+	if err := migrate.DedupeRepositories(context.Background(), drv); err != nil {
+		log.Fatalf("Failed to dedupe repositories: %v", err)
+	}
+
 	if err := client.Schema.Create(context.Background(), migrate.WithDropIndex(true)); err != nil {
 		log.Fatalf("Failed to run migrations: %v", err)
 	}
@@ -61,10 +69,36 @@ func main() {
 		os.Getenv("GITHUB_CLIENT_SECRET"),
 	)
 
+	// Provider map: keyed by canonical name ("github", "forgejo"). New
+	// code reads from this map. Existing handlers also accept *github.Client
+	// directly for back-compat and will be migrated in follow-ups.
+	providers := map[string]provider.Provider{
+		"github": provider.NewGitHubAdapter(ghClient),
+	}
+
+	// Forgejo is opt-in. Only register the provider if the env vars
+	// are configured. If FORGEJO_CLIENT_ID is set but the secret is
+	// missing we fail fast to avoid confusing "403 Forbidden" errors
+	// at login time.
+	fjID := os.Getenv("FORGEJO_CLIENT_ID")
+	fjSecret := os.Getenv("FORGEJO_CLIENT_SECRET")
+	if fjID != "" && fjSecret == "" {
+		log.Fatalf("FORGEJO_CLIENT_ID is set but FORGEJO_CLIENT_SECRET is missing")
+	}
+	if fjID != "" && fjSecret != "" {
+		fj := forgejo.NewClient(
+			fjID,
+			fjSecret,
+			os.Getenv("FORGEJO_DEFAULT_URL"), // may be "" — picked at login time
+		)
+		providers["forgejo"] = provider.NewForgejoAdapter(fj)
+		log.Println("Forgejo provider registered")
+	}
+
 	hub := ws.NewHub()
 	go hub.Run()
 
-	syncer := sync.NewSyncer(client, ghClient, hub)
+	syncer := sync.NewSyncer(client, ghClient, providers, hub)
 
 	tmpl := template.Must(template.New("").Funcs(template.FuncMap{
 		"appVersion": func() string { return Version },
@@ -147,6 +181,9 @@ func main() {
 		"contains": func(s, substr string) bool {
 			return strings.Contains(s, substr)
 		},
+		"sub": func(a, b int) int {
+			return a - b
+		},
 		"timeSince": func(t time.Time) string {
 			d := time.Since(t)
 			switch {
@@ -189,9 +226,9 @@ func main() {
 	))
 	syncer.SetTemplate(tmpl)
 
-	authHandler := handlers.NewAuthHandler(client, sessionStore, ghClient)
+	authHandler := handlers.NewAuthHandler(client, sessionStore, ghClient, providers)
 	dashHandler := handlers.NewDashboardHandler(client, sessionStore, ghClient, syncer)
-	settingsHandler := handlers.NewSettingsHandler(client, sessionStore, ghClient, syncer)
+	settingsHandler := handlers.NewSettingsHandler(client, sessionStore, ghClient, providers, syncer)
 	chartHandler := handlers.NewChartHandler(client)
 	badgeHandler := handlers.NewBadgeHandler(client)
 	gitHubAppHandler := handlers.NewGitHubAppHandler(client)
@@ -206,6 +243,8 @@ func main() {
 
 	r.GET("/auth/github", authHandler.Login)
 	r.GET("/auth/github/callback", authHandler.Callback)
+	r.GET("/auth/forgejo", authHandler.LoginForgejo)
+	r.GET("/auth/forgejo/callback", authHandler.CallbackForgejo)
 	r.POST("/auth/logout", authHandler.Logout)
 
 	r.GET("/", dashHandler.Index)
@@ -235,6 +274,10 @@ func main() {
 		authed.POST("/settings/umami", settingsHandler.UpdateUmami)
 		authed.GET("/settings/repos/available", settingsHandler.AvailableRepos)
 		authed.POST("/settings/repos/select", settingsHandler.SelectRepos)
+		authed.POST("/settings/forgejo/disconnect", settingsHandler.DisconnectForgejo)
+		authed.GET("/settings/forgejo/available", settingsHandler.AvailableForgejoRepos)
+		authed.POST("/settings/forgejo/select", settingsHandler.SelectForgejoRepos)
+		authed.POST("/settings/forgejo/warning/dismiss", settingsHandler.DismissForgejoWarning)
 		authed.DELETE("/repos/:id", settingsHandler.RemoveRepo)
 
 		authed.GET("/charts/data", chartHandler.Data)

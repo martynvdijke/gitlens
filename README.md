@@ -12,6 +12,7 @@ A Go-based web application for monitoring and visualizing GitHub repository acti
 - **GitHub webhook** — Real-time updates on push events
 - **WebSocket live updates** — Repo cards refresh automatically when data changes
 - **GitHub OAuth** — Secure authentication via GitHub
+- **Forgejo support** — Connect your Forgejo/Gitea instance as an additional provider alongside GitHub
 
 ## Architecture
 
@@ -20,15 +21,16 @@ Browser (HTMX + WebSocket)
     |
 Gin HTTP Server (:6270)
     |
-    +-- Auth routes      --> GitHub OAuth
+    +-- Auth routes      --> GitHub + Forgejo OAuth
     +-- Dashboard routes --> HTML + HTMX partials
     +-- Settings routes  --> HTML forms
     +-- Webhook route    --> GitHub push events
     +-- WebSocket route  --> Real-time updates
     |
-internal/github.Client --> GitHub REST API v3
+internal/github.Client    --> GitHub REST API v3
+internal/forgejo.Client   --> Forgejo/Gitea REST API v1
     |
-internal/sync.Syncer   --> Periodic + on-demand sync
+internal/sync.Syncer      --> Periodic + on-demand sync
     |
 ent.Client (ORM)       --> SQLite
 ```
@@ -38,7 +40,8 @@ ent.Client (ORM)       --> SQLite
 - Go 1.26+
 - Node.js 24+ (for TypeScript compilation)
 - C compiler (for CGO SQLite driver)
-- A [GitHub OAuth App](https://github.com/settings/developers)
+- A [GitHub OAuth App](https://github.com/settings/developers) (optional if using Forgejo only)
+- A Forgejo/Gitea instance with OAuth2 application (optional if using GitHub only)
 
 ## Setup
 
@@ -73,6 +76,19 @@ GITHUB_CLIENT_SECRET=your_client_secret_here
 
 For local development the defaults for `PORT`, `DB_PATH`, and `GITHUB_REDIRECT_URL` are fine. See the [configuration table](#configuration) below for all options.
 
+### (Optional) Register a Forgejo OAuth2 Application
+
+In your Forgejo instance, go to Settings → Applications → OAuth2 Applications and create a new application:
+
+| Field | Value |
+|---|---|
+| **Application name** | `GitLens` |
+| **Redirect URI** | `http://localhost:6270/auth/forgejo/callback` |
+
+After creation, note the **Client ID** and **Client Secret**. Set these as `FORGEJO_CLIENT_ID` and `FORGEJO_CLIENT_SECRET` in your environment.
+
+> For production: Set `FORGEJO_REDIRECT_URL` to your deployed callback URL and `FORGEJO_DEFAULT_URL` to your Forgejo instance base URL (e.g. `https://codeberg.org`) so users don't have to type it on every login.
+
 ### 3. Install dependencies
 
 ```bash
@@ -101,6 +117,10 @@ All configuration is done via environment variables. For local development, plac
 | `GITHUB_CLIENT_SECRET` | — | GitHub OAuth App client secret **(required)** |
 | `GITHUB_REDIRECT_URL` | `http://localhost:6270/auth/github/callback` | OAuth callback URL (must match your OAuth App settings) |
 | `GITHUB_WEBHOOK_SECRET` | — | HMAC-SHA256 secret for webhook payload verification |
+| `FORGEJO_CLIENT_ID` | — | Forgejo OAuth2 application client ID (optional) |
+| `FORGEJO_CLIENT_SECRET` | — | Forgejo OAuth2 application client secret (required if FORGEJO_CLIENT_ID set) |
+| `FORGEJO_REDIRECT_URL` | `<APP_URL>/auth/forgejo/callback` | Forgejo OAuth callback URL |
+| `FORGEJO_DEFAULT_URL` | — | Default Forgejo instance base URL (e.g. `https://codeberg.org`). If set, users skip the instance URL prompt on login. |
 
 ## Docker
 
@@ -155,7 +175,9 @@ task test:e2e
 .
 ├── main.go                  # Application entry point
 ├── internal/
+│   ├── forgejo/             # Forgejo/Gitea API client
 │   ├── github/              # GitHub API client
+│   ├── provider/            # Provider abstraction (GitHub + Forgejo interface)
 │   ├── handlers/            # HTTP handlers (auth, dashboard, settings, webhook)
 │   ├── middleware/           # Session management middleware
 │   ├── sync/                # Data synchronization engine
@@ -181,7 +203,9 @@ task test:e2e
 |---|---|---|
 | `/` | GET | Home / dashboard |
 | `/auth/github` | GET | GitHub OAuth login |
-| `/auth/github/callback` | GET | OAuth callback |
+| `/auth/github/callback` | GET | GitHub OAuth callback |
+| `/auth/forgejo` | GET | Forgejo OAuth login (optional `?instance=`) |
+| `/auth/forgejo/callback` | GET | Forgejo OAuth callback |
 | `/auth/logout` | POST | Logout |
 | `/dashboard` | GET | Dashboard partial |
 | `/repos` | GET | Repository list (HTMX partial) |
@@ -191,7 +215,11 @@ task test:e2e
 | `/settings` | GET | Settings page |
 | `/settings/interval` | POST | Update sync interval |
 | `/settings/repos/available` | GET | List available repos |
-| `/settings/repos/select` | POST | Import selected repos |
+| `/settings/repos/select` | POST | Import selected GitHub repos |
+| `/settings/forgejo/disconnect` | POST | Disconnect Forgejo account |
+| `/settings/forgejo/available` | GET | List available Forgejo repos |
+| `/settings/forgejo/select` | POST | Import selected Forgejo repos |
+| `/settings/forgejo/warning/dismiss` | POST | Dismiss cross-provider warning for a repo |
 | `/repos/{id}/prs` | GET | List pull requests for a repo |
 | `/repos/{id}/prs/{number}/merge` | POST | Merge a single pull request |
 | `/repos/{id}/prs/merge-all` | POST | Merge all open pull requests |

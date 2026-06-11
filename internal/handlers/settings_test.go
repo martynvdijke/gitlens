@@ -11,6 +11,7 @@ import (
 	"gitlens/ent/repository"
 	"gitlens/internal/github"
 	"gitlens/internal/middleware"
+	"gitlens/internal/provider"
 	"gitlens/internal/sync"
 
 	"github.com/gin-gonic/gin"
@@ -25,8 +26,8 @@ func newTestSettingsHandler(t *testing.T, ghAPIURL string) (*SettingsHandler, *m
 	if ghAPIURL != "" {
 		ghClient.APIURL = ghAPIURL
 	}
-	syncer := sync.NewSyncer(client, ghClient, nil)
-	h := NewSettingsHandler(client, store, ghClient, syncer)
+	syncer := sync.NewSyncer(client, ghClient, map[string]provider.Provider{"github": provider.NewGitHubAdapter(ghClient)}, nil)
+	h := NewSettingsHandler(client, store, ghClient, map[string]provider.Provider{"github": provider.NewGitHubAdapter(ghClient)}, syncer)
 	h.bgCtx = t.Context()
 	return h, store
 }

@@ -36,6 +36,20 @@ const (
 	FieldSyncedAt = "synced_at"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// FieldForgejoID holds the string denoting the forgejo_id field in the database.
+	FieldForgejoID = "forgejo_id"
+	// FieldForgejoLogin holds the string denoting the forgejo_login field in the database.
+	FieldForgejoLogin = "forgejo_login"
+	// FieldForgejoAvatarURL holds the string denoting the forgejo_avatar_url field in the database.
+	FieldForgejoAvatarURL = "forgejo_avatar_url"
+	// FieldForgejoName holds the string denoting the forgejo_name field in the database.
+	FieldForgejoName = "forgejo_name"
+	// FieldForgejoAccessToken holds the string denoting the forgejo_access_token field in the database.
+	FieldForgejoAccessToken = "forgejo_access_token"
+	// FieldForgejoURL holds the string denoting the forgejo_url field in the database.
+	FieldForgejoURL = "forgejo_url"
+	// FieldDismissedForgejoWarningFor holds the string denoting the dismissed_forgejo_warning_for field in the database.
+	FieldDismissedForgejoWarningFor = "dismissed_forgejo_warning_for"
 	// EdgeRepositories holds the string denoting the repositories edge name in mutations.
 	EdgeRepositories = "repositories"
 	// Table holds the table name of the user in the database.
@@ -63,6 +77,13 @@ var Columns = []string{
 	FieldIsAdmin,
 	FieldSyncedAt,
 	FieldCreatedAt,
+	FieldForgejoID,
+	FieldForgejoLogin,
+	FieldForgejoAvatarURL,
+	FieldForgejoName,
+	FieldForgejoAccessToken,
+	FieldForgejoURL,
+	FieldDismissedForgejoWarningFor,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -145,6 +166,41 @@ func BySyncedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByCreatedAt orders the results by the created_at field.
 func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByForgejoID orders the results by the forgejo_id field.
+func ByForgejoID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldForgejoID, opts...).ToFunc()
+}
+
+// ByForgejoLogin orders the results by the forgejo_login field.
+func ByForgejoLogin(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldForgejoLogin, opts...).ToFunc()
+}
+
+// ByForgejoAvatarURL orders the results by the forgejo_avatar_url field.
+func ByForgejoAvatarURL(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldForgejoAvatarURL, opts...).ToFunc()
+}
+
+// ByForgejoName orders the results by the forgejo_name field.
+func ByForgejoName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldForgejoName, opts...).ToFunc()
+}
+
+// ByForgejoAccessToken orders the results by the forgejo_access_token field.
+func ByForgejoAccessToken(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldForgejoAccessToken, opts...).ToFunc()
+}
+
+// ByForgejoURL orders the results by the forgejo_url field.
+func ByForgejoURL(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldForgejoURL, opts...).ToFunc()
+}
+
+// ByDismissedForgejoWarningFor orders the results by the dismissed_forgejo_warning_for field.
+func ByDismissedForgejoWarningFor(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDismissedForgejoWarningFor, opts...).ToFunc()
 }
 
 // ByRepositoriesCount orders the results by repositories count.

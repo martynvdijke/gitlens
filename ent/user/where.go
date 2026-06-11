@@ -110,6 +110,41 @@ func CreatedAt(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCreatedAt, v))
 }
 
+// ForgejoID applies equality check predicate on the "forgejo_id" field. It's identical to ForgejoIDEQ.
+func ForgejoID(v int64) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldForgejoID, v))
+}
+
+// ForgejoLogin applies equality check predicate on the "forgejo_login" field. It's identical to ForgejoLoginEQ.
+func ForgejoLogin(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldForgejoLogin, v))
+}
+
+// ForgejoAvatarURL applies equality check predicate on the "forgejo_avatar_url" field. It's identical to ForgejoAvatarURLEQ.
+func ForgejoAvatarURL(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldForgejoAvatarURL, v))
+}
+
+// ForgejoName applies equality check predicate on the "forgejo_name" field. It's identical to ForgejoNameEQ.
+func ForgejoName(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldForgejoName, v))
+}
+
+// ForgejoAccessToken applies equality check predicate on the "forgejo_access_token" field. It's identical to ForgejoAccessTokenEQ.
+func ForgejoAccessToken(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldForgejoAccessToken, v))
+}
+
+// ForgejoURL applies equality check predicate on the "forgejo_url" field. It's identical to ForgejoURLEQ.
+func ForgejoURL(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldForgejoURL, v))
+}
+
+// DismissedForgejoWarningFor applies equality check predicate on the "dismissed_forgejo_warning_for" field. It's identical to DismissedForgejoWarningForEQ.
+func DismissedForgejoWarningFor(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldDismissedForgejoWarningFor, v))
+}
+
 // GithubIDEQ applies the EQ predicate on the "github_id" field.
 func GithubIDEQ(v int64) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldGithubID, v))
@@ -718,6 +753,506 @@ func CreatedAtLT(v time.Time) predicate.User {
 // CreatedAtLTE applies the LTE predicate on the "created_at" field.
 func CreatedAtLTE(v time.Time) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// ForgejoIDEQ applies the EQ predicate on the "forgejo_id" field.
+func ForgejoIDEQ(v int64) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldForgejoID, v))
+}
+
+// ForgejoIDNEQ applies the NEQ predicate on the "forgejo_id" field.
+func ForgejoIDNEQ(v int64) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldForgejoID, v))
+}
+
+// ForgejoIDIn applies the In predicate on the "forgejo_id" field.
+func ForgejoIDIn(vs ...int64) predicate.User {
+	return predicate.User(sql.FieldIn(FieldForgejoID, vs...))
+}
+
+// ForgejoIDNotIn applies the NotIn predicate on the "forgejo_id" field.
+func ForgejoIDNotIn(vs ...int64) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldForgejoID, vs...))
+}
+
+// ForgejoIDGT applies the GT predicate on the "forgejo_id" field.
+func ForgejoIDGT(v int64) predicate.User {
+	return predicate.User(sql.FieldGT(FieldForgejoID, v))
+}
+
+// ForgejoIDGTE applies the GTE predicate on the "forgejo_id" field.
+func ForgejoIDGTE(v int64) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldForgejoID, v))
+}
+
+// ForgejoIDLT applies the LT predicate on the "forgejo_id" field.
+func ForgejoIDLT(v int64) predicate.User {
+	return predicate.User(sql.FieldLT(FieldForgejoID, v))
+}
+
+// ForgejoIDLTE applies the LTE predicate on the "forgejo_id" field.
+func ForgejoIDLTE(v int64) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldForgejoID, v))
+}
+
+// ForgejoIDIsNil applies the IsNil predicate on the "forgejo_id" field.
+func ForgejoIDIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldForgejoID))
+}
+
+// ForgejoIDNotNil applies the NotNil predicate on the "forgejo_id" field.
+func ForgejoIDNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldForgejoID))
+}
+
+// ForgejoLoginEQ applies the EQ predicate on the "forgejo_login" field.
+func ForgejoLoginEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldForgejoLogin, v))
+}
+
+// ForgejoLoginNEQ applies the NEQ predicate on the "forgejo_login" field.
+func ForgejoLoginNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldForgejoLogin, v))
+}
+
+// ForgejoLoginIn applies the In predicate on the "forgejo_login" field.
+func ForgejoLoginIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldForgejoLogin, vs...))
+}
+
+// ForgejoLoginNotIn applies the NotIn predicate on the "forgejo_login" field.
+func ForgejoLoginNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldForgejoLogin, vs...))
+}
+
+// ForgejoLoginGT applies the GT predicate on the "forgejo_login" field.
+func ForgejoLoginGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldForgejoLogin, v))
+}
+
+// ForgejoLoginGTE applies the GTE predicate on the "forgejo_login" field.
+func ForgejoLoginGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldForgejoLogin, v))
+}
+
+// ForgejoLoginLT applies the LT predicate on the "forgejo_login" field.
+func ForgejoLoginLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldForgejoLogin, v))
+}
+
+// ForgejoLoginLTE applies the LTE predicate on the "forgejo_login" field.
+func ForgejoLoginLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldForgejoLogin, v))
+}
+
+// ForgejoLoginContains applies the Contains predicate on the "forgejo_login" field.
+func ForgejoLoginContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldForgejoLogin, v))
+}
+
+// ForgejoLoginHasPrefix applies the HasPrefix predicate on the "forgejo_login" field.
+func ForgejoLoginHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldForgejoLogin, v))
+}
+
+// ForgejoLoginHasSuffix applies the HasSuffix predicate on the "forgejo_login" field.
+func ForgejoLoginHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldForgejoLogin, v))
+}
+
+// ForgejoLoginIsNil applies the IsNil predicate on the "forgejo_login" field.
+func ForgejoLoginIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldForgejoLogin))
+}
+
+// ForgejoLoginNotNil applies the NotNil predicate on the "forgejo_login" field.
+func ForgejoLoginNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldForgejoLogin))
+}
+
+// ForgejoLoginEqualFold applies the EqualFold predicate on the "forgejo_login" field.
+func ForgejoLoginEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldForgejoLogin, v))
+}
+
+// ForgejoLoginContainsFold applies the ContainsFold predicate on the "forgejo_login" field.
+func ForgejoLoginContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldForgejoLogin, v))
+}
+
+// ForgejoAvatarURLEQ applies the EQ predicate on the "forgejo_avatar_url" field.
+func ForgejoAvatarURLEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldForgejoAvatarURL, v))
+}
+
+// ForgejoAvatarURLNEQ applies the NEQ predicate on the "forgejo_avatar_url" field.
+func ForgejoAvatarURLNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldForgejoAvatarURL, v))
+}
+
+// ForgejoAvatarURLIn applies the In predicate on the "forgejo_avatar_url" field.
+func ForgejoAvatarURLIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldForgejoAvatarURL, vs...))
+}
+
+// ForgejoAvatarURLNotIn applies the NotIn predicate on the "forgejo_avatar_url" field.
+func ForgejoAvatarURLNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldForgejoAvatarURL, vs...))
+}
+
+// ForgejoAvatarURLGT applies the GT predicate on the "forgejo_avatar_url" field.
+func ForgejoAvatarURLGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldForgejoAvatarURL, v))
+}
+
+// ForgejoAvatarURLGTE applies the GTE predicate on the "forgejo_avatar_url" field.
+func ForgejoAvatarURLGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldForgejoAvatarURL, v))
+}
+
+// ForgejoAvatarURLLT applies the LT predicate on the "forgejo_avatar_url" field.
+func ForgejoAvatarURLLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldForgejoAvatarURL, v))
+}
+
+// ForgejoAvatarURLLTE applies the LTE predicate on the "forgejo_avatar_url" field.
+func ForgejoAvatarURLLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldForgejoAvatarURL, v))
+}
+
+// ForgejoAvatarURLContains applies the Contains predicate on the "forgejo_avatar_url" field.
+func ForgejoAvatarURLContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldForgejoAvatarURL, v))
+}
+
+// ForgejoAvatarURLHasPrefix applies the HasPrefix predicate on the "forgejo_avatar_url" field.
+func ForgejoAvatarURLHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldForgejoAvatarURL, v))
+}
+
+// ForgejoAvatarURLHasSuffix applies the HasSuffix predicate on the "forgejo_avatar_url" field.
+func ForgejoAvatarURLHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldForgejoAvatarURL, v))
+}
+
+// ForgejoAvatarURLIsNil applies the IsNil predicate on the "forgejo_avatar_url" field.
+func ForgejoAvatarURLIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldForgejoAvatarURL))
+}
+
+// ForgejoAvatarURLNotNil applies the NotNil predicate on the "forgejo_avatar_url" field.
+func ForgejoAvatarURLNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldForgejoAvatarURL))
+}
+
+// ForgejoAvatarURLEqualFold applies the EqualFold predicate on the "forgejo_avatar_url" field.
+func ForgejoAvatarURLEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldForgejoAvatarURL, v))
+}
+
+// ForgejoAvatarURLContainsFold applies the ContainsFold predicate on the "forgejo_avatar_url" field.
+func ForgejoAvatarURLContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldForgejoAvatarURL, v))
+}
+
+// ForgejoNameEQ applies the EQ predicate on the "forgejo_name" field.
+func ForgejoNameEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldForgejoName, v))
+}
+
+// ForgejoNameNEQ applies the NEQ predicate on the "forgejo_name" field.
+func ForgejoNameNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldForgejoName, v))
+}
+
+// ForgejoNameIn applies the In predicate on the "forgejo_name" field.
+func ForgejoNameIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldForgejoName, vs...))
+}
+
+// ForgejoNameNotIn applies the NotIn predicate on the "forgejo_name" field.
+func ForgejoNameNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldForgejoName, vs...))
+}
+
+// ForgejoNameGT applies the GT predicate on the "forgejo_name" field.
+func ForgejoNameGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldForgejoName, v))
+}
+
+// ForgejoNameGTE applies the GTE predicate on the "forgejo_name" field.
+func ForgejoNameGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldForgejoName, v))
+}
+
+// ForgejoNameLT applies the LT predicate on the "forgejo_name" field.
+func ForgejoNameLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldForgejoName, v))
+}
+
+// ForgejoNameLTE applies the LTE predicate on the "forgejo_name" field.
+func ForgejoNameLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldForgejoName, v))
+}
+
+// ForgejoNameContains applies the Contains predicate on the "forgejo_name" field.
+func ForgejoNameContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldForgejoName, v))
+}
+
+// ForgejoNameHasPrefix applies the HasPrefix predicate on the "forgejo_name" field.
+func ForgejoNameHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldForgejoName, v))
+}
+
+// ForgejoNameHasSuffix applies the HasSuffix predicate on the "forgejo_name" field.
+func ForgejoNameHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldForgejoName, v))
+}
+
+// ForgejoNameIsNil applies the IsNil predicate on the "forgejo_name" field.
+func ForgejoNameIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldForgejoName))
+}
+
+// ForgejoNameNotNil applies the NotNil predicate on the "forgejo_name" field.
+func ForgejoNameNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldForgejoName))
+}
+
+// ForgejoNameEqualFold applies the EqualFold predicate on the "forgejo_name" field.
+func ForgejoNameEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldForgejoName, v))
+}
+
+// ForgejoNameContainsFold applies the ContainsFold predicate on the "forgejo_name" field.
+func ForgejoNameContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldForgejoName, v))
+}
+
+// ForgejoAccessTokenEQ applies the EQ predicate on the "forgejo_access_token" field.
+func ForgejoAccessTokenEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldForgejoAccessToken, v))
+}
+
+// ForgejoAccessTokenNEQ applies the NEQ predicate on the "forgejo_access_token" field.
+func ForgejoAccessTokenNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldForgejoAccessToken, v))
+}
+
+// ForgejoAccessTokenIn applies the In predicate on the "forgejo_access_token" field.
+func ForgejoAccessTokenIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldForgejoAccessToken, vs...))
+}
+
+// ForgejoAccessTokenNotIn applies the NotIn predicate on the "forgejo_access_token" field.
+func ForgejoAccessTokenNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldForgejoAccessToken, vs...))
+}
+
+// ForgejoAccessTokenGT applies the GT predicate on the "forgejo_access_token" field.
+func ForgejoAccessTokenGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldForgejoAccessToken, v))
+}
+
+// ForgejoAccessTokenGTE applies the GTE predicate on the "forgejo_access_token" field.
+func ForgejoAccessTokenGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldForgejoAccessToken, v))
+}
+
+// ForgejoAccessTokenLT applies the LT predicate on the "forgejo_access_token" field.
+func ForgejoAccessTokenLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldForgejoAccessToken, v))
+}
+
+// ForgejoAccessTokenLTE applies the LTE predicate on the "forgejo_access_token" field.
+func ForgejoAccessTokenLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldForgejoAccessToken, v))
+}
+
+// ForgejoAccessTokenContains applies the Contains predicate on the "forgejo_access_token" field.
+func ForgejoAccessTokenContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldForgejoAccessToken, v))
+}
+
+// ForgejoAccessTokenHasPrefix applies the HasPrefix predicate on the "forgejo_access_token" field.
+func ForgejoAccessTokenHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldForgejoAccessToken, v))
+}
+
+// ForgejoAccessTokenHasSuffix applies the HasSuffix predicate on the "forgejo_access_token" field.
+func ForgejoAccessTokenHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldForgejoAccessToken, v))
+}
+
+// ForgejoAccessTokenIsNil applies the IsNil predicate on the "forgejo_access_token" field.
+func ForgejoAccessTokenIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldForgejoAccessToken))
+}
+
+// ForgejoAccessTokenNotNil applies the NotNil predicate on the "forgejo_access_token" field.
+func ForgejoAccessTokenNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldForgejoAccessToken))
+}
+
+// ForgejoAccessTokenEqualFold applies the EqualFold predicate on the "forgejo_access_token" field.
+func ForgejoAccessTokenEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldForgejoAccessToken, v))
+}
+
+// ForgejoAccessTokenContainsFold applies the ContainsFold predicate on the "forgejo_access_token" field.
+func ForgejoAccessTokenContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldForgejoAccessToken, v))
+}
+
+// ForgejoURLEQ applies the EQ predicate on the "forgejo_url" field.
+func ForgejoURLEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldForgejoURL, v))
+}
+
+// ForgejoURLNEQ applies the NEQ predicate on the "forgejo_url" field.
+func ForgejoURLNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldForgejoURL, v))
+}
+
+// ForgejoURLIn applies the In predicate on the "forgejo_url" field.
+func ForgejoURLIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldForgejoURL, vs...))
+}
+
+// ForgejoURLNotIn applies the NotIn predicate on the "forgejo_url" field.
+func ForgejoURLNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldForgejoURL, vs...))
+}
+
+// ForgejoURLGT applies the GT predicate on the "forgejo_url" field.
+func ForgejoURLGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldForgejoURL, v))
+}
+
+// ForgejoURLGTE applies the GTE predicate on the "forgejo_url" field.
+func ForgejoURLGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldForgejoURL, v))
+}
+
+// ForgejoURLLT applies the LT predicate on the "forgejo_url" field.
+func ForgejoURLLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldForgejoURL, v))
+}
+
+// ForgejoURLLTE applies the LTE predicate on the "forgejo_url" field.
+func ForgejoURLLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldForgejoURL, v))
+}
+
+// ForgejoURLContains applies the Contains predicate on the "forgejo_url" field.
+func ForgejoURLContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldForgejoURL, v))
+}
+
+// ForgejoURLHasPrefix applies the HasPrefix predicate on the "forgejo_url" field.
+func ForgejoURLHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldForgejoURL, v))
+}
+
+// ForgejoURLHasSuffix applies the HasSuffix predicate on the "forgejo_url" field.
+func ForgejoURLHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldForgejoURL, v))
+}
+
+// ForgejoURLIsNil applies the IsNil predicate on the "forgejo_url" field.
+func ForgejoURLIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldForgejoURL))
+}
+
+// ForgejoURLNotNil applies the NotNil predicate on the "forgejo_url" field.
+func ForgejoURLNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldForgejoURL))
+}
+
+// ForgejoURLEqualFold applies the EqualFold predicate on the "forgejo_url" field.
+func ForgejoURLEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldForgejoURL, v))
+}
+
+// ForgejoURLContainsFold applies the ContainsFold predicate on the "forgejo_url" field.
+func ForgejoURLContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldForgejoURL, v))
+}
+
+// DismissedForgejoWarningForEQ applies the EQ predicate on the "dismissed_forgejo_warning_for" field.
+func DismissedForgejoWarningForEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldDismissedForgejoWarningFor, v))
+}
+
+// DismissedForgejoWarningForNEQ applies the NEQ predicate on the "dismissed_forgejo_warning_for" field.
+func DismissedForgejoWarningForNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldDismissedForgejoWarningFor, v))
+}
+
+// DismissedForgejoWarningForIn applies the In predicate on the "dismissed_forgejo_warning_for" field.
+func DismissedForgejoWarningForIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldDismissedForgejoWarningFor, vs...))
+}
+
+// DismissedForgejoWarningForNotIn applies the NotIn predicate on the "dismissed_forgejo_warning_for" field.
+func DismissedForgejoWarningForNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldDismissedForgejoWarningFor, vs...))
+}
+
+// DismissedForgejoWarningForGT applies the GT predicate on the "dismissed_forgejo_warning_for" field.
+func DismissedForgejoWarningForGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldDismissedForgejoWarningFor, v))
+}
+
+// DismissedForgejoWarningForGTE applies the GTE predicate on the "dismissed_forgejo_warning_for" field.
+func DismissedForgejoWarningForGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldDismissedForgejoWarningFor, v))
+}
+
+// DismissedForgejoWarningForLT applies the LT predicate on the "dismissed_forgejo_warning_for" field.
+func DismissedForgejoWarningForLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldDismissedForgejoWarningFor, v))
+}
+
+// DismissedForgejoWarningForLTE applies the LTE predicate on the "dismissed_forgejo_warning_for" field.
+func DismissedForgejoWarningForLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldDismissedForgejoWarningFor, v))
+}
+
+// DismissedForgejoWarningForContains applies the Contains predicate on the "dismissed_forgejo_warning_for" field.
+func DismissedForgejoWarningForContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldDismissedForgejoWarningFor, v))
+}
+
+// DismissedForgejoWarningForHasPrefix applies the HasPrefix predicate on the "dismissed_forgejo_warning_for" field.
+func DismissedForgejoWarningForHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldDismissedForgejoWarningFor, v))
+}
+
+// DismissedForgejoWarningForHasSuffix applies the HasSuffix predicate on the "dismissed_forgejo_warning_for" field.
+func DismissedForgejoWarningForHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldDismissedForgejoWarningFor, v))
+}
+
+// DismissedForgejoWarningForIsNil applies the IsNil predicate on the "dismissed_forgejo_warning_for" field.
+func DismissedForgejoWarningForIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldDismissedForgejoWarningFor))
+}
+
+// DismissedForgejoWarningForNotNil applies the NotNil predicate on the "dismissed_forgejo_warning_for" field.
+func DismissedForgejoWarningForNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldDismissedForgejoWarningFor))
+}
+
+// DismissedForgejoWarningForEqualFold applies the EqualFold predicate on the "dismissed_forgejo_warning_for" field.
+func DismissedForgejoWarningForEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldDismissedForgejoWarningFor, v))
+}
+
+// DismissedForgejoWarningForContainsFold applies the ContainsFold predicate on the "dismissed_forgejo_warning_for" field.
+func DismissedForgejoWarningForContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldDismissedForgejoWarningFor, v))
 }
 
 // HasRepositories applies the HasEdge predicate on the "repositories" edge.

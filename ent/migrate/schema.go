@@ -93,6 +93,13 @@ var (
 		{Name: "synced_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "provider", Type: field.TypeString, Default: "github"},
+		{Name: "forgejo_id", Type: field.TypeInt64, Nullable: true},
+		{Name: "forgejo_owner", Type: field.TypeString, Nullable: true},
+		{Name: "forgejo_name", Type: field.TypeString, Nullable: true},
+		{Name: "forgejo_full_name", Type: field.TypeString, Nullable: true},
+		{Name: "forgejo_html_url", Type: field.TypeString, Nullable: true},
+		{Name: "forgejo_url", Type: field.TypeString, Nullable: true},
 		{Name: "user_repositories", Type: field.TypeInt},
 	}
 	// RepositoriesTable holds the schema information for the "repositories" table.
@@ -103,9 +110,26 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "repositories_users_repositories",
-				Columns:    []*schema.Column{RepositoriesColumns[33]},
+				Columns:    []*schema.Column{RepositoriesColumns[40]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "repository_github_id_user_repositories",
+				Unique:  true,
+				Columns: []*schema.Column{RepositoriesColumns[1], RepositoriesColumns[40]},
+			},
+			{
+				Name:    "repository_forgejo_id_user_repositories",
+				Unique:  true,
+				Columns: []*schema.Column{RepositoriesColumns[34], RepositoriesColumns[40]},
+			},
+			{
+				Name:    "repository_forgejo_full_name",
+				Unique:  false,
+				Columns: []*schema.Column{RepositoriesColumns[37]},
 			},
 		},
 	}
@@ -123,12 +147,26 @@ var (
 		{Name: "is_admin", Type: field.TypeBool, Default: false},
 		{Name: "synced_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "forgejo_id", Type: field.TypeInt64, Nullable: true},
+		{Name: "forgejo_login", Type: field.TypeString, Nullable: true},
+		{Name: "forgejo_avatar_url", Type: field.TypeString, Nullable: true},
+		{Name: "forgejo_name", Type: field.TypeString, Nullable: true},
+		{Name: "forgejo_access_token", Type: field.TypeString, Nullable: true},
+		{Name: "forgejo_url", Type: field.TypeString, Nullable: true},
+		{Name: "dismissed_forgejo_warning_for", Type: field.TypeString, Nullable: true},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
 		Name:       "users",
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "user_forgejo_id_forgejo_url",
+				Unique:  true,
+				Columns: []*schema.Column{UsersColumns[12], UsersColumns[17]},
+			},
+		},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{

@@ -7,6 +7,7 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -327,10 +328,11 @@ func (h *DashboardHandler) Index(c *gin.Context) {
 	}
 
 	c.HTML(http.StatusOK, "index.html", gin.H{
-		"User":      nil,
-		"Repos":     nil,
-		"Metrics":   computeMetrics(nil),
-		"ActiveTab": "repos",
+		"User":              nil,
+		"Repos":             nil,
+		"Metrics":           computeMetrics(nil),
+		"ActiveTab":         "repos",
+		"ForgejoDefaultURL": os.Getenv("FORGEJO_DEFAULT_URL"),
 	})
 }
 

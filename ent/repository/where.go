@@ -215,6 +215,41 @@ func UpdatedAt(v time.Time) predicate.Repository {
 	return predicate.Repository(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
+// Provider applies equality check predicate on the "provider" field. It's identical to ProviderEQ.
+func Provider(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldProvider, v))
+}
+
+// ForgejoID applies equality check predicate on the "forgejo_id" field. It's identical to ForgejoIDEQ.
+func ForgejoID(v int64) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldForgejoID, v))
+}
+
+// ForgejoOwner applies equality check predicate on the "forgejo_owner" field. It's identical to ForgejoOwnerEQ.
+func ForgejoOwner(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldForgejoOwner, v))
+}
+
+// ForgejoName applies equality check predicate on the "forgejo_name" field. It's identical to ForgejoNameEQ.
+func ForgejoName(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldForgejoName, v))
+}
+
+// ForgejoFullName applies equality check predicate on the "forgejo_full_name" field. It's identical to ForgejoFullNameEQ.
+func ForgejoFullName(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldForgejoFullName, v))
+}
+
+// ForgejoHTMLURL applies equality check predicate on the "forgejo_html_url" field. It's identical to ForgejoHTMLURLEQ.
+func ForgejoHTMLURL(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldForgejoHTMLURL, v))
+}
+
+// ForgejoURL applies equality check predicate on the "forgejo_url" field. It's identical to ForgejoURLEQ.
+func ForgejoURL(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldForgejoURL, v))
+}
+
 // GithubIDEQ applies the EQ predicate on the "github_id" field.
 func GithubIDEQ(v int64) predicate.Repository {
 	return predicate.Repository(sql.FieldEQ(FieldGithubID, v))
@@ -2083,6 +2118,496 @@ func UpdatedAtLT(v time.Time) predicate.Repository {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.Repository {
 	return predicate.Repository(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// ProviderEQ applies the EQ predicate on the "provider" field.
+func ProviderEQ(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldProvider, v))
+}
+
+// ProviderNEQ applies the NEQ predicate on the "provider" field.
+func ProviderNEQ(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldProvider, v))
+}
+
+// ProviderIn applies the In predicate on the "provider" field.
+func ProviderIn(vs ...string) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldProvider, vs...))
+}
+
+// ProviderNotIn applies the NotIn predicate on the "provider" field.
+func ProviderNotIn(vs ...string) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldProvider, vs...))
+}
+
+// ProviderGT applies the GT predicate on the "provider" field.
+func ProviderGT(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldProvider, v))
+}
+
+// ProviderGTE applies the GTE predicate on the "provider" field.
+func ProviderGTE(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldProvider, v))
+}
+
+// ProviderLT applies the LT predicate on the "provider" field.
+func ProviderLT(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldProvider, v))
+}
+
+// ProviderLTE applies the LTE predicate on the "provider" field.
+func ProviderLTE(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldProvider, v))
+}
+
+// ProviderContains applies the Contains predicate on the "provider" field.
+func ProviderContains(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldContains(FieldProvider, v))
+}
+
+// ProviderHasPrefix applies the HasPrefix predicate on the "provider" field.
+func ProviderHasPrefix(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldHasPrefix(FieldProvider, v))
+}
+
+// ProviderHasSuffix applies the HasSuffix predicate on the "provider" field.
+func ProviderHasSuffix(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldHasSuffix(FieldProvider, v))
+}
+
+// ProviderEqualFold applies the EqualFold predicate on the "provider" field.
+func ProviderEqualFold(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEqualFold(FieldProvider, v))
+}
+
+// ProviderContainsFold applies the ContainsFold predicate on the "provider" field.
+func ProviderContainsFold(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldContainsFold(FieldProvider, v))
+}
+
+// ForgejoIDEQ applies the EQ predicate on the "forgejo_id" field.
+func ForgejoIDEQ(v int64) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldForgejoID, v))
+}
+
+// ForgejoIDNEQ applies the NEQ predicate on the "forgejo_id" field.
+func ForgejoIDNEQ(v int64) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldForgejoID, v))
+}
+
+// ForgejoIDIn applies the In predicate on the "forgejo_id" field.
+func ForgejoIDIn(vs ...int64) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldForgejoID, vs...))
+}
+
+// ForgejoIDNotIn applies the NotIn predicate on the "forgejo_id" field.
+func ForgejoIDNotIn(vs ...int64) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldForgejoID, vs...))
+}
+
+// ForgejoIDGT applies the GT predicate on the "forgejo_id" field.
+func ForgejoIDGT(v int64) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldForgejoID, v))
+}
+
+// ForgejoIDGTE applies the GTE predicate on the "forgejo_id" field.
+func ForgejoIDGTE(v int64) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldForgejoID, v))
+}
+
+// ForgejoIDLT applies the LT predicate on the "forgejo_id" field.
+func ForgejoIDLT(v int64) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldForgejoID, v))
+}
+
+// ForgejoIDLTE applies the LTE predicate on the "forgejo_id" field.
+func ForgejoIDLTE(v int64) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldForgejoID, v))
+}
+
+// ForgejoIDIsNil applies the IsNil predicate on the "forgejo_id" field.
+func ForgejoIDIsNil() predicate.Repository {
+	return predicate.Repository(sql.FieldIsNull(FieldForgejoID))
+}
+
+// ForgejoIDNotNil applies the NotNil predicate on the "forgejo_id" field.
+func ForgejoIDNotNil() predicate.Repository {
+	return predicate.Repository(sql.FieldNotNull(FieldForgejoID))
+}
+
+// ForgejoOwnerEQ applies the EQ predicate on the "forgejo_owner" field.
+func ForgejoOwnerEQ(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldForgejoOwner, v))
+}
+
+// ForgejoOwnerNEQ applies the NEQ predicate on the "forgejo_owner" field.
+func ForgejoOwnerNEQ(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldForgejoOwner, v))
+}
+
+// ForgejoOwnerIn applies the In predicate on the "forgejo_owner" field.
+func ForgejoOwnerIn(vs ...string) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldForgejoOwner, vs...))
+}
+
+// ForgejoOwnerNotIn applies the NotIn predicate on the "forgejo_owner" field.
+func ForgejoOwnerNotIn(vs ...string) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldForgejoOwner, vs...))
+}
+
+// ForgejoOwnerGT applies the GT predicate on the "forgejo_owner" field.
+func ForgejoOwnerGT(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldForgejoOwner, v))
+}
+
+// ForgejoOwnerGTE applies the GTE predicate on the "forgejo_owner" field.
+func ForgejoOwnerGTE(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldForgejoOwner, v))
+}
+
+// ForgejoOwnerLT applies the LT predicate on the "forgejo_owner" field.
+func ForgejoOwnerLT(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldForgejoOwner, v))
+}
+
+// ForgejoOwnerLTE applies the LTE predicate on the "forgejo_owner" field.
+func ForgejoOwnerLTE(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldForgejoOwner, v))
+}
+
+// ForgejoOwnerContains applies the Contains predicate on the "forgejo_owner" field.
+func ForgejoOwnerContains(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldContains(FieldForgejoOwner, v))
+}
+
+// ForgejoOwnerHasPrefix applies the HasPrefix predicate on the "forgejo_owner" field.
+func ForgejoOwnerHasPrefix(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldHasPrefix(FieldForgejoOwner, v))
+}
+
+// ForgejoOwnerHasSuffix applies the HasSuffix predicate on the "forgejo_owner" field.
+func ForgejoOwnerHasSuffix(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldHasSuffix(FieldForgejoOwner, v))
+}
+
+// ForgejoOwnerIsNil applies the IsNil predicate on the "forgejo_owner" field.
+func ForgejoOwnerIsNil() predicate.Repository {
+	return predicate.Repository(sql.FieldIsNull(FieldForgejoOwner))
+}
+
+// ForgejoOwnerNotNil applies the NotNil predicate on the "forgejo_owner" field.
+func ForgejoOwnerNotNil() predicate.Repository {
+	return predicate.Repository(sql.FieldNotNull(FieldForgejoOwner))
+}
+
+// ForgejoOwnerEqualFold applies the EqualFold predicate on the "forgejo_owner" field.
+func ForgejoOwnerEqualFold(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEqualFold(FieldForgejoOwner, v))
+}
+
+// ForgejoOwnerContainsFold applies the ContainsFold predicate on the "forgejo_owner" field.
+func ForgejoOwnerContainsFold(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldContainsFold(FieldForgejoOwner, v))
+}
+
+// ForgejoNameEQ applies the EQ predicate on the "forgejo_name" field.
+func ForgejoNameEQ(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldForgejoName, v))
+}
+
+// ForgejoNameNEQ applies the NEQ predicate on the "forgejo_name" field.
+func ForgejoNameNEQ(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldForgejoName, v))
+}
+
+// ForgejoNameIn applies the In predicate on the "forgejo_name" field.
+func ForgejoNameIn(vs ...string) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldForgejoName, vs...))
+}
+
+// ForgejoNameNotIn applies the NotIn predicate on the "forgejo_name" field.
+func ForgejoNameNotIn(vs ...string) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldForgejoName, vs...))
+}
+
+// ForgejoNameGT applies the GT predicate on the "forgejo_name" field.
+func ForgejoNameGT(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldForgejoName, v))
+}
+
+// ForgejoNameGTE applies the GTE predicate on the "forgejo_name" field.
+func ForgejoNameGTE(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldForgejoName, v))
+}
+
+// ForgejoNameLT applies the LT predicate on the "forgejo_name" field.
+func ForgejoNameLT(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldForgejoName, v))
+}
+
+// ForgejoNameLTE applies the LTE predicate on the "forgejo_name" field.
+func ForgejoNameLTE(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldForgejoName, v))
+}
+
+// ForgejoNameContains applies the Contains predicate on the "forgejo_name" field.
+func ForgejoNameContains(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldContains(FieldForgejoName, v))
+}
+
+// ForgejoNameHasPrefix applies the HasPrefix predicate on the "forgejo_name" field.
+func ForgejoNameHasPrefix(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldHasPrefix(FieldForgejoName, v))
+}
+
+// ForgejoNameHasSuffix applies the HasSuffix predicate on the "forgejo_name" field.
+func ForgejoNameHasSuffix(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldHasSuffix(FieldForgejoName, v))
+}
+
+// ForgejoNameIsNil applies the IsNil predicate on the "forgejo_name" field.
+func ForgejoNameIsNil() predicate.Repository {
+	return predicate.Repository(sql.FieldIsNull(FieldForgejoName))
+}
+
+// ForgejoNameNotNil applies the NotNil predicate on the "forgejo_name" field.
+func ForgejoNameNotNil() predicate.Repository {
+	return predicate.Repository(sql.FieldNotNull(FieldForgejoName))
+}
+
+// ForgejoNameEqualFold applies the EqualFold predicate on the "forgejo_name" field.
+func ForgejoNameEqualFold(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEqualFold(FieldForgejoName, v))
+}
+
+// ForgejoNameContainsFold applies the ContainsFold predicate on the "forgejo_name" field.
+func ForgejoNameContainsFold(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldContainsFold(FieldForgejoName, v))
+}
+
+// ForgejoFullNameEQ applies the EQ predicate on the "forgejo_full_name" field.
+func ForgejoFullNameEQ(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldForgejoFullName, v))
+}
+
+// ForgejoFullNameNEQ applies the NEQ predicate on the "forgejo_full_name" field.
+func ForgejoFullNameNEQ(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldForgejoFullName, v))
+}
+
+// ForgejoFullNameIn applies the In predicate on the "forgejo_full_name" field.
+func ForgejoFullNameIn(vs ...string) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldForgejoFullName, vs...))
+}
+
+// ForgejoFullNameNotIn applies the NotIn predicate on the "forgejo_full_name" field.
+func ForgejoFullNameNotIn(vs ...string) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldForgejoFullName, vs...))
+}
+
+// ForgejoFullNameGT applies the GT predicate on the "forgejo_full_name" field.
+func ForgejoFullNameGT(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldForgejoFullName, v))
+}
+
+// ForgejoFullNameGTE applies the GTE predicate on the "forgejo_full_name" field.
+func ForgejoFullNameGTE(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldForgejoFullName, v))
+}
+
+// ForgejoFullNameLT applies the LT predicate on the "forgejo_full_name" field.
+func ForgejoFullNameLT(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldForgejoFullName, v))
+}
+
+// ForgejoFullNameLTE applies the LTE predicate on the "forgejo_full_name" field.
+func ForgejoFullNameLTE(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldForgejoFullName, v))
+}
+
+// ForgejoFullNameContains applies the Contains predicate on the "forgejo_full_name" field.
+func ForgejoFullNameContains(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldContains(FieldForgejoFullName, v))
+}
+
+// ForgejoFullNameHasPrefix applies the HasPrefix predicate on the "forgejo_full_name" field.
+func ForgejoFullNameHasPrefix(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldHasPrefix(FieldForgejoFullName, v))
+}
+
+// ForgejoFullNameHasSuffix applies the HasSuffix predicate on the "forgejo_full_name" field.
+func ForgejoFullNameHasSuffix(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldHasSuffix(FieldForgejoFullName, v))
+}
+
+// ForgejoFullNameIsNil applies the IsNil predicate on the "forgejo_full_name" field.
+func ForgejoFullNameIsNil() predicate.Repository {
+	return predicate.Repository(sql.FieldIsNull(FieldForgejoFullName))
+}
+
+// ForgejoFullNameNotNil applies the NotNil predicate on the "forgejo_full_name" field.
+func ForgejoFullNameNotNil() predicate.Repository {
+	return predicate.Repository(sql.FieldNotNull(FieldForgejoFullName))
+}
+
+// ForgejoFullNameEqualFold applies the EqualFold predicate on the "forgejo_full_name" field.
+func ForgejoFullNameEqualFold(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEqualFold(FieldForgejoFullName, v))
+}
+
+// ForgejoFullNameContainsFold applies the ContainsFold predicate on the "forgejo_full_name" field.
+func ForgejoFullNameContainsFold(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldContainsFold(FieldForgejoFullName, v))
+}
+
+// ForgejoHTMLURLEQ applies the EQ predicate on the "forgejo_html_url" field.
+func ForgejoHTMLURLEQ(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldForgejoHTMLURL, v))
+}
+
+// ForgejoHTMLURLNEQ applies the NEQ predicate on the "forgejo_html_url" field.
+func ForgejoHTMLURLNEQ(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldForgejoHTMLURL, v))
+}
+
+// ForgejoHTMLURLIn applies the In predicate on the "forgejo_html_url" field.
+func ForgejoHTMLURLIn(vs ...string) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldForgejoHTMLURL, vs...))
+}
+
+// ForgejoHTMLURLNotIn applies the NotIn predicate on the "forgejo_html_url" field.
+func ForgejoHTMLURLNotIn(vs ...string) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldForgejoHTMLURL, vs...))
+}
+
+// ForgejoHTMLURLGT applies the GT predicate on the "forgejo_html_url" field.
+func ForgejoHTMLURLGT(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldForgejoHTMLURL, v))
+}
+
+// ForgejoHTMLURLGTE applies the GTE predicate on the "forgejo_html_url" field.
+func ForgejoHTMLURLGTE(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldForgejoHTMLURL, v))
+}
+
+// ForgejoHTMLURLLT applies the LT predicate on the "forgejo_html_url" field.
+func ForgejoHTMLURLLT(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldForgejoHTMLURL, v))
+}
+
+// ForgejoHTMLURLLTE applies the LTE predicate on the "forgejo_html_url" field.
+func ForgejoHTMLURLLTE(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldForgejoHTMLURL, v))
+}
+
+// ForgejoHTMLURLContains applies the Contains predicate on the "forgejo_html_url" field.
+func ForgejoHTMLURLContains(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldContains(FieldForgejoHTMLURL, v))
+}
+
+// ForgejoHTMLURLHasPrefix applies the HasPrefix predicate on the "forgejo_html_url" field.
+func ForgejoHTMLURLHasPrefix(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldHasPrefix(FieldForgejoHTMLURL, v))
+}
+
+// ForgejoHTMLURLHasSuffix applies the HasSuffix predicate on the "forgejo_html_url" field.
+func ForgejoHTMLURLHasSuffix(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldHasSuffix(FieldForgejoHTMLURL, v))
+}
+
+// ForgejoHTMLURLIsNil applies the IsNil predicate on the "forgejo_html_url" field.
+func ForgejoHTMLURLIsNil() predicate.Repository {
+	return predicate.Repository(sql.FieldIsNull(FieldForgejoHTMLURL))
+}
+
+// ForgejoHTMLURLNotNil applies the NotNil predicate on the "forgejo_html_url" field.
+func ForgejoHTMLURLNotNil() predicate.Repository {
+	return predicate.Repository(sql.FieldNotNull(FieldForgejoHTMLURL))
+}
+
+// ForgejoHTMLURLEqualFold applies the EqualFold predicate on the "forgejo_html_url" field.
+func ForgejoHTMLURLEqualFold(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEqualFold(FieldForgejoHTMLURL, v))
+}
+
+// ForgejoHTMLURLContainsFold applies the ContainsFold predicate on the "forgejo_html_url" field.
+func ForgejoHTMLURLContainsFold(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldContainsFold(FieldForgejoHTMLURL, v))
+}
+
+// ForgejoURLEQ applies the EQ predicate on the "forgejo_url" field.
+func ForgejoURLEQ(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldForgejoURL, v))
+}
+
+// ForgejoURLNEQ applies the NEQ predicate on the "forgejo_url" field.
+func ForgejoURLNEQ(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldForgejoURL, v))
+}
+
+// ForgejoURLIn applies the In predicate on the "forgejo_url" field.
+func ForgejoURLIn(vs ...string) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldForgejoURL, vs...))
+}
+
+// ForgejoURLNotIn applies the NotIn predicate on the "forgejo_url" field.
+func ForgejoURLNotIn(vs ...string) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldForgejoURL, vs...))
+}
+
+// ForgejoURLGT applies the GT predicate on the "forgejo_url" field.
+func ForgejoURLGT(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldForgejoURL, v))
+}
+
+// ForgejoURLGTE applies the GTE predicate on the "forgejo_url" field.
+func ForgejoURLGTE(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldForgejoURL, v))
+}
+
+// ForgejoURLLT applies the LT predicate on the "forgejo_url" field.
+func ForgejoURLLT(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldForgejoURL, v))
+}
+
+// ForgejoURLLTE applies the LTE predicate on the "forgejo_url" field.
+func ForgejoURLLTE(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldForgejoURL, v))
+}
+
+// ForgejoURLContains applies the Contains predicate on the "forgejo_url" field.
+func ForgejoURLContains(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldContains(FieldForgejoURL, v))
+}
+
+// ForgejoURLHasPrefix applies the HasPrefix predicate on the "forgejo_url" field.
+func ForgejoURLHasPrefix(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldHasPrefix(FieldForgejoURL, v))
+}
+
+// ForgejoURLHasSuffix applies the HasSuffix predicate on the "forgejo_url" field.
+func ForgejoURLHasSuffix(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldHasSuffix(FieldForgejoURL, v))
+}
+
+// ForgejoURLIsNil applies the IsNil predicate on the "forgejo_url" field.
+func ForgejoURLIsNil() predicate.Repository {
+	return predicate.Repository(sql.FieldIsNull(FieldForgejoURL))
+}
+
+// ForgejoURLNotNil applies the NotNil predicate on the "forgejo_url" field.
+func ForgejoURLNotNil() predicate.Repository {
+	return predicate.Repository(sql.FieldNotNull(FieldForgejoURL))
+}
+
+// ForgejoURLEqualFold applies the EqualFold predicate on the "forgejo_url" field.
+func ForgejoURLEqualFold(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEqualFold(FieldForgejoURL, v))
+}
+
+// ForgejoURLContainsFold applies the ContainsFold predicate on the "forgejo_url" field.
+func ForgejoURLContainsFold(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldContainsFold(FieldForgejoURL, v))
 }
 
 // HasUser applies the HasEdge predicate on the "user" edge.

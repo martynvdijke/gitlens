@@ -1416,6 +1416,14 @@ type RepositoryMutation struct {
 	synced_at                 *time.Time
 	created_at                *time.Time
 	updated_at                *time.Time
+	provider                  *string
+	forgejo_id                *int64
+	addforgejo_id             *int64
+	forgejo_owner             *string
+	forgejo_name              *string
+	forgejo_full_name         *string
+	forgejo_html_url          *string
+	forgejo_url               *string
 	clearedFields             map[string]struct{}
 	user                      *int
 	cleareduser               bool
@@ -3258,6 +3266,357 @@ func (m *RepositoryMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// SetProvider sets the "provider" field.
+func (m *RepositoryMutation) SetProvider(s string) {
+	m.provider = &s
+}
+
+// Provider returns the value of the "provider" field in the mutation.
+func (m *RepositoryMutation) Provider() (r string, exists bool) {
+	v := m.provider
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProvider returns the old "provider" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldProvider(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProvider is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProvider requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProvider: %w", err)
+	}
+	return oldValue.Provider, nil
+}
+
+// ResetProvider resets all changes to the "provider" field.
+func (m *RepositoryMutation) ResetProvider() {
+	m.provider = nil
+}
+
+// SetForgejoID sets the "forgejo_id" field.
+func (m *RepositoryMutation) SetForgejoID(i int64) {
+	m.forgejo_id = &i
+	m.addforgejo_id = nil
+}
+
+// ForgejoID returns the value of the "forgejo_id" field in the mutation.
+func (m *RepositoryMutation) ForgejoID() (r int64, exists bool) {
+	v := m.forgejo_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldForgejoID returns the old "forgejo_id" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldForgejoID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldForgejoID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldForgejoID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldForgejoID: %w", err)
+	}
+	return oldValue.ForgejoID, nil
+}
+
+// AddForgejoID adds i to the "forgejo_id" field.
+func (m *RepositoryMutation) AddForgejoID(i int64) {
+	if m.addforgejo_id != nil {
+		*m.addforgejo_id += i
+	} else {
+		m.addforgejo_id = &i
+	}
+}
+
+// AddedForgejoID returns the value that was added to the "forgejo_id" field in this mutation.
+func (m *RepositoryMutation) AddedForgejoID() (r int64, exists bool) {
+	v := m.addforgejo_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearForgejoID clears the value of the "forgejo_id" field.
+func (m *RepositoryMutation) ClearForgejoID() {
+	m.forgejo_id = nil
+	m.addforgejo_id = nil
+	m.clearedFields[repository.FieldForgejoID] = struct{}{}
+}
+
+// ForgejoIDCleared returns if the "forgejo_id" field was cleared in this mutation.
+func (m *RepositoryMutation) ForgejoIDCleared() bool {
+	_, ok := m.clearedFields[repository.FieldForgejoID]
+	return ok
+}
+
+// ResetForgejoID resets all changes to the "forgejo_id" field.
+func (m *RepositoryMutation) ResetForgejoID() {
+	m.forgejo_id = nil
+	m.addforgejo_id = nil
+	delete(m.clearedFields, repository.FieldForgejoID)
+}
+
+// SetForgejoOwner sets the "forgejo_owner" field.
+func (m *RepositoryMutation) SetForgejoOwner(s string) {
+	m.forgejo_owner = &s
+}
+
+// ForgejoOwner returns the value of the "forgejo_owner" field in the mutation.
+func (m *RepositoryMutation) ForgejoOwner() (r string, exists bool) {
+	v := m.forgejo_owner
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldForgejoOwner returns the old "forgejo_owner" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldForgejoOwner(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldForgejoOwner is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldForgejoOwner requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldForgejoOwner: %w", err)
+	}
+	return oldValue.ForgejoOwner, nil
+}
+
+// ClearForgejoOwner clears the value of the "forgejo_owner" field.
+func (m *RepositoryMutation) ClearForgejoOwner() {
+	m.forgejo_owner = nil
+	m.clearedFields[repository.FieldForgejoOwner] = struct{}{}
+}
+
+// ForgejoOwnerCleared returns if the "forgejo_owner" field was cleared in this mutation.
+func (m *RepositoryMutation) ForgejoOwnerCleared() bool {
+	_, ok := m.clearedFields[repository.FieldForgejoOwner]
+	return ok
+}
+
+// ResetForgejoOwner resets all changes to the "forgejo_owner" field.
+func (m *RepositoryMutation) ResetForgejoOwner() {
+	m.forgejo_owner = nil
+	delete(m.clearedFields, repository.FieldForgejoOwner)
+}
+
+// SetForgejoName sets the "forgejo_name" field.
+func (m *RepositoryMutation) SetForgejoName(s string) {
+	m.forgejo_name = &s
+}
+
+// ForgejoName returns the value of the "forgejo_name" field in the mutation.
+func (m *RepositoryMutation) ForgejoName() (r string, exists bool) {
+	v := m.forgejo_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldForgejoName returns the old "forgejo_name" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldForgejoName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldForgejoName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldForgejoName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldForgejoName: %w", err)
+	}
+	return oldValue.ForgejoName, nil
+}
+
+// ClearForgejoName clears the value of the "forgejo_name" field.
+func (m *RepositoryMutation) ClearForgejoName() {
+	m.forgejo_name = nil
+	m.clearedFields[repository.FieldForgejoName] = struct{}{}
+}
+
+// ForgejoNameCleared returns if the "forgejo_name" field was cleared in this mutation.
+func (m *RepositoryMutation) ForgejoNameCleared() bool {
+	_, ok := m.clearedFields[repository.FieldForgejoName]
+	return ok
+}
+
+// ResetForgejoName resets all changes to the "forgejo_name" field.
+func (m *RepositoryMutation) ResetForgejoName() {
+	m.forgejo_name = nil
+	delete(m.clearedFields, repository.FieldForgejoName)
+}
+
+// SetForgejoFullName sets the "forgejo_full_name" field.
+func (m *RepositoryMutation) SetForgejoFullName(s string) {
+	m.forgejo_full_name = &s
+}
+
+// ForgejoFullName returns the value of the "forgejo_full_name" field in the mutation.
+func (m *RepositoryMutation) ForgejoFullName() (r string, exists bool) {
+	v := m.forgejo_full_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldForgejoFullName returns the old "forgejo_full_name" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldForgejoFullName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldForgejoFullName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldForgejoFullName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldForgejoFullName: %w", err)
+	}
+	return oldValue.ForgejoFullName, nil
+}
+
+// ClearForgejoFullName clears the value of the "forgejo_full_name" field.
+func (m *RepositoryMutation) ClearForgejoFullName() {
+	m.forgejo_full_name = nil
+	m.clearedFields[repository.FieldForgejoFullName] = struct{}{}
+}
+
+// ForgejoFullNameCleared returns if the "forgejo_full_name" field was cleared in this mutation.
+func (m *RepositoryMutation) ForgejoFullNameCleared() bool {
+	_, ok := m.clearedFields[repository.FieldForgejoFullName]
+	return ok
+}
+
+// ResetForgejoFullName resets all changes to the "forgejo_full_name" field.
+func (m *RepositoryMutation) ResetForgejoFullName() {
+	m.forgejo_full_name = nil
+	delete(m.clearedFields, repository.FieldForgejoFullName)
+}
+
+// SetForgejoHTMLURL sets the "forgejo_html_url" field.
+func (m *RepositoryMutation) SetForgejoHTMLURL(s string) {
+	m.forgejo_html_url = &s
+}
+
+// ForgejoHTMLURL returns the value of the "forgejo_html_url" field in the mutation.
+func (m *RepositoryMutation) ForgejoHTMLURL() (r string, exists bool) {
+	v := m.forgejo_html_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldForgejoHTMLURL returns the old "forgejo_html_url" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldForgejoHTMLURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldForgejoHTMLURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldForgejoHTMLURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldForgejoHTMLURL: %w", err)
+	}
+	return oldValue.ForgejoHTMLURL, nil
+}
+
+// ClearForgejoHTMLURL clears the value of the "forgejo_html_url" field.
+func (m *RepositoryMutation) ClearForgejoHTMLURL() {
+	m.forgejo_html_url = nil
+	m.clearedFields[repository.FieldForgejoHTMLURL] = struct{}{}
+}
+
+// ForgejoHTMLURLCleared returns if the "forgejo_html_url" field was cleared in this mutation.
+func (m *RepositoryMutation) ForgejoHTMLURLCleared() bool {
+	_, ok := m.clearedFields[repository.FieldForgejoHTMLURL]
+	return ok
+}
+
+// ResetForgejoHTMLURL resets all changes to the "forgejo_html_url" field.
+func (m *RepositoryMutation) ResetForgejoHTMLURL() {
+	m.forgejo_html_url = nil
+	delete(m.clearedFields, repository.FieldForgejoHTMLURL)
+}
+
+// SetForgejoURL sets the "forgejo_url" field.
+func (m *RepositoryMutation) SetForgejoURL(s string) {
+	m.forgejo_url = &s
+}
+
+// ForgejoURL returns the value of the "forgejo_url" field in the mutation.
+func (m *RepositoryMutation) ForgejoURL() (r string, exists bool) {
+	v := m.forgejo_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldForgejoURL returns the old "forgejo_url" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldForgejoURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldForgejoURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldForgejoURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldForgejoURL: %w", err)
+	}
+	return oldValue.ForgejoURL, nil
+}
+
+// ClearForgejoURL clears the value of the "forgejo_url" field.
+func (m *RepositoryMutation) ClearForgejoURL() {
+	m.forgejo_url = nil
+	m.clearedFields[repository.FieldForgejoURL] = struct{}{}
+}
+
+// ForgejoURLCleared returns if the "forgejo_url" field was cleared in this mutation.
+func (m *RepositoryMutation) ForgejoURLCleared() bool {
+	_, ok := m.clearedFields[repository.FieldForgejoURL]
+	return ok
+}
+
+// ResetForgejoURL resets all changes to the "forgejo_url" field.
+func (m *RepositoryMutation) ResetForgejoURL() {
+	m.forgejo_url = nil
+	delete(m.clearedFields, repository.FieldForgejoURL)
+}
+
 // SetUserID sets the "user" edge to the User entity by id.
 func (m *RepositoryMutation) SetUserID(id int) {
 	m.user = &id
@@ -3331,7 +3690,7 @@ func (m *RepositoryMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RepositoryMutation) Fields() []string {
-	fields := make([]string, 0, 32)
+	fields := make([]string, 0, 39)
 	if m.github_id != nil {
 		fields = append(fields, repository.FieldGithubID)
 	}
@@ -3428,6 +3787,27 @@ func (m *RepositoryMutation) Fields() []string {
 	if m.updated_at != nil {
 		fields = append(fields, repository.FieldUpdatedAt)
 	}
+	if m.provider != nil {
+		fields = append(fields, repository.FieldProvider)
+	}
+	if m.forgejo_id != nil {
+		fields = append(fields, repository.FieldForgejoID)
+	}
+	if m.forgejo_owner != nil {
+		fields = append(fields, repository.FieldForgejoOwner)
+	}
+	if m.forgejo_name != nil {
+		fields = append(fields, repository.FieldForgejoName)
+	}
+	if m.forgejo_full_name != nil {
+		fields = append(fields, repository.FieldForgejoFullName)
+	}
+	if m.forgejo_html_url != nil {
+		fields = append(fields, repository.FieldForgejoHTMLURL)
+	}
+	if m.forgejo_url != nil {
+		fields = append(fields, repository.FieldForgejoURL)
+	}
 	return fields
 }
 
@@ -3500,6 +3880,20 @@ func (m *RepositoryMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case repository.FieldUpdatedAt:
 		return m.UpdatedAt()
+	case repository.FieldProvider:
+		return m.Provider()
+	case repository.FieldForgejoID:
+		return m.ForgejoID()
+	case repository.FieldForgejoOwner:
+		return m.ForgejoOwner()
+	case repository.FieldForgejoName:
+		return m.ForgejoName()
+	case repository.FieldForgejoFullName:
+		return m.ForgejoFullName()
+	case repository.FieldForgejoHTMLURL:
+		return m.ForgejoHTMLURL()
+	case repository.FieldForgejoURL:
+		return m.ForgejoURL()
 	}
 	return nil, false
 }
@@ -3573,6 +3967,20 @@ func (m *RepositoryMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldCreatedAt(ctx)
 	case repository.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
+	case repository.FieldProvider:
+		return m.OldProvider(ctx)
+	case repository.FieldForgejoID:
+		return m.OldForgejoID(ctx)
+	case repository.FieldForgejoOwner:
+		return m.OldForgejoOwner(ctx)
+	case repository.FieldForgejoName:
+		return m.OldForgejoName(ctx)
+	case repository.FieldForgejoFullName:
+		return m.OldForgejoFullName(ctx)
+	case repository.FieldForgejoHTMLURL:
+		return m.OldForgejoHTMLURL(ctx)
+	case repository.FieldForgejoURL:
+		return m.OldForgejoURL(ctx)
 	}
 	return nil, fmt.Errorf("unknown Repository field %s", name)
 }
@@ -3806,6 +4214,55 @@ func (m *RepositoryMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUpdatedAt(v)
 		return nil
+	case repository.FieldProvider:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProvider(v)
+		return nil
+	case repository.FieldForgejoID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetForgejoID(v)
+		return nil
+	case repository.FieldForgejoOwner:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetForgejoOwner(v)
+		return nil
+	case repository.FieldForgejoName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetForgejoName(v)
+		return nil
+	case repository.FieldForgejoFullName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetForgejoFullName(v)
+		return nil
+	case repository.FieldForgejoHTMLURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetForgejoHTMLURL(v)
+		return nil
+	case repository.FieldForgejoURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetForgejoURL(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Repository field %s", name)
 }
@@ -3853,6 +4310,9 @@ func (m *RepositoryMutation) AddedFields() []string {
 	if m.addopen_pr_count != nil {
 		fields = append(fields, repository.FieldOpenPrCount)
 	}
+	if m.addforgejo_id != nil {
+		fields = append(fields, repository.FieldForgejoID)
+	}
 	return fields
 }
 
@@ -3887,6 +4347,8 @@ func (m *RepositoryMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedWorkflowFailureCount()
 	case repository.FieldOpenPrCount:
 		return m.AddedOpenPrCount()
+	case repository.FieldForgejoID:
+		return m.AddedForgejoID()
 	}
 	return nil, false
 }
@@ -3987,6 +4449,13 @@ func (m *RepositoryMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddOpenPrCount(v)
 		return nil
+	case repository.FieldForgejoID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddForgejoID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Repository numeric field %s", name)
 }
@@ -4066,6 +4535,24 @@ func (m *RepositoryMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(repository.FieldSyncedAt) {
 		fields = append(fields, repository.FieldSyncedAt)
+	}
+	if m.FieldCleared(repository.FieldForgejoID) {
+		fields = append(fields, repository.FieldForgejoID)
+	}
+	if m.FieldCleared(repository.FieldForgejoOwner) {
+		fields = append(fields, repository.FieldForgejoOwner)
+	}
+	if m.FieldCleared(repository.FieldForgejoName) {
+		fields = append(fields, repository.FieldForgejoName)
+	}
+	if m.FieldCleared(repository.FieldForgejoFullName) {
+		fields = append(fields, repository.FieldForgejoFullName)
+	}
+	if m.FieldCleared(repository.FieldForgejoHTMLURL) {
+		fields = append(fields, repository.FieldForgejoHTMLURL)
+	}
+	if m.FieldCleared(repository.FieldForgejoURL) {
+		fields = append(fields, repository.FieldForgejoURL)
 	}
 	return fields
 }
@@ -4152,6 +4639,24 @@ func (m *RepositoryMutation) ClearField(name string) error {
 		return nil
 	case repository.FieldSyncedAt:
 		m.ClearSyncedAt()
+		return nil
+	case repository.FieldForgejoID:
+		m.ClearForgejoID()
+		return nil
+	case repository.FieldForgejoOwner:
+		m.ClearForgejoOwner()
+		return nil
+	case repository.FieldForgejoName:
+		m.ClearForgejoName()
+		return nil
+	case repository.FieldForgejoFullName:
+		m.ClearForgejoFullName()
+		return nil
+	case repository.FieldForgejoHTMLURL:
+		m.ClearForgejoHTMLURL()
+		return nil
+	case repository.FieldForgejoURL:
+		m.ClearForgejoURL()
 		return nil
 	}
 	return fmt.Errorf("unknown Repository nullable field %s", name)
@@ -4257,6 +4762,27 @@ func (m *RepositoryMutation) ResetField(name string) error {
 	case repository.FieldUpdatedAt:
 		m.ResetUpdatedAt()
 		return nil
+	case repository.FieldProvider:
+		m.ResetProvider()
+		return nil
+	case repository.FieldForgejoID:
+		m.ResetForgejoID()
+		return nil
+	case repository.FieldForgejoOwner:
+		m.ResetForgejoOwner()
+		return nil
+	case repository.FieldForgejoName:
+		m.ResetForgejoName()
+		return nil
+	case repository.FieldForgejoFullName:
+		m.ResetForgejoFullName()
+		return nil
+	case repository.FieldForgejoHTMLURL:
+		m.ResetForgejoHTMLURL()
+		return nil
+	case repository.FieldForgejoURL:
+		m.ResetForgejoURL()
+		return nil
 	}
 	return fmt.Errorf("unknown Repository field %s", name)
 }
@@ -4338,29 +4864,37 @@ func (m *RepositoryMutation) ResetEdge(name string) error {
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op                       Op
-	typ                      string
-	id                       *int
-	github_id                *int64
-	addgithub_id             *int64
-	login                    *string
-	avatar_url               *string
-	name                     *string
-	access_token             *string
-	sync_interval_minutes    *int
-	addsync_interval_minutes *int
-	umami_url                *string
-	umami_site_id            *string
-	is_admin                 *bool
-	synced_at                *time.Time
-	created_at               *time.Time
-	clearedFields            map[string]struct{}
-	repositories             map[int]struct{}
-	removedrepositories      map[int]struct{}
-	clearedrepositories      bool
-	done                     bool
-	oldValue                 func(context.Context) (*User, error)
-	predicates               []predicate.User
+	op                            Op
+	typ                           string
+	id                            *int
+	github_id                     *int64
+	addgithub_id                  *int64
+	login                         *string
+	avatar_url                    *string
+	name                          *string
+	access_token                  *string
+	sync_interval_minutes         *int
+	addsync_interval_minutes      *int
+	umami_url                     *string
+	umami_site_id                 *string
+	is_admin                      *bool
+	synced_at                     *time.Time
+	created_at                    *time.Time
+	forgejo_id                    *int64
+	addforgejo_id                 *int64
+	forgejo_login                 *string
+	forgejo_avatar_url            *string
+	forgejo_name                  *string
+	forgejo_access_token          *string
+	forgejo_url                   *string
+	dismissed_forgejo_warning_for *string
+	clearedFields                 map[string]struct{}
+	repositories                  map[int]struct{}
+	removedrepositories           map[int]struct{}
+	clearedrepositories           bool
+	done                          bool
+	oldValue                      func(context.Context) (*User, error)
+	predicates                    []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -4962,6 +5496,370 @@ func (m *UserMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
+// SetForgejoID sets the "forgejo_id" field.
+func (m *UserMutation) SetForgejoID(i int64) {
+	m.forgejo_id = &i
+	m.addforgejo_id = nil
+}
+
+// ForgejoID returns the value of the "forgejo_id" field in the mutation.
+func (m *UserMutation) ForgejoID() (r int64, exists bool) {
+	v := m.forgejo_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldForgejoID returns the old "forgejo_id" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldForgejoID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldForgejoID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldForgejoID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldForgejoID: %w", err)
+	}
+	return oldValue.ForgejoID, nil
+}
+
+// AddForgejoID adds i to the "forgejo_id" field.
+func (m *UserMutation) AddForgejoID(i int64) {
+	if m.addforgejo_id != nil {
+		*m.addforgejo_id += i
+	} else {
+		m.addforgejo_id = &i
+	}
+}
+
+// AddedForgejoID returns the value that was added to the "forgejo_id" field in this mutation.
+func (m *UserMutation) AddedForgejoID() (r int64, exists bool) {
+	v := m.addforgejo_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearForgejoID clears the value of the "forgejo_id" field.
+func (m *UserMutation) ClearForgejoID() {
+	m.forgejo_id = nil
+	m.addforgejo_id = nil
+	m.clearedFields[user.FieldForgejoID] = struct{}{}
+}
+
+// ForgejoIDCleared returns if the "forgejo_id" field was cleared in this mutation.
+func (m *UserMutation) ForgejoIDCleared() bool {
+	_, ok := m.clearedFields[user.FieldForgejoID]
+	return ok
+}
+
+// ResetForgejoID resets all changes to the "forgejo_id" field.
+func (m *UserMutation) ResetForgejoID() {
+	m.forgejo_id = nil
+	m.addforgejo_id = nil
+	delete(m.clearedFields, user.FieldForgejoID)
+}
+
+// SetForgejoLogin sets the "forgejo_login" field.
+func (m *UserMutation) SetForgejoLogin(s string) {
+	m.forgejo_login = &s
+}
+
+// ForgejoLogin returns the value of the "forgejo_login" field in the mutation.
+func (m *UserMutation) ForgejoLogin() (r string, exists bool) {
+	v := m.forgejo_login
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldForgejoLogin returns the old "forgejo_login" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldForgejoLogin(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldForgejoLogin is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldForgejoLogin requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldForgejoLogin: %w", err)
+	}
+	return oldValue.ForgejoLogin, nil
+}
+
+// ClearForgejoLogin clears the value of the "forgejo_login" field.
+func (m *UserMutation) ClearForgejoLogin() {
+	m.forgejo_login = nil
+	m.clearedFields[user.FieldForgejoLogin] = struct{}{}
+}
+
+// ForgejoLoginCleared returns if the "forgejo_login" field was cleared in this mutation.
+func (m *UserMutation) ForgejoLoginCleared() bool {
+	_, ok := m.clearedFields[user.FieldForgejoLogin]
+	return ok
+}
+
+// ResetForgejoLogin resets all changes to the "forgejo_login" field.
+func (m *UserMutation) ResetForgejoLogin() {
+	m.forgejo_login = nil
+	delete(m.clearedFields, user.FieldForgejoLogin)
+}
+
+// SetForgejoAvatarURL sets the "forgejo_avatar_url" field.
+func (m *UserMutation) SetForgejoAvatarURL(s string) {
+	m.forgejo_avatar_url = &s
+}
+
+// ForgejoAvatarURL returns the value of the "forgejo_avatar_url" field in the mutation.
+func (m *UserMutation) ForgejoAvatarURL() (r string, exists bool) {
+	v := m.forgejo_avatar_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldForgejoAvatarURL returns the old "forgejo_avatar_url" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldForgejoAvatarURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldForgejoAvatarURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldForgejoAvatarURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldForgejoAvatarURL: %w", err)
+	}
+	return oldValue.ForgejoAvatarURL, nil
+}
+
+// ClearForgejoAvatarURL clears the value of the "forgejo_avatar_url" field.
+func (m *UserMutation) ClearForgejoAvatarURL() {
+	m.forgejo_avatar_url = nil
+	m.clearedFields[user.FieldForgejoAvatarURL] = struct{}{}
+}
+
+// ForgejoAvatarURLCleared returns if the "forgejo_avatar_url" field was cleared in this mutation.
+func (m *UserMutation) ForgejoAvatarURLCleared() bool {
+	_, ok := m.clearedFields[user.FieldForgejoAvatarURL]
+	return ok
+}
+
+// ResetForgejoAvatarURL resets all changes to the "forgejo_avatar_url" field.
+func (m *UserMutation) ResetForgejoAvatarURL() {
+	m.forgejo_avatar_url = nil
+	delete(m.clearedFields, user.FieldForgejoAvatarURL)
+}
+
+// SetForgejoName sets the "forgejo_name" field.
+func (m *UserMutation) SetForgejoName(s string) {
+	m.forgejo_name = &s
+}
+
+// ForgejoName returns the value of the "forgejo_name" field in the mutation.
+func (m *UserMutation) ForgejoName() (r string, exists bool) {
+	v := m.forgejo_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldForgejoName returns the old "forgejo_name" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldForgejoName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldForgejoName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldForgejoName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldForgejoName: %w", err)
+	}
+	return oldValue.ForgejoName, nil
+}
+
+// ClearForgejoName clears the value of the "forgejo_name" field.
+func (m *UserMutation) ClearForgejoName() {
+	m.forgejo_name = nil
+	m.clearedFields[user.FieldForgejoName] = struct{}{}
+}
+
+// ForgejoNameCleared returns if the "forgejo_name" field was cleared in this mutation.
+func (m *UserMutation) ForgejoNameCleared() bool {
+	_, ok := m.clearedFields[user.FieldForgejoName]
+	return ok
+}
+
+// ResetForgejoName resets all changes to the "forgejo_name" field.
+func (m *UserMutation) ResetForgejoName() {
+	m.forgejo_name = nil
+	delete(m.clearedFields, user.FieldForgejoName)
+}
+
+// SetForgejoAccessToken sets the "forgejo_access_token" field.
+func (m *UserMutation) SetForgejoAccessToken(s string) {
+	m.forgejo_access_token = &s
+}
+
+// ForgejoAccessToken returns the value of the "forgejo_access_token" field in the mutation.
+func (m *UserMutation) ForgejoAccessToken() (r string, exists bool) {
+	v := m.forgejo_access_token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldForgejoAccessToken returns the old "forgejo_access_token" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldForgejoAccessToken(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldForgejoAccessToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldForgejoAccessToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldForgejoAccessToken: %w", err)
+	}
+	return oldValue.ForgejoAccessToken, nil
+}
+
+// ClearForgejoAccessToken clears the value of the "forgejo_access_token" field.
+func (m *UserMutation) ClearForgejoAccessToken() {
+	m.forgejo_access_token = nil
+	m.clearedFields[user.FieldForgejoAccessToken] = struct{}{}
+}
+
+// ForgejoAccessTokenCleared returns if the "forgejo_access_token" field was cleared in this mutation.
+func (m *UserMutation) ForgejoAccessTokenCleared() bool {
+	_, ok := m.clearedFields[user.FieldForgejoAccessToken]
+	return ok
+}
+
+// ResetForgejoAccessToken resets all changes to the "forgejo_access_token" field.
+func (m *UserMutation) ResetForgejoAccessToken() {
+	m.forgejo_access_token = nil
+	delete(m.clearedFields, user.FieldForgejoAccessToken)
+}
+
+// SetForgejoURL sets the "forgejo_url" field.
+func (m *UserMutation) SetForgejoURL(s string) {
+	m.forgejo_url = &s
+}
+
+// ForgejoURL returns the value of the "forgejo_url" field in the mutation.
+func (m *UserMutation) ForgejoURL() (r string, exists bool) {
+	v := m.forgejo_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldForgejoURL returns the old "forgejo_url" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldForgejoURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldForgejoURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldForgejoURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldForgejoURL: %w", err)
+	}
+	return oldValue.ForgejoURL, nil
+}
+
+// ClearForgejoURL clears the value of the "forgejo_url" field.
+func (m *UserMutation) ClearForgejoURL() {
+	m.forgejo_url = nil
+	m.clearedFields[user.FieldForgejoURL] = struct{}{}
+}
+
+// ForgejoURLCleared returns if the "forgejo_url" field was cleared in this mutation.
+func (m *UserMutation) ForgejoURLCleared() bool {
+	_, ok := m.clearedFields[user.FieldForgejoURL]
+	return ok
+}
+
+// ResetForgejoURL resets all changes to the "forgejo_url" field.
+func (m *UserMutation) ResetForgejoURL() {
+	m.forgejo_url = nil
+	delete(m.clearedFields, user.FieldForgejoURL)
+}
+
+// SetDismissedForgejoWarningFor sets the "dismissed_forgejo_warning_for" field.
+func (m *UserMutation) SetDismissedForgejoWarningFor(s string) {
+	m.dismissed_forgejo_warning_for = &s
+}
+
+// DismissedForgejoWarningFor returns the value of the "dismissed_forgejo_warning_for" field in the mutation.
+func (m *UserMutation) DismissedForgejoWarningFor() (r string, exists bool) {
+	v := m.dismissed_forgejo_warning_for
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDismissedForgejoWarningFor returns the old "dismissed_forgejo_warning_for" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldDismissedForgejoWarningFor(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDismissedForgejoWarningFor is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDismissedForgejoWarningFor requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDismissedForgejoWarningFor: %w", err)
+	}
+	return oldValue.DismissedForgejoWarningFor, nil
+}
+
+// ClearDismissedForgejoWarningFor clears the value of the "dismissed_forgejo_warning_for" field.
+func (m *UserMutation) ClearDismissedForgejoWarningFor() {
+	m.dismissed_forgejo_warning_for = nil
+	m.clearedFields[user.FieldDismissedForgejoWarningFor] = struct{}{}
+}
+
+// DismissedForgejoWarningForCleared returns if the "dismissed_forgejo_warning_for" field was cleared in this mutation.
+func (m *UserMutation) DismissedForgejoWarningForCleared() bool {
+	_, ok := m.clearedFields[user.FieldDismissedForgejoWarningFor]
+	return ok
+}
+
+// ResetDismissedForgejoWarningFor resets all changes to the "dismissed_forgejo_warning_for" field.
+func (m *UserMutation) ResetDismissedForgejoWarningFor() {
+	m.dismissed_forgejo_warning_for = nil
+	delete(m.clearedFields, user.FieldDismissedForgejoWarningFor)
+}
+
 // AddRepositoryIDs adds the "repositories" edge to the Repository entity by ids.
 func (m *UserMutation) AddRepositoryIDs(ids ...int) {
 	if m.repositories == nil {
@@ -5050,7 +5948,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 18)
 	if m.github_id != nil {
 		fields = append(fields, user.FieldGithubID)
 	}
@@ -5084,6 +5982,27 @@ func (m *UserMutation) Fields() []string {
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
 	}
+	if m.forgejo_id != nil {
+		fields = append(fields, user.FieldForgejoID)
+	}
+	if m.forgejo_login != nil {
+		fields = append(fields, user.FieldForgejoLogin)
+	}
+	if m.forgejo_avatar_url != nil {
+		fields = append(fields, user.FieldForgejoAvatarURL)
+	}
+	if m.forgejo_name != nil {
+		fields = append(fields, user.FieldForgejoName)
+	}
+	if m.forgejo_access_token != nil {
+		fields = append(fields, user.FieldForgejoAccessToken)
+	}
+	if m.forgejo_url != nil {
+		fields = append(fields, user.FieldForgejoURL)
+	}
+	if m.dismissed_forgejo_warning_for != nil {
+		fields = append(fields, user.FieldDismissedForgejoWarningFor)
+	}
 	return fields
 }
 
@@ -5114,6 +6033,20 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.SyncedAt()
 	case user.FieldCreatedAt:
 		return m.CreatedAt()
+	case user.FieldForgejoID:
+		return m.ForgejoID()
+	case user.FieldForgejoLogin:
+		return m.ForgejoLogin()
+	case user.FieldForgejoAvatarURL:
+		return m.ForgejoAvatarURL()
+	case user.FieldForgejoName:
+		return m.ForgejoName()
+	case user.FieldForgejoAccessToken:
+		return m.ForgejoAccessToken()
+	case user.FieldForgejoURL:
+		return m.ForgejoURL()
+	case user.FieldDismissedForgejoWarningFor:
+		return m.DismissedForgejoWarningFor()
 	}
 	return nil, false
 }
@@ -5145,6 +6078,20 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldSyncedAt(ctx)
 	case user.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
+	case user.FieldForgejoID:
+		return m.OldForgejoID(ctx)
+	case user.FieldForgejoLogin:
+		return m.OldForgejoLogin(ctx)
+	case user.FieldForgejoAvatarURL:
+		return m.OldForgejoAvatarURL(ctx)
+	case user.FieldForgejoName:
+		return m.OldForgejoName(ctx)
+	case user.FieldForgejoAccessToken:
+		return m.OldForgejoAccessToken(ctx)
+	case user.FieldForgejoURL:
+		return m.OldForgejoURL(ctx)
+	case user.FieldDismissedForgejoWarningFor:
+		return m.OldDismissedForgejoWarningFor(ctx)
 	}
 	return nil, fmt.Errorf("unknown User field %s", name)
 }
@@ -5231,6 +6178,55 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCreatedAt(v)
 		return nil
+	case user.FieldForgejoID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetForgejoID(v)
+		return nil
+	case user.FieldForgejoLogin:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetForgejoLogin(v)
+		return nil
+	case user.FieldForgejoAvatarURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetForgejoAvatarURL(v)
+		return nil
+	case user.FieldForgejoName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetForgejoName(v)
+		return nil
+	case user.FieldForgejoAccessToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetForgejoAccessToken(v)
+		return nil
+	case user.FieldForgejoURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetForgejoURL(v)
+		return nil
+	case user.FieldDismissedForgejoWarningFor:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDismissedForgejoWarningFor(v)
+		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
 }
@@ -5245,6 +6241,9 @@ func (m *UserMutation) AddedFields() []string {
 	if m.addsync_interval_minutes != nil {
 		fields = append(fields, user.FieldSyncIntervalMinutes)
 	}
+	if m.addforgejo_id != nil {
+		fields = append(fields, user.FieldForgejoID)
+	}
 	return fields
 }
 
@@ -5257,6 +6256,8 @@ func (m *UserMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedGithubID()
 	case user.FieldSyncIntervalMinutes:
 		return m.AddedSyncIntervalMinutes()
+	case user.FieldForgejoID:
+		return m.AddedForgejoID()
 	}
 	return nil, false
 }
@@ -5280,6 +6281,13 @@ func (m *UserMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddSyncIntervalMinutes(v)
 		return nil
+	case user.FieldForgejoID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddForgejoID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown User numeric field %s", name)
 }
@@ -5302,6 +6310,27 @@ func (m *UserMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(user.FieldSyncedAt) {
 		fields = append(fields, user.FieldSyncedAt)
+	}
+	if m.FieldCleared(user.FieldForgejoID) {
+		fields = append(fields, user.FieldForgejoID)
+	}
+	if m.FieldCleared(user.FieldForgejoLogin) {
+		fields = append(fields, user.FieldForgejoLogin)
+	}
+	if m.FieldCleared(user.FieldForgejoAvatarURL) {
+		fields = append(fields, user.FieldForgejoAvatarURL)
+	}
+	if m.FieldCleared(user.FieldForgejoName) {
+		fields = append(fields, user.FieldForgejoName)
+	}
+	if m.FieldCleared(user.FieldForgejoAccessToken) {
+		fields = append(fields, user.FieldForgejoAccessToken)
+	}
+	if m.FieldCleared(user.FieldForgejoURL) {
+		fields = append(fields, user.FieldForgejoURL)
+	}
+	if m.FieldCleared(user.FieldDismissedForgejoWarningFor) {
+		fields = append(fields, user.FieldDismissedForgejoWarningFor)
 	}
 	return fields
 }
@@ -5331,6 +6360,27 @@ func (m *UserMutation) ClearField(name string) error {
 		return nil
 	case user.FieldSyncedAt:
 		m.ClearSyncedAt()
+		return nil
+	case user.FieldForgejoID:
+		m.ClearForgejoID()
+		return nil
+	case user.FieldForgejoLogin:
+		m.ClearForgejoLogin()
+		return nil
+	case user.FieldForgejoAvatarURL:
+		m.ClearForgejoAvatarURL()
+		return nil
+	case user.FieldForgejoName:
+		m.ClearForgejoName()
+		return nil
+	case user.FieldForgejoAccessToken:
+		m.ClearForgejoAccessToken()
+		return nil
+	case user.FieldForgejoURL:
+		m.ClearForgejoURL()
+		return nil
+	case user.FieldDismissedForgejoWarningFor:
+		m.ClearDismissedForgejoWarningFor()
 		return nil
 	}
 	return fmt.Errorf("unknown User nullable field %s", name)
@@ -5372,6 +6422,27 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldCreatedAt:
 		m.ResetCreatedAt()
+		return nil
+	case user.FieldForgejoID:
+		m.ResetForgejoID()
+		return nil
+	case user.FieldForgejoLogin:
+		m.ResetForgejoLogin()
+		return nil
+	case user.FieldForgejoAvatarURL:
+		m.ResetForgejoAvatarURL()
+		return nil
+	case user.FieldForgejoName:
+		m.ResetForgejoName()
+		return nil
+	case user.FieldForgejoAccessToken:
+		m.ResetForgejoAccessToken()
+		return nil
+	case user.FieldForgejoURL:
+		m.ResetForgejoURL()
+		return nil
+	case user.FieldDismissedForgejoWarningFor:
+		m.ResetDismissedForgejoWarningFor()
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)

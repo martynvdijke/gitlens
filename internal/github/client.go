@@ -35,6 +35,17 @@ func NewClient(clientID, clientSecret string) *Client {
 	}
 }
 
+// AuthorizeURL returns the URL the browser should be redirected to in
+// order to begin the OAuth flow. `state` is an opaque CSRF token
+// echoed back on the callback; pass "" to omit.
+func (c *Client) AuthorizeURL(state, redirectURL string) string {
+	u := "https://github.com/login/oauth/authorize?client_id=" + c.clientID + "&redirect_uri=" + redirectURL + "&scope=repo,read:user"
+	if state != "" {
+		u += "&state=" + state
+	}
+	return u
+}
+
 type ghUser struct {
 	ID        int64  `json:"id"`
 	Login     string `json:"login"`

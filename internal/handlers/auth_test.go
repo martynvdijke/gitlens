@@ -14,6 +14,7 @@ import (
 	"gitlens/ent/enttest"
 	"gitlens/internal/github"
 	"gitlens/internal/middleware"
+	"gitlens/internal/provider"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
@@ -40,7 +41,7 @@ func newTestAuthHandler(t *testing.T, ghTokenURL, ghAPIURL string) (*AuthHandler
 	if ghAPIURL != "" {
 		ghClient.APIURL = ghAPIURL
 	}
-	return NewAuthHandler(client, store, ghClient), store, client
+	return NewAuthHandler(client, store, ghClient, map[string]provider.Provider{"github": provider.NewGitHubAdapter(ghClient)}), store, client
 }
 
 func serveTestRequest(handler gin.HandlerFunc, method, path string, cookies ...*http.Cookie) *httptest.ResponseRecorder {
