@@ -1,3 +1,17 @@
+# [1.14.0](https://github.com/martynvdijke/gitlens/compare/v1.13.1...v1.14.0) (2026-06-11)
+
+
+### Bug Fixes
+
+* also update features.spec.ts to match 'Continue with GitHub' button text ([1d69142](https://github.com/martynvdijke/gitlens/commit/1d691427aa2807eb7d3ecaa516076bac5247c984))
+* update Playwright test to match 'Continue with GitHub' button text ([a12851c](https://github.com/martynvdijke/gitlens/commit/a12851c898f261088bd8adef932f4d603fdfe364))
+
+
+### Features
+
+* add Forgejo integration for multi-provider support ([3bb3f2a](https://github.com/martynvdijke/gitlens/commit/3bb3f2a2e34226ae53b5c8dce570d3877c447800))
+* add sort controls and timeline to homepage ([cfcb34f](https://github.com/martynvdijke/gitlens/commit/cfcb34ffa014665675fb60e042c0404ee06d8f89))
+
 ## [1.13.1](https://github.com/martynvdijke/gitlens/compare/v1.13.0...v1.13.1) (2026-06-11)
 
 # [1.13.0](https://github.com/martynvdijke/gitlens/compare/v1.12.0...v1.13.0) (2026-06-11)
