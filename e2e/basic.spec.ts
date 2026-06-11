@@ -16,7 +16,7 @@ test.describe('Home page (unauthenticated)', () => {
     await page.goto('/');
     const loginButton = page.locator('a.btn-success[href="/auth/github"]');
     await expect(loginButton).toBeVisible();
-    await expect(loginButton).toContainText('Login with GitHub');
+    await expect(loginButton).toContainText('Continue with GitHub');
     await expect(loginButton).toHaveAttribute('href', '/auth/github');
   });
 });
