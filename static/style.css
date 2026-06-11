@@ -1,4 +1,230 @@
-/* HTMX loading indicators */
+/* ===========================
+   Theme: CSS Custom Properties
+   =========================== */
+
+:root {
+    /* Background colors */
+    --bg-primary: #0d1117;
+    --bg-secondary: #161b22;
+    --bg-tertiary: #1c2128;
+    --bg-elevated: #21262d;
+    --bg-surface: #30363d;
+    --bg-input: transparent;
+    --bg-nav: transparent;
+
+    /* Text colors */
+    --text-primary: #f0f6fc;
+    --text-secondary: #8b949e;
+    --text-accent: #58a6ff;
+
+    /* Border colors */
+    --border-default: #30363d;
+    --border-muted: #21262d;
+
+    /* Accent colors */
+    --accent-success: #3fb950;
+    --accent-danger: #f85149;
+    --accent-warning: #d29922;
+    --accent-info: #58a6ff;
+    --accent-active: #f78166;
+    --accent-checked-bg: #238636;
+    --accent-checked-border: #238636;
+
+    /* Scrollbar */
+    --scrollbar-track: #0d1117;
+    --scrollbar-thumb: #30363d;
+    --scrollbar-thumb-hover: #484f58;
+
+    /* Skeleton */
+    --skeleton-bg: #161b22;
+    --skeleton-border: #30363d;
+    --skeleton-shimmer-from: #21262d;
+    --skeleton-shimmer-to: #30363d;
+
+    /* Progress */
+    --progress-bg: #21262d;
+
+    /* Button */
+    --btn-outline-secondary-color: #8b949e;
+    --btn-outline-secondary-border: #30363d;
+    --btn-outline-secondary-hover-bg: #30363d;
+    --btn-outline-danger-color: #f85149;
+
+    /* Badge */
+    --badge-bg: #30363d;
+}
+
+/* Light theme overrides */
+.light-theme {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f6f8fa;
+    --bg-tertiary: #f3f4f6;
+    --bg-elevated: #ffffff;
+    --bg-surface: #d0d7de;
+    --bg-input: #ffffff;
+    --bg-nav: #ffffff;
+
+    --text-primary: #1f2328;
+    --text-secondary: #656d76;
+    --text-accent: #0969da;
+
+    --border-default: #d0d7de;
+    --border-muted: #e1e4e8;
+
+    --accent-success: #1a7f37;
+    --accent-danger: #cf222e;
+    --accent-warning: #9a6700;
+    --accent-info: #0969da;
+    --accent-active: #fd8c73;
+    --accent-checked-bg: #1a7f37;
+    --accent-checked-border: #1a7f37;
+
+    --scrollbar-track: #f6f8fa;
+    --scrollbar-thumb: #d0d7de;
+    --scrollbar-thumb-hover: #afb8c1;
+
+    --skeleton-bg: #f6f8fa;
+    --skeleton-border: #d0d7de;
+    --skeleton-shimmer-from: #e1e4e8;
+    --skeleton-shimmer-to: #d0d7de;
+
+    --progress-bg: #e1e4e8;
+
+    --btn-outline-secondary-color: #656d76;
+    --btn-outline-secondary-border: #d0d7de;
+    --btn-outline-secondary-hover-bg: #e1e4e8;
+    --btn-outline-danger-color: #cf222e;
+
+    --badge-bg: #e1e4e8;
+}
+
+/* Transition for smooth theme switching */
+body, .card, .navbar, .nav-tabs, footer, .modal-content,
+.form-control, .form-select, .input-group-text, .btn,
+.badge, code, .progress, .list-group-item,
+.feed-event-release, .feed-event-workflow_failure, .feed-event-pr_merge,
+#tab-bar, .settings-page, .admin-panel,
+.pr-queue-scroll, .metrics-scroll,
+.table, th, td, .alert, .page-link {
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+/* ===========================
+   Bootstrap / Bootswatch Overrides for Light Theme
+   =========================== */
+
+.light-theme {
+    /* Surfaces */
+    --bs-body-bg: var(--bg-primary);
+    --bs-body-color: var(--text-primary);
+}
+
+.light-theme .bg-dark {
+    background-color: var(--bg-secondary) !important;
+}
+.light-theme .bg-transparent {
+    background-color: var(--bg-input) !important;
+}
+.light-theme .text-light {
+    color: var(--text-primary) !important;
+}
+.light-theme .text-secondary {
+    color: var(--text-secondary) !important;
+}
+.light-theme .text-info {
+    color: var(--accent-info) !important;
+}
+.light-theme .text-success {
+    color: var(--accent-success) !important;
+}
+.light-theme .text-danger {
+    color: var(--accent-danger) !important;
+}
+.light-theme .text-warning {
+    color: var(--accent-warning) !important;
+}
+.light-theme .border-secondary {
+    border-color: var(--border-default) !important;
+}
+.light-theme .border-top,
+.light-theme .border-bottom {
+    border-color: var(--border-default) !important;
+}
+.light-theme .navbar {
+    background-color: var(--bg-nav) !important;
+}
+.light-theme footer {
+    border-color: var(--border-default) !important;
+}
+.light-theme .card {
+    background-color: var(--bg-secondary);
+}
+.light-theme .card.border-dashed {
+    border-color: var(--border-default);
+}
+.light-theme .form-control,
+.light-theme .form-select {
+    background-color: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-default) !important;
+}
+.light-theme .form-control:focus,
+.light-theme .form-select:focus {
+    background-color: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+}
+.light-theme .input-group-text {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-secondary) !important;
+    border-color: var(--border-default) !important;
+}
+.light-theme .btn-outline-secondary {
+    color: var(--btn-outline-secondary-color) !important;
+    border-color: var(--btn-outline-secondary-border) !important;
+}
+.light-theme .btn-outline-secondary:hover {
+    background-color: var(--btn-outline-secondary-hover-bg) !important;
+    color: var(--text-primary) !important;
+}
+.light-theme .btn-outline-danger {
+    color: var(--btn-outline-danger-color) !important;
+}
+.light-theme .btn-outline-info {
+    color: var(--accent-info) !important;
+    border-color: var(--accent-info) !important;
+}
+.light-theme .badge.bg-secondary {
+    background-color: var(--badge-bg) !important;
+    color: var(--text-primary) !important;
+}
+.light-theme .nav-tabs {
+    border-bottom-color: var(--border-default) !important;
+}
+.light-theme .nav-tabs .nav-link {
+    color: var(--text-secondary) !important;
+}
+.light-theme .nav-tabs .nav-link:hover {
+    border-color: var(--border-default);
+}
+.light-theme code {
+    color: var(--text-primary) !important;
+}
+.light-theme .form-check-input {
+    background-color: var(--bg-input) !important;
+    border-color: var(--border-default) !important;
+}
+.light-theme .form-check-input:checked {
+    background-color: var(--accent-checked-bg) !important;
+    border-color: var(--accent-checked-border) !important;
+}
+.light-theme select option {
+    background-color: var(--bg-input);
+    color: var(--text-primary);
+}
+
+/* ===========================
+   HTMX loading indicators
+   =========================== */
 .htmx-indicator {
     display: none;
 }
@@ -7,21 +233,23 @@
     display: inline;
 }
 
-/* Skeleton loading animation for repo cards */
+/* ===========================
+   Skeleton loading animation
+   =========================== */
 @keyframes shimmer {
     0% { background-position: -200px 0; }
     100% { background-position: calc(200px + 100%) 0; }
 }
 .repo-card-skeleton {
-    background: #161b22;
-    border: 1px solid #30363d;
+    background: var(--skeleton-bg);
+    border: 1px solid var(--skeleton-border);
     border-radius: 8px;
     padding: 20px;
 }
 .skeleton-line {
     height: 14px;
     border-radius: 4px;
-    background: linear-gradient(90deg, #21262d 25%, #30363d 50%, #21262d 75%);
+    background: linear-gradient(90deg, var(--skeleton-shimmer-from) 25%, var(--skeleton-shimmer-to) 50%, var(--skeleton-shimmer-from) 75%);
     background-size: 200px 100%;
     animation: shimmer 1.5s ease-in-out infinite;
     margin-bottom: 8px;
@@ -29,62 +257,102 @@
 .skeleton-line-sm { width: 60%; }
 .skeleton-line-xs { width: 40%; height: 10px; }
 
-/* Nav-tabs active indicator accent (override Bootswatch Darkly) */
+/* ===========================
+   Nav-tabs active indicator
+   =========================== */
 .nav-tabs .nav-link.active {
-    border-bottom-color: #f78166 !important;
+    border-bottom-color: var(--accent-active) !important;
     border-bottom-width: 2px;
 }
 
-/* Feed event type color accents */
-.feed-event-release > div:first-child svg { color: #3fb950; }
-.feed-event-workflow_failure > div:first-child svg { color: #f85149; }
-.feed-event-pr_merge > div:first-child svg { color: #d29922; }
+/* ===========================
+   Feed event type color accents
+   =========================== */
+.feed-event-release > div:first-child svg { color: var(--accent-success); }
+.feed-event-workflow_failure > div:first-child svg { color: var(--accent-danger); }
+.feed-event-pr_merge > div:first-child svg { color: var(--accent-warning); }
 
 /* Feed event hover background */
 .feed-event-release:hover,
 .feed-event-workflow_failure:hover,
 .feed-event-pr_merge:hover {
-    background: #1c2128;
+    background: var(--bg-tertiary);
 }
 
-/* Custom scrollbar for dark theme */
+/* ===========================
+   Custom scrollbar
+   =========================== */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
 ::-webkit-scrollbar-track {
-    background: #0d1117;
+    background: var(--scrollbar-track);
 }
 ::-webkit-scrollbar-thumb {
-    background: #30363d;
+    background: var(--scrollbar-thumb);
     border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: #484f58;
+    background: var(--scrollbar-thumb-hover);
 }
 
-/* Logo SVG: ensure proper sizing in navbar */
+/* ===========================
+   Logo SVG sizing
+   =========================== */
 .navbar-brand img {
     flex-shrink: 0;
 }
 
-/* Empty state card helper */
+/* ===========================
+   Empty state card helper
+   =========================== */
 .card.border-dashed {
     border-style: dashed;
 }
 
-/* Ensure form check inputs keep dark theme */
+/* ===========================
+   Form check inputs
+   =========================== */
 .form-check-input:checked {
-    background-color: #238636;
-    border-color: #238636;
+    background-color: var(--accent-checked-bg);
+    border-color: var(--accent-checked-border);
 }
 
-/* Progress bars inside metric cards */
+/* ===========================
+   Progress bars
+   =========================== */
 .progress {
-    background-color: #21262d;
+    background-color: var(--progress-bg);
 }
 
-/* Mobile: horizontally scrollable tab bar */
+/* ===========================
+   Theme toggle button
+   =========================== */
+.theme-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35rem;
+    border: 1px solid var(--border-default);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    line-height: 1;
+}
+.theme-toggle-btn:hover {
+    background-color: var(--bg-elevated);
+    color: var(--text-primary);
+}
+.theme-toggle-btn svg {
+    display: block;
+}
+
+/* ===========================
+   Mobile: horizontally scrollable tab bar
+   =========================== */
 @media (max-width: 576px) {
     #tab-bar {
         flex-wrap: nowrap;
@@ -102,7 +370,9 @@
     }
 }
 
-/* Mobile: repo card stat blocks */
+/* ===========================
+   Mobile: repo card stat blocks
+   =========================== */
 @media (max-width: 576px) {
     .repo-stats .stat-label {
         font-size: 0.7rem;
@@ -110,9 +380,17 @@
     .repo-stats .stat-value {
         font-size: 0.8rem;
     }
+    .repo-stats [class*="col-"] {
+        padding-bottom: 0.35rem;
+    }
+    .repo-stats .p-2 {
+        padding: 0.65rem !important;
+    }
 }
 
-/* Mobile: PR queue card layout */
+/* ===========================
+   Mobile: PR queue card layout
+   =========================== */
 @media (max-width: 767.98px) {
     .pr-queue-scroll {
         overflow-x: auto;
@@ -126,7 +404,9 @@
     }
 }
 
-/* Mobile: metrics breakdown scroll */
+/* ===========================
+   Mobile: metrics breakdown scroll
+   =========================== */
 @media (max-width: 767.98px) {
     .metrics-scroll {
         overflow-x: auto;
@@ -137,7 +417,9 @@
     }
 }
 
-/* Mobile: reduce container padding */
+/* ===========================
+   Mobile: reduce container padding
+   =========================== */
 @media (max-width: 576px) {
     main.container {
         padding-left: 0.75rem;
@@ -145,14 +427,18 @@
     }
 }
 
-/* Mobile: settings page */
+/* ===========================
+   Mobile: settings page
+   =========================== */
 @media (max-width: 576px) {
     .settings-page .card-body {
         padding: 1rem;
     }
 }
 
-/* Mobile: landing page hero optimizations */
+/* ===========================
+   Mobile: landing page hero
+   =========================== */
 @media (max-width: 576px) {
     .landing-hero .display-5 {
         font-size: 2rem;
@@ -175,7 +461,9 @@
     }
 }
 
-/* Mobile: landing page feature cards readability */
+/* ===========================
+   Mobile: landing page feature cards
+   =========================== */
 @media (max-width: 576px) {
     .landing-features {
         padding-left: 1rem !important;
@@ -197,7 +485,9 @@
     }
 }
 
-/* Mobile: navbar user area spacing */
+/* ===========================
+   Mobile: navbar user area
+   =========================== */
 @media (max-width: 576px) {
     .navbar .container-fluid {
         gap: 0.25rem;
@@ -210,3 +500,15 @@
         font-size: 0.8rem;
     }
 }
+
+/* ===========================
+   Landing page hero SVG stroke colors (light theme aware)
+   =========================== */
+.landing-hero svg[stroke="#3fb950"],
+.landing-features svg[stroke="#3fb950"] { stroke: var(--accent-success) !important; }
+.landing-hero svg[stroke="#58a6ff"],
+.landing-features svg[stroke="#58a6ff"] { stroke: var(--accent-info) !important; }
+.landing-hero svg[stroke="#d29922"],
+.landing-features svg[stroke="#d29922"] { stroke: var(--accent-warning) !important; }
+.landing-hero svg[stroke="#f85149"],
+.landing-features svg[stroke="#f85149"] { stroke: var(--accent-danger) !important; }

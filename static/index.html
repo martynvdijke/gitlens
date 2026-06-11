@@ -10,6 +10,7 @@
     <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/darkly/bootstrap.min.css">
     <link rel="stylesheet" href="/static/style.css">
+    <script>!function(){var t=localStorage.getItem("gitlens-theme");t==="light"&&document.documentElement.classList.add("light-theme")}()</script>
     {{with .User}}{{if and .UmamiURL .UmamiSiteID}}<script async defer src="{{.UmamiURL}}/script.js" data-website-id="{{.UmamiSiteID}}"></script>{{end}}{{end}}
 </head>
 <body>
@@ -19,16 +20,20 @@
                 <img src="/static/logo.svg" alt="" width="24" height="24">
                 <span class="fw-semibold fs-5">GitLens</span>
             </a>
-            {{if .User}}
             <div class="d-flex align-items-center gap-2 ms-auto">
+                <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme">
+                    <svg class="theme-toggle-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <svg class="theme-toggle-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                </button>
+            {{if .User}}
                 <button class="btn btn-sm btn-outline-secondary border-0" hx-get="/settings" hx-target="#main-content" hx-swap="innerHTML" title="Settings">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
                 </button>
                 <img src="{{.User.AvatarURL}}" alt="" class="rounded-circle" width="28" height="28">
                 <span class="text-secondary small">{{.User.Login}}</span>
                 <button class="btn btn-sm btn-outline-danger" hx-post="/auth/logout" hx-target="body">Logout</button>
-            </div>
             {{end}}
+            </div>
         </div>
     </nav>
 
@@ -211,7 +216,7 @@
             {{end}}
 
             <div class="row g-2 mb-3 repo-stats">
-                <div class="col-md-3 col-6">
+                <div class="col-12 col-sm-6 col-md-3">
                     <div class="p-2 bg-dark rounded border border-secondary">
                         <div class="text-uppercase small text-secondary mb-1 stat-label">Latest Commit</div>
                         <div class="stat-value">
@@ -226,7 +231,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-3 col-6">
+                <div class="col-12 col-sm-6 col-md-3">
                     <div class="p-2 bg-dark rounded border border-secondary">
                         <div class="text-uppercase small text-secondary mb-1 stat-label">Latest Release</div>
                         <div class="stat-value">
@@ -244,7 +249,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-3 col-6">
+                <div class="col-12 col-sm-6 col-md-3">
                     <div class="p-2 bg-dark rounded border border-secondary">
                         <div class="text-uppercase small text-secondary mb-1 stat-label">Latest Build</div>
                         <div class="stat-value">
@@ -260,7 +265,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-3 col-6">
+                <div class="col-12 col-sm-6 col-md-3">
                     <div class="p-2 bg-dark rounded border border-secondary">
                         <div class="text-uppercase small text-secondary mb-1 stat-label">Pull Requests</div>
                         <div class="stat-value">
@@ -787,6 +792,22 @@ loadChartData('');
     <footer class="text-center py-3 text-secondary small border-top border-secondary mt-4">
         <span>GitLens <span class="font-monospace">{{appVersion}}</span></span>
     </footer>
+    <script>
+    function toggleTheme() {
+        var html = document.documentElement;
+        var isLight = html.classList.toggle('light-theme');
+        localStorage.setItem('gitlens-theme', isLight ? 'light' : 'dark');
+        // Show the opposite icon
+        document.querySelector('.theme-toggle-sun').style.display = isLight ? 'none' : '';
+        document.querySelector('.theme-toggle-moon').style.display = isLight ? '' : 'none';
+    }
+    // Sync icon state on page load (after FOUC script has applied the class)
+    (function() {
+        var isLight = document.documentElement.classList.contains('light-theme');
+        document.querySelector('.theme-toggle-sun').style.display = isLight ? 'none' : '';
+        document.querySelector('.theme-toggle-moon').style.display = isLight ? '' : 'none';
+    })();
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
 </body>
 </html>
