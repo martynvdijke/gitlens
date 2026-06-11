@@ -1,3 +1,10 @@
+# [1.13.0](https://github.com/martynvdijke/gitlens/compare/v1.12.0...v1.13.0) (2026-06-11)
+
+
+### Features
+
+* add light/dark theme toggle and mobile-responsive repo cards ([c56eac9](https://github.com/martynvdijke/gitlens/commit/c56eac9e3064ccbddf7dbb1599c1a4034c4e2b61))
+
 # [1.12.0](https://github.com/martynvdijke/gitlens/compare/v1.11.1...v1.12.0) (2026-06-10)
 
 
