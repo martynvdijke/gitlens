@@ -11,8 +11,10 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"gitlens/ent"
+	"gitlens/ent/event"
 	"gitlens/ent/repository"
 	"gitlens/ent/user"
 	"gitlens/internal/github"
@@ -100,11 +102,13 @@ func roundPct(v float64) float64 {
 
 func (h *DashboardHandler) ListRepos(c *gin.Context) {
 	userID := c.GetInt64("user_id")
+	sort := c.Query("sort")
 	q := c.Query("q")
 
+	order, needsPostSort := parseSortParam(sort)
 	query := h.client.Repository.Query().
 		Where(repository.HasUserWith(user.ID(int(userID)))).
-		Order(ent.Desc(repository.FieldUpdatedAt))
+		Order(order)
 	if q != "" {
 		query = query.Where(
 			repository.Or(
@@ -118,7 +122,10 @@ func (h *DashboardHandler) ListRepos(c *gin.Context) {
 		c.HTML(http.StatusInternalServerError, "repo_list", gin.H{"Error": "Failed to fetch repositories"})
 		return
 	}
-	c.HTML(http.StatusOK, "repo_list", gin.H{"Repos": repos, "Query": q})
+	if needsPostSort {
+		sortByBuildStatus(repos)
+	}
+	c.HTML(http.StatusOK, "repo_list", gin.H{"Repos": repos, "Query": q, "Sort": sort})
 }
 
 func (h *DashboardHandler) SyncRepo(c *gin.Context) {
@@ -271,6 +278,48 @@ type prSummary struct {
 	BaseRef   string `json:"br"`
 }
 
+// sortByBuildStatus orders repos by workflow severity: failures first, then unknown, then success, then no workflows.
+func sortByBuildStatus(repos []*ent.Repository) {
+	statusRank := map[string]int{
+		"failure": 0,
+		"unknown": 1,
+		"success": 2,
+		"":        3,
+	}
+	sort.SliceStable(repos, func(i, j int) bool {
+		ri := statusRank[repos[i].WorkflowStatus]
+		rj := statusRank[repos[j].WorkflowStatus]
+		if ri != rj {
+			return ri < rj
+		}
+		return strings.ToLower(repos[i].FullName) < strings.ToLower(repos[j].FullName)
+	})
+}
+
+// parseSortParam maps a sort query parameter to an ent ordering function.
+// Returns (order, needsPostSort) where needsPostSort indicates the repos
+// should be re-sorted in Go after fetching (used for custom multi-tier sorts).
+func parseSortParam(sort string) (repository.OrderOption, bool) {
+	switch sort {
+	case "build_status":
+		return ent.Desc(repository.FieldUpdatedAt), true
+	case "latest_commit":
+		return ent.Desc(repository.FieldLatestCommitDate), false
+	case "latest_release":
+		return ent.Desc(repository.FieldLatestReleaseDate), false
+	case "pass_rate":
+		return ent.Asc(repository.FieldWorkflowFailureCount), false
+	case "name_asc":
+		return ent.Asc(repository.FieldFullName), false
+	case "name_desc":
+		return ent.Desc(repository.FieldFullName), false
+	case "synced_at":
+		return ent.Desc(repository.FieldSyncedAt), false
+	default:
+		return ent.Desc(repository.FieldUpdatedAt), false
+	}
+}
+
 // Index renders the full page with repos tab as default.
 // Repo list is lazy-loaded via htmx so the page (including footer) renders instantly.
 func (h *DashboardHandler) Index(c *gin.Context) {
@@ -336,15 +385,112 @@ func (h *DashboardHandler) Index(c *gin.Context) {
 	})
 }
 
+type timelineGroup struct {
+	Date   string
+	Events []feedEvent
+}
+
+// groupEventsByDate groups feed events by date label (Today, Yesterday, or "Jan 2").
+func groupEventsByDate(events []feedEvent) []timelineGroup {
+	if len(events) == 0 {
+		return nil
+	}
+	today := time.Now().Truncate(24 * time.Hour)
+	yesterday := today.Add(-24 * time.Hour)
+
+	var groups []timelineGroup
+	var current *timelineGroup
+
+	for _, e := range events {
+		eventDate := e.Timestamp.Truncate(24 * time.Hour)
+		label := e.Timestamp.Format("Jan 2")
+		switch {
+		case eventDate.Equal(today):
+			label = "Today"
+		case eventDate.Equal(yesterday):
+			label = "Yesterday"
+		}
+		if current == nil || current.Date != label {
+			if current != nil {
+				groups = append(groups, *current)
+			}
+			current = &timelineGroup{Date: label}
+		}
+		current.Events = append(current.Events, e)
+	}
+	if current != nil {
+		groups = append(groups, *current)
+	}
+	return groups
+}
+
+// queryHomepageTimeline fetches recent cross-repo events for the homepage timeline.
+// Returns the last 7 days of releases, workflow failures, and PR merges, capped at 20.
+// Only events for repos belonging to the requesting user are returned.
+func (h *DashboardHandler) queryHomepageTimeline(c *gin.Context) []feedEvent {
+	userID := c.GetInt64("user_id")
+	sinceTime := time.Now().Add(-7 * 24 * time.Hour)
+
+	// Get user's repos for scoping events and name resolution
+	repos, _ := h.client.Repository.Query().
+		Where(repository.HasUserWith(user.ID(int(userID)))).
+		All(c.Request.Context())
+	if len(repos) == 0 {
+		return nil
+	}
+
+	repoIDSet := make(map[int]struct{ owner, name, full string })
+	repoIDs := make([]int, 0, len(repos))
+	for _, r := range repos {
+		repoIDSet[r.ID] = struct{ owner, name, full string }{r.Owner, r.Name, r.FullName}
+		repoIDs = append(repoIDs, r.ID)
+	}
+
+	dbEvents, err := h.client.Event.Query().
+		Where(
+			event.TimestampGTE(sinceTime),
+			event.TypeIn(event.TypeRelease, event.TypeWorkflowFailure, event.TypePrMerge),
+			event.RepoIDIn(repoIDs...),
+		).
+		Order(ent.Desc(event.FieldTimestamp)).
+		Limit(20).
+		All(c.Request.Context())
+	if err != nil || len(dbEvents) == 0 {
+		return nil
+	}
+
+	events := make([]feedEvent, 0, len(dbEvents))
+	for _, e := range dbEvents {
+		rName, ok := repoIDSet[e.RepoID]
+		if !ok {
+			continue
+		}
+		events = append(events, feedEvent{
+			ID:        e.ID,
+			Type:      string(e.Type),
+			Title:     e.Title,
+			URL:       e.URL,
+			Metadata:  e.Metadata,
+			Timestamp: e.Timestamp,
+			RepoOwner: rName.owner,
+			RepoName:  rName.name,
+			RepoFull:  rName.full,
+		})
+	}
+	return events
+}
+
 // ReposTab renders the repos tab content (partial, no layout).
 func (h *DashboardHandler) ReposTab(c *gin.Context) {
 	userID := c.GetInt64("user_id")
 	u, _ := h.client.User.Get(c.Request.Context(), int(userID))
 
+	sort := c.Query("sort")
 	q := c.Query("q")
+	order, needsPostSort := parseSortParam(sort)
 	query := h.client.Repository.Query().
 		Where(repository.HasUserWith(user.ID(int(userID)))).
-		Order(ent.Desc(repository.FieldUpdatedAt))
+		Order(order)
 	if q != "" {
 		query = query.Where(
 			repository.Or(
@@ -354,11 +500,20 @@ func (h *DashboardHandler) ReposTab(c *gin.Context) {
 		)
 	}
 	repos, _ := query.All(c.Request.Context())
+	if needsPostSort {
+		sortByBuildStatus(repos)
+	}
+
+	// Fetch timeline events for the homepage
+	events := h.queryHomepageTimeline(c)
+	timelineGroups := groupEventsByDate(events)
 
 	c.HTML(http.StatusOK, "repos_tab", gin.H{
-		"User":      u,
-		"Repos":     repos,
-		"ActiveTab": "repos",
+		"User":           u,
+		"Repos":          repos,
+		"ActiveTab":      "repos",
+		"Sort":           sort,
+		"TimelineGroups": timelineGroups,
 	})
 }
 

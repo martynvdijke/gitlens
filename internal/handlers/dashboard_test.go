@@ -1137,6 +1137,226 @@ func TestIndex_RendersNormalWhenHasRepos(t *testing.T) {
 
 // ─── RenovateRebaseAll Tests ─────────────────────────────────────────
 
+// ─── Sort Param Tests ──────────────────────────────────────────────
+
+func TestParseSortParam_ValidKeys(t *testing.T) {
+	tests := []struct {
+		key           string
+		expectPostSort bool
+	}{
+		{"updated_at", false},
+		{"build_status", true},
+		{"latest_commit", false},
+		{"latest_release", false},
+		{"pass_rate", false},
+		{"name_asc", false},
+		{"name_desc", false},
+		{"synced_at", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.key, func(t *testing.T) {
+			_, needsPostSort := parseSortParam(tt.key)
+			if needsPostSort != tt.expectPostSort {
+				t.Errorf("parseSortParam(%q) needsPostSort = %v, want %v", tt.key, needsPostSort, tt.expectPostSort)
+			}
+		})
+	}
+}
+
+func TestParseSortParam_InvalidKeyFallsBack(t *testing.T) {
+	order, needsPostSort := parseSortParam("invalid_key")
+	if needsPostSort {
+		t.Error("expected needsPostSort=false for invalid key")
+	}
+	if order == nil {
+		t.Error("expected non-nil order for default fallback")
+	}
+}
+
+func TestSortByBuildStatus(t *testing.T) {
+	repos := []*ent.Repository{
+		{WorkflowStatus: "success", FullName: "b/repo"},
+		{WorkflowStatus: "failure", FullName: "a/repo"},
+		{WorkflowStatus: "unknown", FullName: "c/repo"},
+		{WorkflowStatus: "failure", FullName: "z/repo"},
+		{WorkflowStatus: "", FullName: "m/repo"},
+	}
+	sortByBuildStatus(repos)
+
+	expected := []string{"a/repo", "z/repo", "c/repo", "b/repo", "m/repo"}
+	for i, r := range repos {
+		if r.FullName != expected[i] {
+			t.Errorf("position %d: expected %s, got %s", i, expected[i], r.FullName)
+		}
+	}
+}
+
+func TestGroupEventsByDate(t *testing.T) {
+	now := time.Now()
+	today := now.Truncate(24 * time.Hour)
+	yesterday := today.Add(-24 * time.Hour)
+
+	events := []feedEvent{
+		{Timestamp: today.Add(2 * time.Hour), Title: "Today event 1", Type: "release"},
+		{Timestamp: today.Add(1 * time.Hour), Title: "Today event 2", Type: "workflow_failure"},
+		{Timestamp: yesterday.Add(3 * time.Hour), Title: "Yesterday event", Type: "pr_merge"},
+		{Timestamp: yesterday.Add(-48 * time.Hour), Title: "Older event", Type: "release"},
+	}
+	groups := groupEventsByDate(events)
+	if len(groups) != 3 {
+		t.Fatalf("expected 3 groups, got %d", len(groups))
+	}
+	if groups[0].Date != "Today" {
+		t.Errorf("first group: expected Today, got %s", groups[0].Date)
+	}
+	if groups[1].Date != "Yesterday" {
+		t.Errorf("second group: expected Yesterday, got %s", groups[1].Date)
+	}
+	if len(groups[0].Events) != 2 {
+		t.Errorf("expected 2 today events, got %d", len(groups[0].Events))
+	}
+}
+
+func TestGroupEventsByDate_Empty(t *testing.T) {
+	groups := groupEventsByDate(nil)
+	if groups != nil {
+		t.Error("expected nil for empty input")
+	}
+	groups = groupEventsByDate([]feedEvent{})
+	if groups != nil {
+		t.Error("expected nil for empty slice")
+	}
+}
+
+// ─── ReposTab Sort Integration Tests ───────────────────────────────
+
+func serveDashboardWithTimeline(handler gin.HandlerFunc, path string, cookies ...*http.Cookie) *httptest.ResponseRecorder {
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	engine := gin.New()
+	engine.SetHTMLTemplate(template.Must(template.New("").Funcs(template.FuncMap{
+		"shortSHA":             func(s string) string { return s },
+		"formatTime":           func(t time.Time) string { return "" },
+		"truncate":             func(s string, n int) string { return s },
+		"workflowIcon":         func(status string) string { return "" },
+		"workflowLabel":        func(status string) string { return "" },
+		"hasWorkflowRun":       func(status string) bool { return false },
+		"printf":               func(format string, args ...interface{}) string { return "" },
+		"releaseIcon":          func(conclusion string) string { return "" },
+		"releaseLabel":         func(conclusion string) string { return "" },
+		"hasReleaseConclusion": func(s string) bool { return false },
+		"timeSince":            func(t time.Time) string { return "" },
+		"eventIcon":            func(eventType string) string { return "" },
+		"contains":             func(s, substr string) bool { return strings.Contains(s, substr) },
+	}).Parse(`{{define "repos_tab"}}<div>{{range .Repos}}<div class="repo">{{.FullName}}</div>{{end}}</div>{{template "homepage_timeline" .}}{{end}}{{define "homepage_timeline"}}{{if .TimelineGroups}}{{range .TimelineGroups}}<div class="tl-group" data-date="{{.Date}}">{{range .Events}}<div class="tl-event" data-type="{{.Type}}">{{.Title}}</div>{{end}}</div>{{end}}{{else}}<div class="tl-empty">No recent activity</div>{{end}}{{end}}`)))
+	engine.GET("/dashboard", handler)
+	req := httptest.NewRequest("GET", path, nil)
+	for _, cookie := range cookies {
+		req.AddCookie(cookie)
+	}
+	engine.ServeHTTP(w, req)
+	return w
+}
+
+func TestReposTab_SortParam_Default(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().SetGithubID(1200).SetLogin("sortdefault").SetAccessToken("tok").Save(context.Background())
+	client.Repository.Create().SetGithubID(100).SetOwner("u").SetName("a").SetFullName("u/a").SetHTMLURL("https://github.com/u/a").SetDefaultBranch("main").SetUpdatedAt(time.Now()).SetUserID(u.ID).Save(context.Background())
+	client.Repository.Create().SetGithubID(101).SetOwner("u").SetName("b").SetFullName("u/b").SetHTMLURL("https://github.com/u/b").SetDefaultBranch("main").SetUpdatedAt(time.Now().Add(-time.Hour)).SetUserID(u.ID).Save(context.Background())
+
+	sessionID := store.Set(int64(u.ID))
+	h := func(c *gin.Context) { c.Set("user_id", int64(u.ID)); handler.ReposTab(c) }
+	w := serveDashboardWithTimeline(h, "/dashboard", &http.Cookie{Name: "gitlens_session", Value: sessionID})
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+}
+
+func TestReposTab_SortParam_Valid(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().SetGithubID(1201).SetLogin("sortvalid").SetAccessToken("tok").Save(context.Background())
+	client.Repository.Create().SetGithubID(102).SetOwner("u").SetName("x").SetFullName("u/x").SetHTMLURL("https://github.com/u/x").SetDefaultBranch("main").SetUserID(u.ID).Save(context.Background())
+
+	sessionID := store.Set(int64(u.ID))
+	h := func(c *gin.Context) { c.Set("user_id", int64(u.ID)); handler.ReposTab(c) }
+	w := serveDashboardWithTimeline(h, "/dashboard?sort=name_asc", &http.Cookie{Name: "gitlens_session", Value: sessionID})
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200 for valid sort, got %d", w.Code)
+	}
+}
+
+// ─── Timeline Integration Tests ────────────────────────────────────
+
+func TestReposTab_Timeline_RendersEvents(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().SetGithubID(1300).SetLogin("timeline").SetAccessToken("tok").Save(context.Background())
+	r, _ := client.Repository.Create().SetGithubID(110).SetOwner("u").SetName("timeline-repo").SetFullName("u/timeline-repo").SetHTMLURL("https://github.com/u/timeline-repo").SetDefaultBranch("main").SetUserID(u.ID).Save(context.Background())
+	client.Event.Create().SetRepoID(r.ID).SetType("release").SetTitle("v1.0.0").SetURL("https://github.com/u/timeline-repo/releases/v1.0.0").SetTimestamp(time.Now()).Save(context.Background())
+	client.Event.Create().SetRepoID(r.ID).SetType("workflow_failure").SetTitle("CI failed").SetURL("https://github.com/u/timeline-repo/actions/1").SetTimestamp(time.Now()).Save(context.Background())
+
+	sessionID := store.Set(int64(u.ID))
+	h := func(c *gin.Context) { c.Set("user_id", int64(u.ID)); handler.ReposTab(c) }
+	w := serveDashboardWithTimeline(h, "/dashboard", &http.Cookie{Name: "gitlens_session", Value: sessionID})
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	body := w.Body.String()
+	if !strings.Contains(body, "v1.0.0") {
+		t.Errorf("expected release event in response, body: %s", body)
+	}
+	if !strings.Contains(body, "CI failed") {
+		t.Errorf("expected workflow failure event in response, body: %s", body)
+	}
+	if !strings.Contains(body, "tl-group") {
+		t.Errorf("expected timeline group in response, body: %s", body)
+	}
+}
+
+func TestReposTab_Timeline_Empty(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().SetGithubID(1301).SetLogin("timelineempty").SetAccessToken("tok").Save(context.Background())
+	client.Repository.Create().SetGithubID(111).SetOwner("u").SetName("empty-repo").SetFullName("u/empty-repo").SetHTMLURL("https://github.com/u/empty-repo").SetDefaultBranch("main").SetUserID(u.ID).Save(context.Background())
+
+	sessionID := store.Set(int64(u.ID))
+	h := func(c *gin.Context) { c.Set("user_id", int64(u.ID)); handler.ReposTab(c) }
+	w := serveDashboardWithTimeline(h, "/dashboard", &http.Cookie{Name: "gitlens_session", Value: sessionID})
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	body := w.Body.String()
+	if !strings.Contains(body, "No recent activity") {
+		t.Errorf("expected empty timeline state, body: %s", body)
+	}
+}
+
+func TestReposTab_Timeline_FiltersByUser(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u1, _ := client.User.Create().SetGithubID(1400).SetLogin("user1").SetAccessToken("tok").Save(context.Background())
+	u2, _ := client.User.Create().SetGithubID(1401).SetLogin("user2").SetAccessToken("tok2").Save(context.Background())
+	r1, _ := client.Repository.Create().SetGithubID(120).SetOwner("u1").SetName("r1").SetFullName("u1/r1").SetHTMLURL("https://github.com/u1/r1").SetDefaultBranch("main").SetUserID(u1.ID).Save(context.Background())
+	client.Repository.Create().SetGithubID(121).SetOwner("u2").SetName("r2").SetFullName("u2/r2").SetHTMLURL("https://github.com/u2/r2").SetDefaultBranch("main").SetUserID(u2.ID).Save(context.Background())
+	// Event for user1's repo
+	client.Event.Create().SetRepoID(r1.ID).SetType("release").SetTitle("v1.0").SetURL("https://github.com/u1/r1/releases/v1.0").SetTimestamp(time.Now()).Save(context.Background())
+	// Event for user2's repo (should not appear for user1)
+	client.Event.Create().SetRepoID(999).SetType("release").SetTitle("v2.0").SetURL("https://github.com/u2/r2/releases/v2.0").SetTimestamp(time.Now()).Save(context.Background())
+
+	sessionID := store.Set(int64(u1.ID))
+	h := func(c *gin.Context) { c.Set("user_id", int64(u1.ID)); handler.ReposTab(c) }
+	w := serveDashboardWithTimeline(h, "/dashboard", &http.Cookie{Name: "gitlens_session", Value: sessionID})
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	body := w.Body.String()
+	if !strings.Contains(body, "v1.0") {
+		t.Errorf("expected user1's event in response, body: %s", body)
+	}
+	if strings.Contains(body, "v2.0") {
+		t.Errorf("did not expect user2's event in response, body: %s", body)
+	}
+}
+
+// ─── RenovateRebaseAll Tests ─────────────────────────────────────────
+
 func TestRenovateRebaseAll_InvalidRepoID(t *testing.T) {
 	handler, store, client := newTestDashboardHandler(t)
 	u, _ := client.User.Create().

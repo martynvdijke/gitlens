@@ -26,6 +26,19 @@ func DedupeRepositories(ctx context.Context, drv *entsql.Driver) error {
 		return fmt.Errorf("nil driver")
 	}
 
+	// Check if the repositories table exists. On a fresh database
+	// the schema hasn't been created yet, so there cannot be duplicates.
+	var exists int
+	if err := drv.DB().QueryRowContext(ctx,
+		"SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='repositories'",
+	).Scan(&exists); err != nil {
+		return fmt.Errorf("checking repositories table: %w", err)
+	}
+	if exists == 0 {
+		log.Println("DedupeRepositories: repositories table does not exist, skipping")
+		return nil
+	}
+
 	// 1. Count duplicates so the log message is meaningful.
 	rows, err := drv.DB().QueryContext(ctx, `
 		SELECT user_repositories, github_id, COUNT(*) as c
