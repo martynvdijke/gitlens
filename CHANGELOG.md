@@ -1,3 +1,15 @@
+# [1.15.0](https://github.com/martynvdijke/gitlens/compare/v1.14.0...v1.15.0) (2026-06-13)
+
+
+### Bug Fixes
+
+* restore footer version with font-monospace class in split template ([2958b6c](https://github.com/martynvdijke/gitlens/commit/2958b6c320ff8bb07e15913fd710a87af18bd1ac))
+
+
+### Features
+
+* frontend consolidation and UX improvements ([a3a02c9](https://github.com/martynvdijke/gitlens/commit/a3a02c9563c16e1235c5632ceeac7923c309a23e))
+
 # [1.14.0](https://github.com/martynvdijke/gitlens/compare/v1.13.1...v1.14.0) (2026-06-11)
 
 
