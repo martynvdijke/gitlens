@@ -351,6 +351,89 @@ body, .card, .navbar, .nav-tabs, footer, .modal-content,
 }
 
 /* ===========================
+   Mobile: bottom navigation bar
+   =========================== */
+.bottom-nav {
+    z-index: 1030;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.bottom-nav .nav-link {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0;
+    color: var(--text-secondary);
+    padding: 0.35rem 0.5rem !important;
+}
+.bottom-nav .nav-link.active,
+.bottom-nav .nav-link:active {
+    color: var(--accent-info);
+    background: transparent;
+}
+.bottom-nav .nav-link svg {
+    margin-bottom: 1px;
+}
+
+/* Add bottom padding for fixed nav on mobile */
+@media (max-width: 767.98px) {
+    main.container {
+        padding-bottom: 4.5rem;
+    }
+}
+
+/* ===========================
+   Mobile: hide top tab bar, show bottom nav
+   =========================== */
+@media (max-width: 767.98px) {
+    #tab-bar {
+        display: none !important;
+    }
+}
+@media (min-width: 768px) {
+    #tab-bar {
+        display: flex !important;
+    }
+}
+
+/* ===========================
+   Mobile: 44x44px touch targets for icon-only/small buttons
+   =========================== */
+@media (max-width: 767.98px) {
+    .btn-sm,
+    .btn-group-sm > .btn,
+    .navbar .btn-sm {
+        min-width: 44px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    button.theme-toggle-btn {
+        min-width: 44px;
+        min-height: 44px;
+    }
+    /* Settings list item remove buttons */
+    .btn-outline-secondary.border-0 {
+        min-width: 44px;
+        min-height: 44px;
+    }
+    /* Stats area touch targets */
+    .repo-stats .btn-sm {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 0.5rem 0.75rem;
+    }
+    /* PR merge buttons */
+    .card .btn-sm {
+        min-width: 44px;
+        min-height: 36px;
+    }
+}
+
+/* ===========================
    Mobile: horizontally scrollable tab bar
    =========================== */
 @media (max-width: 576px) {
@@ -458,6 +541,26 @@ body, .card, .navbar, .nav-tabs, footer, .modal-content,
     .landing-hero .py-5 {
         padding-top: 2.5rem !important;
         padding-bottom: 2rem !important;
+    }
+}
+
+/* 320px ultra-narrow viewports */
+@media (max-width: 360px) {
+    .landing-hero .btn-lg,
+    .landing-hero .landing-cta,
+    .landing-hero button.btn,
+    .landing-hero a.btn {
+        min-width: 0 !important;
+        width: 100%;
+        padding: 0.65rem 0.75rem;
+        font-size: 0.9rem;
+    }
+    .landing-hero .display-5 {
+        font-size: 1.6rem;
+    }
+    .landing-hero svg[width="64"] {
+        width: 48px;
+        height: 48px;
     }
 }
 

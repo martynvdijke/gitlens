@@ -1,0 +1,89 @@
+{{define "prs_tab"}}
+<div class="d-flex align-items-center justify-content-between mb-3 gap-3 flex-wrap">
+    <h2 class="h4 fw-semibold mb-0">Pull Requests</h2>
+    <div class="d-flex align-items-center gap-2">
+        {{if .Repos}}
+        <select class="form-select form-select-sm bg-dark text-light border-secondary" style="width:auto" hx-get="/prs" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true" hx-trigger="change" name="repo">
+            <option value="">All Repos</option>
+            {{range .Repos}}
+            <option value="{{.FullName}}" {{if eq $.FilterRepo .FullName}}selected{{end}}>{{.FullName}}</option>
+            {{end}}
+        </select>
+        {{end}}
+        <span id="batch-spinner" class="htmx-indicator small text-info">Merging...</span>
+    </div>
+</div>
+
+{{if .PRs}}
+<form id="pr-queue-form" hx-post="/prs/batch-merge" hx-target="#pr-queue-status" hx-swap="innerHTML" hx-indicator="#batch-spinner">
+    <div id="pr-queue-status"></div>
+
+    <!-- Mobile: stacked card layout -->
+    <div class="d-md-none d-flex flex-column gap-2 mb-3">
+        {{range .PRs}}
+        <div class="card border-secondary">
+            <div class="card-body py-2 px-3">
+                <div class="d-flex align-items-start justify-content-between gap-2">
+                    <label class="d-flex align-items-start gap-2 flex-grow-1 min-w-0">
+                        <input type="checkbox" name="pr_ids" value="{{.RepoID}}:{{.Number}}" class="form-check-input pr-queue-checkbox mt-1 flex-shrink-0">
+                        <div class="min-w-0">
+                            <a href="{{.HTMLURL}}" target="_blank" rel="noopener" class="text-light text-decoration-none small fw-medium text-truncate d-block">#{{.Number}} {{.Title}}</a>
+                            <span class="text-info small">{{.RepoFullName}}</span>
+                            <span class="text-secondary small d-block">{{.HeadRef}} → {{.BaseRef}}</span>
+                            <span class="text-secondary small">{{.Author}} &middot; {{printf "%.10s" .CreatedAt}}</span>
+                        </div>
+                    </label>
+                    <button class="btn btn-sm btn-success flex-shrink-0" hx-post="/prs/merge" hx-vals='{"repo_id":{{.RepoID}},"pr_number":{{.Number}}}' hx-target="#pr-queue-status" hx-swap="innerHTML" hx-indicator="#batch-spinner" hx-confirm="Merge #{{.Number}} ({{.RepoFullName}})?">Merge</button>
+                </div>
+            </div>
+        </div>
+        {{end}}
+    </div>
+
+    <!-- Desktop: table layout -->
+    <div class="d-none d-md-block card border-secondary pr-queue-scroll">
+        <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom border-secondary bg-dark small text-uppercase text-secondary fw-semibold pr-header">
+            <label style="width:20px;flex-shrink:0">
+                <input type="checkbox" class="form-check-input" onchange="document.querySelectorAll('.pr-queue-checkbox').forEach(c => c.checked = this.checked)" title="Select all">
+            </label>
+            <span style="width:180px;flex-shrink:0">Repository</span>
+            <span class="flex-grow-1">Pull Request</span>
+            <span class="d-none d-sm-inline" style="width:140px;flex-shrink:0;text-align:right">Author / Age</span>
+            <span style="width:80px;flex-shrink:0;text-align:right">Action</span>
+        </div>
+        {{range .PRs}}
+        <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom border-secondary bg-dark pr-row">
+            <label style="width:20px;flex-shrink:0">
+                <input type="checkbox" name="pr_ids" value="{{.RepoID}}:{{.Number}}" class="form-check-input pr-queue-checkbox">
+            </label>
+            <span class="text-info small text-truncate d-none d-sm-inline" style="width:180px;flex-shrink:0">{{.RepoFullName}}</span>
+            <span class="flex-grow-1 min-w-0 d-flex flex-column">
+                <a href="{{.HTMLURL}}" target="_blank" rel="noopener" class="text-light text-decoration-none small fw-medium text-truncate">#{{.Number}} {{.Title}}</a>
+                <span class="text-secondary small text-truncate d-sm-none">{{.RepoFullName}}</span>
+                <span class="text-secondary small">{{.HeadRef}} → {{.BaseRef}}</span>
+            </span>
+            <span class="d-none d-sm-flex flex-column" style="width:140px;flex-shrink:0;text-align:right">
+                <span class="text-light small">{{.Author}}</span>
+                <span class="text-secondary small">{{printf "%.10s" .CreatedAt}}</span>
+            </span>
+            <span style="width:80px;flex-shrink:0;text-align:right">
+                <button class="btn btn-sm btn-success" hx-post="/prs/merge" hx-vals='{"repo_id":{{.RepoID}},"pr_number":{{.Number}}}' hx-target="#pr-queue-status" hx-swap="innerHTML" hx-indicator="#batch-spinner" hx-confirm="Merge #{{.Number}} ({{.RepoFullName}})?">Merge</button>
+            </span>
+        </div>
+        {{end}}
+    </div>
+    <div class="mt-3">
+        <button type="submit" class="btn btn-sm btn-success" onclick="return document.querySelectorAll('.pr-queue-checkbox:checked').length > 0 || (alert('Select at least one PR to merge'), false)">
+            Merge Selected
+        </button>
+    </div>
+</form>
+{{else}}
+<div class="card border-secondary text-center py-5">
+    <div class="card-body">
+        <h5 class="card-title">No open pull requests</h5>
+        <p class="card-text text-secondary">All tracked repositories have no open PRs.</p>
+    </div>
+</div>
+{{end}}
+{{end}}

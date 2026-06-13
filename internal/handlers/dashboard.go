@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"gitlens/ent"
@@ -19,9 +20,20 @@ import (
 	"gitlens/ent/user"
 	"gitlens/internal/github"
 	mw "gitlens/internal/middleware"
-	"gitlens/internal/sync"
+	appsync "gitlens/internal/sync"
 
 	"github.com/gin-gonic/gin"
+)
+
+// ImportProgress tracks an ongoing repository import job for a user.
+type ImportProgress struct {
+	Total   int `json:"total"`
+	Current int `json:"current"`
+}
+
+var (
+	importProgressMu sync.Mutex
+	importProgress   = map[int64]*ImportProgress{} // userID -> progress
 )
 
 type DORAMetrics struct {
@@ -48,11 +60,11 @@ type DashboardHandler struct {
 	client *ent.Client
 	store  *mw.SessionStore
 	gh     *github.Client
-	syncer *sync.Syncer
+	syncer *	appsync.Syncer
 	bgCtx  context.Context
 }
 
-func NewDashboardHandler(client *ent.Client, store *mw.SessionStore, gh *github.Client, syncer *sync.Syncer) *DashboardHandler {
+func NewDashboardHandler(client *ent.Client, store *mw.SessionStore, gh *github.Client, syncer *	appsync.Syncer) *DashboardHandler {
 	return &DashboardHandler{client: client, store: store, gh: gh, syncer: syncer, bgCtx: context.Background()}
 }
 
@@ -152,6 +164,31 @@ func (h *DashboardHandler) SyncRepo(c *gin.Context) {
 	c.HTML(http.StatusOK, "repo_card", r)
 }
 
+// ImportProgressHandler returns the current import progress for the user.
+func (h *DashboardHandler) ImportProgressHandler(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	importProgressMu.Lock()
+	prog, ok := importProgress[userID]
+	importProgressMu.Unlock()
+
+	if !ok || prog.Total == 0 {
+		c.JSON(http.StatusOK, ImportProgress{Total: 0, Current: 0})
+		return
+	}
+
+	// Clean up after completion
+	if prog.Current >= prog.Total {
+		go func() {
+			time.Sleep(30 * time.Second)
+			importProgressMu.Lock()
+			delete(importProgress, userID)
+			importProgressMu.Unlock()
+		}()
+	}
+
+	c.JSON(http.StatusOK, prog)
+}
+
 func (h *DashboardHandler) ImportAllRepos(c *gin.Context) {
 	userID := c.GetInt64("user_id")
 	u, err := h.client.User.Get(c.Request.Context(), int(userID))
@@ -201,6 +238,13 @@ func (h *DashboardHandler) ImportAllRepos(c *gin.Context) {
 		newIDs = append(newIDs, repo.ID)
 	}
 
+	// Track import progress
+	total := len(newIDs)
+	prog := &ImportProgress{Total: total, Current: 0}
+	importProgressMu.Lock()
+	importProgress[userID] = prog
+	importProgressMu.Unlock()
+
 	// Sync new repos in background so the HTTP request returns quickly.
 	// WebSocket broadcasts push updated repo cards as each sync completes.
 	go func() {
@@ -208,9 +252,15 @@ func (h *DashboardHandler) ImportAllRepos(c *gin.Context) {
 			r, err := h.client.Repository.Get(h.bgCtx, id)
 			if err != nil {
 				log.Printf("Error fetching new repo ID %d: %v", id, err)
+				importProgressMu.Lock()
+				prog.Current++
+				importProgressMu.Unlock()
 				continue
 			}
 			h.syncer.SyncOne(h.bgCtx, r)
+			importProgressMu.Lock()
+			prog.Current++
+			importProgressMu.Unlock()
 		}
 	}()
 

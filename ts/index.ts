@@ -1,1 +1,1 @@
-console.log("GitLens frontend loaded");
+import './main.js';
