@@ -1,0 +1,132 @@
+{{define "settings"}}
+<div class="settings-page" style="max-width:720px">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2 class="h4 fw-semibold mb-0">Settings</h2>
+        <button class="btn btn-sm btn-outline-secondary" hx-get="/dashboard" hx-target="#main-content" hx-swap="innerHTML">Back to Dashboard</button>
+    </div>
+
+    <div class="card border-secondary mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Sync Interval</h5>
+            <p class="card-text text-secondary small">How often to automatically refresh repository data.</p>
+            <form hx-post="/settings/interval" hx-target="#interval-status" hx-swap="innerHTML" class="d-flex align-items-center gap-2">
+                <select name="interval" class="form-select form-select-sm bg-dark text-light border-secondary" style="width:auto">
+                    <option value="1" {{if eq .User.SyncIntervalMinutes 1}}selected{{end}}>Every 1 minute</option>
+                    <option value="5" {{if eq .User.SyncIntervalMinutes 5}}selected{{end}}>Every 5 minutes</option>
+                    <option value="15" {{if eq .User.SyncIntervalMinutes 15}}selected{{end}}>Every 15 minutes</option>
+                    <option value="30" {{if eq .User.SyncIntervalMinutes 30}}selected{{end}}>Every 30 minutes</option>
+                    <option value="60" {{if eq .User.SyncIntervalMinutes 60}}selected{{end}}>Every 1 hour</option>
+                    <option value="360" {{if eq .User.SyncIntervalMinutes 360}}selected{{end}}>Every 6 hours</option>
+                    <option value="720" {{if eq .User.SyncIntervalMinutes 720}}selected{{end}}>Every 12 hours</option>
+                    <option value="1440" {{if eq .User.SyncIntervalMinutes 1440}}selected{{end}}>Every 24 hours</option>
+                </select>
+                <button type="submit" class="btn btn-sm btn-success">Save</button>
+            </form>
+            <span id="interval-status"></span>
+        </div>
+    </div>
+
+    <div class="card border-secondary mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Tracked Repositories ({{len .Repos}})</h5>
+
+            {{/* Forgejo cross-provider warning */}}
+            {{$fw := .ForgejoWarning}}
+            {{if $fw.Show}}
+            <div class="alert alert-warning py-2 small mb-3" id="forgejo-warning">
+                <div class="d-flex align-items-start gap-2">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0 mt-1"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <div>
+                        <strong class="d-block mb-1">Repositories not monitored on Forgejo</strong>
+                        <p class="mb-1">The following GitHub-tracked repos have no counterpart on your connected Forgejo instance:</p>
+                        <ul class="mb-1 ps-3">
+                            {{range $repoName := $fw.MissingRepos}}
+                            <li class="d-flex align-items-center gap-2 mb-1">
+                                <span>{{$repoName}}</span>
+                                {{if $fw.ForgejoURL}}
+                                <a href="{{$fw.ForgejoURL}}/explore/repos?q={{$repoName}}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-warning py-0 px-1">Search on Forgejo</a>
+                                {{end}}
+                                <button class="btn btn-sm btn-outline-secondary py-0 px-1" hx-post="/settings/forgejo/warning/dismiss" hx-vals='{"full_name":"{{$repoName}}"}' hx-target="#forgejo-warning" hx-swap="delete">Dismiss</button>
+                            </li>
+                            {{end}}
+                        </ul>
+                        {{if $fw.Capped}}
+                        <p class="mb-0 text-secondary fst-italic">...and {{sub $fw.TotalMissing (len $fw.MissingRepos)}} more repos not shown.</p>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+            {{end}}
+
+            <ul class="list-unstyled mb-3">
+                {{range .Repos}}
+                <li class="d-flex align-items-center justify-content-between py-2 border-bottom border-secondary">
+                    <div class="d-flex align-items-center gap-2">
+                        {{if eq .Provider "forgejo"}}
+                        <span class="badge bg-info text-dark" style="font-size:0.6rem">FJ</span>
+                        {{else}}
+                        <span class="badge bg-secondary" style="font-size:0.6rem">GH</span>
+                        {{end}}
+                        <a href="{{.HTMLURL}}" target="_blank" rel="noopener" class="text-info text-decoration-none small">{{.FullName}}</a>
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary border-0" hx-delete="/repos/{{.ID}}" hx-target="closest li" hx-swap="delete" hx-confirm="Remove {{.FullName}}?">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </li>
+                {{else}}
+                <li class="text-secondary fst-italic small py-2">No repositories tracked yet.</li>
+                {{end}}
+            </ul>
+            <div class="btn-group btn-group-sm" role="group">
+                <button class="btn btn-outline-secondary" hx-get="/settings/repos/available" hx-target="#main-content" hx-swap="innerHTML">from GitHub</button>
+                <button class="btn btn-outline-secondary" hx-get="/settings/forgejo/available" hx-target="#main-content" hx-swap="innerHTML">from Forgejo</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-secondary mb-4">
+        <div class="card-body">
+            <h5 class="card-title">GitHub Webhook</h5>
+            <p class="card-text text-secondary small">Set up this URL as a GitHub webhook to automatically sync on every push.</p>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <code class="flex-grow-1 p-2 bg-dark rounded border border-secondary small" id="webhook-url-text">{{.WebhookURL}}</code>
+                <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard('webhook-url-text')">Copy</button>
+            </div>
+            <p class="text-secondary small mb-0">Payload: <code>application/json</code> &middot; Events: <strong>Push</strong> &middot; Secret: <em>configured via <code>GITHUB_WEBHOOK_SECRET</code></em></p>
+        </div>
+    </div>
+
+    <div class="card border-secondary mb-4">
+        <div class="card-body">
+            <h5 class="card-title">GitHub App</h5>
+            <p class="card-text text-secondary small">Auto-register webhooks for all your repos using a GitHub App installation.</p>
+            <button class="btn btn-sm btn-outline-secondary" hx-post="/repos/setup-webhooks" hx-target="#github-app-status" hx-swap="innerHTML" hx-indicator="#github-app-spinner">
+                Register Webhooks for All Repos
+            </button>
+            <span id="github-app-spinner" class="htmx-indicator small text-info">Registering...</span>
+            <span id="github-app-status" class="d-block mt-2 small"></span>
+        </div>
+    </div>
+
+    <div class="card border-secondary mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Umami Analytics</h5>
+            <p class="card-text text-secondary small">Configure self-hosted Umami analytics tracking. Leave both fields empty to disable.</p>
+            <form hx-post="/settings/umami" hx-target="#umami-status" hx-swap="innerHTML" class="d-flex flex-column gap-2">
+                <div>
+                    <label class="form-label small text-secondary mb-1">Umami URL</label>
+                    <input type="text" name="umami_url" class="form-control form-control-sm bg-dark text-light border-secondary" placeholder="https://umami.example.com" value="{{.User.UmamiURL}}">
+                </div>
+                <div>
+                    <label class="form-label small text-secondary mb-1">Site ID</label>
+                    <input type="text" name="umami_site_id" class="form-control form-control-sm bg-dark text-light border-secondary" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" value="{{.User.UmamiSiteID}}">
+                </div>
+                <div class="d-flex align-items-center gap-2 mt-1">
+                    <button type="submit" class="btn btn-sm btn-success">Save</button>
+                    <span id="umami-status"></span>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{{end}}

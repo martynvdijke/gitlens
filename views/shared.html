@@ -1,0 +1,415 @@
+{{define "bottom_nav"}}
+<nav class="d-md-none fixed-bottom border-top border-secondary bg-dark bottom-nav nav nav-pills justify-content-around py-1" id="bottom-nav">
+    <a href="/dashboard" class="nav-link text-center px-2 {{if eq .ActiveTab "repos"}}active{{end}}"
+       hx-get="/dashboard" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="d-block mx-auto"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <span class="small d-block" style="font-size:0.65rem">Repos</span>
+    </a>
+    <a href="/prs" class="nav-link text-center px-2 {{if eq .ActiveTab "prs"}}active{{end}}"
+       hx-get="/prs" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="d-block mx-auto"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 21V9c0 2 2 3 6 3s6 1 6 3v3"/></svg>
+        <span class="small d-block" style="font-size:0.65rem">PRs</span>
+    </a>
+    <a href="/metrics" class="nav-link text-center px-2 {{if eq .ActiveTab "metrics"}}active{{end}}"
+       hx-get="/metrics" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="d-block mx-auto"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span class="small d-block" style="font-size:0.65rem">Metrics</span>
+    </a>
+    <a href="/settings" class="nav-link text-center px-2 {{if eq .ActiveTab "settings"}}active{{end}}"
+       hx-get="/settings" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="d-block mx-auto"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <span class="small d-block" style="font-size:0.65rem">Settings</span>
+    </a>
+    {{if .User.IsAdmin}}
+    <a href="/admin" class="nav-link text-center px-2 {{if eq .ActiveTab "admin"}}active{{end}}"
+       hx-get="/admin" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="d-block mx-auto"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+        <span class="small d-block" style="font-size:0.65rem">Admin</span>
+    </a>
+    {{end}}
+</nav>
+{{end}}
+
+{{define "tab_bar"}}
+<ul class="nav nav-tabs px-3 border-bottom border-secondary flex-nowrap overflow-auto" id="tab-bar">
+    <li class="nav-item">
+        <a href="/dashboard" class="nav-link {{if eq .ActiveTab "repos"}}active{{end}}"
+           hx-get="/dashboard" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            Repos
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="/prs" class="nav-link {{if eq .ActiveTab "prs"}}active{{end}}"
+           hx-get="/prs" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 21V9c0 2 2 3 6 3s6 1 6 3v3"/></svg>
+            PRs
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="/metrics" class="nav-link {{if eq .ActiveTab "metrics"}}active{{end}}"
+           hx-get="/metrics" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Metrics
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="/settings" class="nav-link {{if eq .ActiveTab "settings"}}active{{end}}"
+           hx-get="/settings" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            Settings
+        </a>
+    </li>
+    {{if .User.IsAdmin}}
+    <li class="nav-item">
+        <a href="/admin" class="nav-link {{if eq .ActiveTab "admin"}}active{{end}}"
+           hx-get="/admin" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+            Admin
+        </a>
+    </li>
+    {{end}}
+</ul>
+{{end}}
+
+{{define "repo_card"}}
+<div class="col-12" id="repo-card-{{.ID}}">
+<div class="card border-secondary" id="repo-{{.ID}}">
+    <div class="card-body">
+        <div class="d-flex align-items-start justify-content-between mb-1">
+            <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                {{if eq .Provider "forgejo"}}
+                <span class="badge bg-info text-dark" style="font-size:0.6rem">FJ</span>
+                {{else}}
+                <span class="badge bg-secondary" style="font-size:0.6rem">GH</span>
+                {{end}}
+                <a href="{{.HTMLURL}}" target="_blank" rel="noopener" class="text-info fw-semibold text-decoration-none fs-6">{{.FullName}}</a>
+                {{if .Language}}<span class="badge bg-secondary">{{.Language}}</span>{{end}}
+            </div>
+            <button class="btn btn-sm btn-outline-secondary border-0" hx-delete="/repos/{{.ID}}" hx-target="#repo-card-{{.ID}}" hx-swap="delete" hx-confirm="Remove {{.FullName}} from tracking?" title="Remove repository">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        {{if .Description}}
+        <p class="text-secondary small mb-3">{{.Description}}</p>
+        {{end}}
+
+        <div class="row g-2 mb-3 repo-stats">
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="p-2 bg-dark rounded border border-secondary">
+                    <div class="text-uppercase small text-secondary mb-1 stat-label">Latest Commit</div>
+                    <div class="stat-value">
+                        {{if .LatestCommitSha}}
+                        <code class="text-light small">{{shortSHA .LatestCommitSha}}</code>
+                        <div class="text-light small text-truncate">{{truncate .LatestCommitMessage 60}}</div>
+                        {{if not .LatestCommitDate.IsZero}}<div class="text-secondary small">{{formatTime .LatestCommitDate}}</div>{{end}}
+                        {{else}}
+                        <span class="text-secondary fst-italic small">Not synced</span>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="p-2 bg-dark rounded border border-secondary">
+                    <div class="text-uppercase small text-secondary mb-1 stat-label">Latest Release</div>
+                    <div class="stat-value">
+                        {{if .LatestReleaseTag}}
+                        <strong class="text-light small">{{.LatestReleaseTag}}</strong>
+                        {{if .LatestReleaseName}}<div class="text-light small text-truncate">{{.LatestReleaseName}}</div>{{end}}
+                        {{if not .LatestReleaseDate.IsZero}}<div class="text-secondary small">{{formatTime .LatestReleaseDate}}</div>{{end}}
+                        {{if hasReleaseConclusion .LatestReleaseConclusion}}
+                        <span class="badge {{if eq .LatestReleaseConclusion "success"}}bg-success{{else if eq .LatestReleaseConclusion "failure"}}bg-danger{{else}}bg-secondary{{end}}">{{releaseIcon .LatestReleaseConclusion}} {{releaseLabel .LatestReleaseConclusion}}</span>
+                        {{end}}
+                        {{else}}
+                        <span class="text-secondary fst-italic small">No releases</span>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="p-2 bg-dark rounded border border-secondary">
+                    <div class="text-uppercase small text-secondary mb-1 stat-label">Latest Build</div>
+                    <div class="stat-value">
+                        {{if hasWorkflowRun .WorkflowStatus}}
+                        <span class="badge {{if eq .WorkflowStatus "success"}}bg-success{{else if eq .WorkflowStatus "failure"}}bg-danger{{else}}bg-warning text-dark{{end}} mb-1">{{workflowIcon .WorkflowStatus}} {{workflowLabel .WorkflowStatus}}</span>
+                        {{if or .WorkflowSuccessCount .WorkflowFailureCount}}
+                        <div class="text-light small">{{.WorkflowSuccessCount}} passed / {{.WorkflowFailureCount}} failed</div>
+                        {{end}}
+                        {{else}}
+                        <span class="text-secondary fst-italic small">No workflows</span>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="p-2 bg-dark rounded border border-secondary">
+                    <div class="text-uppercase small text-secondary mb-1 stat-label">Pull Requests</div>
+                    <div class="stat-value">
+                        {{if .OpenPrCount}}
+                        <span class="text-info fw-semibold small">{{.OpenPrCount}} open</span>
+                        <button class="btn btn-sm btn-outline-info ms-1" hx-get="/repos/{{.ID}}/prs" hx-target="#prs-{{.ID}}" hx-swap="innerHTML" hx-indicator="#pr-spinner-{{.ID}}">View PRs</button>
+                        <span id="pr-spinner-{{.ID}}" class="htmx-indicator small text-info">Loading...</span>
+                        {{else}}
+                        <span class="text-secondary fst-italic small">No open PRs</span>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="prs-{{.ID}}" class="mb-3"></div>
+
+        <div class="d-flex align-items-center justify-content-between pt-2 border-top border-secondary">
+            {{if not .SyncedAt.IsZero}}<span class="text-secondary small">Last synced: {{formatTime .SyncedAt}}</span>{{end}}
+            <button class="btn btn-sm btn-outline-secondary ms-auto" hx-post="/repos/{{.ID}}/sync" hx-target="#repo-card-{{.ID}}" hx-swap="outerHTML">Refresh</button>
+        </div>
+    </div>
+</div>
+</div>
+{{end}}
+
+{{define "repo_list"}}
+<div id="repo-grid">
+<div class="row g-3">
+    {{range .Repos}}
+    {{template "repo_card" .}}
+    {{else}}
+    <div class="col-12">
+        <div class="card border-secondary text-center py-5">
+            <div class="card-body">
+                <h3 class="card-title h4">Welcome to GitLens</h3>
+                <p class="card-text text-secondary">Start by importing repositories from GitHub to track their latest commits, releases, and workflow status.</p>
+                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                    <button class="btn btn-success" hx-post="/repos/import-all" hx-target="#repo-grid" hx-swap="outerHTML" hx-indicator="#sync-spinner">
+                        Import All
+                    </button>
+                    <button class="btn btn-outline-secondary" hx-get="/settings/repos/available" hx-target="#main-content" hx-swap="innerHTML">
+                        Select Repositories
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{end}}
+</div>
+</div>
+{{end}}
+
+{{define "pr_list"}}
+<div class="card border-secondary bg-dark">
+<div class="card-body p-3">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="fw-semibold small">Pull Requests ({{.Count}})</span>
+        <div class="d-flex align-items-center gap-2">
+            {{if gt .Count 1}}
+            <button class="btn btn-sm btn-success" hx-post="/repos/{{.Repo.ID}}/prs/merge-all" hx-target="#repo-card-{{.Repo.ID}}" hx-swap="outerHTML" hx-confirm="Merge all {{.Count}} open pull requests?" hx-indicator="#merge-all-spinner-{{.Repo.ID}}">Merge All</button>
+            <span id="merge-all-spinner-{{.Repo.ID}}" class="htmx-indicator small text-info">Merging...</span>
+            {{end}}
+            <button class="btn btn-sm btn-outline-info" hx-post="/repos/{{.Repo.ID}}/renovate/rebase-all" hx-target="#repo-card-{{.Repo.ID}}" hx-swap="outerHTML" hx-confirm="Trigger Renovate to rebase all open PRs?" hx-indicator="#rebase-all-spinner-{{.Repo.ID}}">Rebase All</button>
+            <span id="rebase-all-spinner-{{.Repo.ID}}" class="htmx-indicator small text-info">Rebasing...</span>
+        </div>
+    </div>
+    <div class="d-flex flex-column gap-2">
+        {{range .PRs}}
+        <div class="d-flex align-items-center justify-content-between p-2 bg-dark rounded border border-secondary gap-2">
+            <div class="d-flex flex-column min-w-0 flex-grow-1">
+                <a href="{{.HTMLURL}}" target="_blank" rel="noopener" class="text-info text-decoration-none small fw-medium text-truncate">#{{.Number}} {{.Title}}</a>
+                <span class="text-secondary small">{{.Author}} &middot; {{printf "%.10s" .CreatedAt}} &middot; {{.HeadRef}} → {{.BaseRef}}</span>
+            </div>
+            <button class="btn btn-sm btn-success flex-shrink-0" hx-post="/repos/{{$.Repo.ID}}/prs/{{.Number}}/merge" hx-target="#repo-card-{{$.Repo.ID}}" hx-swap="outerHTML" hx-confirm="Merge PR #{{.Number}}?" hx-indicator="#pr-spin-{{$.Repo.ID}}-{{.Number}}">Merge</button>
+            <span id="pr-spin-{{$.Repo.ID}}-{{.Number}}" class="htmx-indicator small text-info">Merging...</span>
+        </div>
+        {{end}}
+    </div>
+</div>
+</div>
+{{end}}
+
+{{define "homepage_timeline"}}
+<div class="card border-secondary mt-3">
+<div class="card-body">
+    <h6 class="card-title fw-semibold mb-3">Recent Activity</h6>
+    {{if .TimelineGroups}}
+    <div style="max-height:400px; overflow-y:auto">
+        {{range .TimelineGroups}}
+        <div class="small text-uppercase fw-semibold text-secondary py-1 border-bottom border-secondary mb-1">{{.Date}}</div>
+        {{range .Events}}
+        <div class="d-flex align-items-start gap-2 py-1">
+            <div class="flex-shrink-0 d-flex align-items-center" style="width:20px;height:20px">{{eventIcon .Type}}</div>
+            <div class="min-w-0 flex-grow-1">
+                <a href="{{.URL}}" target="_blank" rel="noopener" class="text-light text-decoration-none small fw-medium text-truncate d-block">{{.Title}}</a>
+                <span class="text-secondary small">{{.RepoFull}} &middot; {{timeSince .Timestamp}}</span>
+            </div>
+        </div>
+        {{end}}
+        {{end}}
+    </div>
+    {{else}}
+    <p class="text-secondary small mb-0">No recent activity</p>
+    {{end}}
+</div>
+</div>
+{{end}}
+
+{{define "available_repos"}}
+{{if .ShowSetup}}
+{{/* Onboarding step indicator */}}
+<div class="d-flex justify-content-center mb-3">
+    <div class="d-flex align-items-center gap-2" style="max-width:400px;width:100%">
+        <div class="d-flex flex-column align-items-center flex-grow-1">
+            <span class="badge bg-success rounded-circle d-flex align-items-center justify-content-center" style="width:28px;height:28px;font-size:0.75rem">1</span>
+            <span class="small text-secondary mt-1">Login</span>
+        </div>
+        <div class="flex-grow-1" style="height:1px;background:var(--border-default,#30363d);align-self:start;margin-top:14px"></div>
+        <div class="d-flex flex-column align-items-center flex-grow-1">
+            <span class="badge bg-success rounded-circle d-flex align-items-center justify-content-center" style="width:28px;height:28px;font-size:0.75rem">2</span>
+            <span class="small text-secondary mt-1">Repos</span>
+        </div>
+        <div class="flex-grow-1" style="height:1px;background:var(--border-default,#30363d);align-self:start;margin-top:14px"></div>
+        <div class="d-flex flex-column align-items-center flex-grow-1">
+            <span class="badge bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width:28px;height:28px;font-size:0.75rem">3</span>
+            <span class="small text-secondary mt-1">Dashboard</span>
+        </div>
+    </div>
+</div>
+{{end}}
+<div style="max-width:720px">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2 class="h4 fw-semibold mb-0">{{if .Forgejo}}Select Forgejo Repositories{{else}}Select Repositories{{end}}</h2>
+        <button class="btn btn-sm btn-outline-secondary" hx-get="{{if .ShowSetup}}/{{else}}/settings{{end}}" hx-target="#main-content" hx-swap="innerHTML">Back</button>
+    </div>
+
+    {{if .Error}}
+    <div class="alert alert-danger py-2 small">{{.Error}}</div>
+    {{else if .NoForgejo}}
+    <div class="card border-secondary text-center py-4">
+        <div class="card-body">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mb-3 text-secondary"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            <p class="card-text text-secondary mb-3">You haven't connected a Forgejo account yet.</p>
+            {{if .ForgejoURL}}
+            <a href="/auth/forgejo?instance={{.ForgejoURL}}" class="btn btn-outline-info btn-sm">Connect Forgejo</a>
+            {{else}}
+            <button class="btn btn-outline-info btn-sm" onclick="forgejoLogin()">Connect Forgejo</button>
+            {{end}}
+        </div>
+    </div>
+    {{else if .Repos}}
+    <form hx-post="{{if .Forgejo}}/settings/forgejo/select{{else}}/settings/repos/select{{end}}" hx-target="#main-content" hx-swap="innerHTML">
+        <div class="d-flex align-items-center gap-3 mb-3">
+            <label class="d-flex align-items-center gap-2 small">
+                <input type="checkbox" class="form-check-input" onchange="document.querySelectorAll('.repo-checkbox').forEach(c => c.checked = this.checked)">
+                Select All
+            </label>
+            <button type="submit" class="btn btn-sm btn-success">Import Selected</button>
+        </div>
+        <ul class="list-unstyled d-flex flex-column gap-1">
+            {{range .Repos}}
+            <li class="bg-dark border border-secondary rounded p-2">
+                <label class="d-flex align-items-center gap-2 cursor-pointer flex-wrap">
+                    <input type="checkbox" name="repo_ids" value="{{.ID}}" class="form-check-input repo-checkbox">
+                    <span class="small fw-medium">{{.FullName}}</span>
+                    {{if .Language}}<span class="badge bg-secondary">{{.Language}}</span>{{end}}
+                    {{if .Description}}<span class="w-100 text-secondary small ms-4">{{.Description}}</span>{{end}}
+                </label>
+            </li>
+            {{end}}
+        </ul>
+        <div class="mt-3">
+            <button type="submit" class="btn btn-sm btn-success">Import Selected</button>
+        </div>
+    </form>
+    {{else}}
+    <div class="card border-secondary text-center py-4">
+        <div class="card-body">
+            <p class="card-text text-secondary">{{if .Forgejo}}All your Forgejo repositories are already being tracked.{{else}}All your GitHub repositories are already being tracked.{{end}}</p>
+        </div>
+    </div>
+    {{end}}
+</div>
+{{end}}
+
+{{define "charts"}}
+<div data-chart-init>
+<div class="d-flex align-items-center gap-2 mb-3">
+    <h6 class="fw-semibold mb-0">Charts</h6>
+    <select id="chart-range" class="form-select form-select-sm bg-dark text-light border-secondary" style="width:auto" onchange="loadChartData(this.value)">
+        <option value="">All time</option>
+        <option value="24h">Last 24 hours</option>
+        <option value="7d">Last 7 days</option>
+        <option value="30d">Last 30 days</option>
+        <option value="90d">Last 90 days</option>
+    </select>
+</div>
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card border-secondary p-3">
+            <canvas id="commitChart" height="200"></canvas>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-secondary p-3">
+            <canvas id="workflowChart" height="200"></canvas>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card border-secondary p-3">
+            <canvas id="summaryChart" height="120"></canvas>
+        </div>
+    </div>
+</div>
+</div>
+{{end}}
+
+{{define "feed"}}
+<div class="card border-secondary mb-4">
+<div class="card-body">
+    <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap mb-3">
+        <h5 class="card-title mb-0">Activity Feed</h5>
+        <form hx-post="/feed/filter" hx-target="#feed-section" hx-swap="innerHTML" class="d-flex align-items-center gap-2 flex-wrap">
+            <select name="since" class="form-select form-select-sm bg-dark text-light border-secondary" style="width:auto">
+                <option value="24h" {{if eq .Since "24h"}}selected{{end}}>Last 24 hours</option>
+                <option value="7d" {{if eq .Since "7d"}}selected{{end}}>Last 7 days</option>
+                <option value="30d" {{if eq .Since "30d"}}selected{{end}}>Last 30 days</option>
+                <option value="all" {{if eq .Since "all"}}selected{{end}}>All time</option>
+            </select>
+            <label class="d-inline-flex align-items-center gap-1 small text-secondary">
+                <input type="checkbox" name="types" value="release" class="form-check-input" {{if or (eq .Types "all") (contains .Types "release")}}checked{{end}} onchange="this.form.requestSubmit()"> Releases
+            </label>
+            <label class="d-inline-flex align-items-center gap-1 small text-secondary">
+                <input type="checkbox" name="types" value="workflow_failure" class="form-check-input" {{if or (eq .Types "all") (contains .Types "workflow_failure")}}checked{{end}} onchange="this.form.requestSubmit()"> Failures
+            </label>
+            <label class="d-inline-flex align-items-center gap-1 small text-secondary">
+                <input type="checkbox" name="types" value="pr_merge" class="form-check-input" {{if or (eq .Types "all") (contains .Types "pr_merge")}}checked{{end}} onchange="this.form.requestSubmit()"> PR Merges
+            </label>
+        </form>
+    </div>
+
+    {{if gt .Count 0}}
+    <div class="d-flex flex-column gap-3">
+        {{range .Groups}}
+        <div>
+            <div class="small text-uppercase fw-semibold text-secondary py-2 border-bottom border-secondary mb-1">{{.Date}}</div>
+            {{range .Events}}
+            <div class="d-flex align-items-start gap-2 p-2 rounded text-decoration-none text-light feed-event-{{.Type}}">
+                <div class="flex-shrink-0 d-flex align-items-center" style="width:24px;height:24px">{{eventIcon .Type}}</div>
+                <div class="d-flex flex-column gap-0 min-w-0 flex-grow-1">
+                    <a href="{{.URL}}" target="_blank" rel="noopener" class="text-light text-decoration-none small fw-medium text-truncate">{{.Title}}</a>
+                    <span class="text-secondary small">{{.RepoFull}}</span>
+                    <span class="text-secondary small">{{timeSince .Timestamp}}</span>
+                </div>
+            </div>
+            {{end}}
+        </div>
+        {{end}}
+    </div>
+    {{else}}
+    <div class="text-center py-4">
+        <p class="text-secondary small mb-0">No events in this period.</p>
+    </div>
+    {{end}}
+</div>
+</div>
+{{end}}

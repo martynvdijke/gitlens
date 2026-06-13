@@ -1,0 +1,44 @@
+{{define "repos_tab"}}
+<div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+    <button class="btn btn-success btn-sm" hx-post="/repos/import-all" hx-target="#repo-grid" hx-swap="outerHTML" hx-indicator="#sync-spinner" onclick="startImportProgress()">
+        Import All Repositories
+    </button>
+    <button class="btn btn-outline-secondary btn-sm" hx-get="/settings/repos/available" hx-target="#main-content" hx-swap="innerHTML">
+        Select Repositories
+    </button>
+    <span class="text-secondary small">Sort:</span>
+    <select class="form-select form-select-sm bg-dark text-light border-secondary" style="width:auto"
+        hx-get="/dashboard" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true" hx-trigger="change"
+        name="sort">
+        <option value="updated_at" {{if or (eq .Sort "") (eq .Sort "updated_at")}}selected{{end}}>Last Updated</option>
+        <option value="build_status" {{if eq .Sort "build_status"}}selected{{end}}>Build Status</option>
+        <option value="latest_commit" {{if eq .Sort "latest_commit"}}selected{{end}}>Latest Commit</option>
+        <option value="latest_release" {{if eq .Sort "latest_release"}}selected{{end}}>Latest Release</option>
+        <option value="pass_rate" {{if eq .Sort "pass_rate"}}selected{{end}}>Workflow Pass Rate</option>
+        <option value="name_asc" {{if eq .Sort "name_asc"}}selected{{end}}>Name (A-Z)</option>
+        <option value="name_desc" {{if eq .Sort "name_desc"}}selected{{end}}>Name (Z-A)</option>
+        <option value="synced_at" {{if eq .Sort "synced_at"}}selected{{end}}>Last Synced</option>
+    </select>
+    <span id="sync-spinner" class="htmx-indicator small text-info">Working...</span>
+</div>
+
+<!-- Import progress bar (hidden until import starts) -->
+<div id="import-progress-bar" class="mb-3" style="display:none">
+    <div class="d-flex align-items-center gap-2 mb-1">
+        <span class="small text-secondary">Syncing repositories...</span>
+        <span id="import-progress-text" class="small text-info">0%</span>
+    </div>
+    <div class="progress" style="height:6px">
+        <div id="import-progress-fill" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width:0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+</div>
+
+<div class="input-group mb-3">
+    <span class="input-group-text border-secondary bg-transparent text-secondary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+    <input type="search" class="form-control bg-transparent text-light border-secondary" placeholder="Search repositories..." hx-get="/repos" hx-trigger="keyup changed delay:300ms, search" hx-target="#repo-grid" hx-swap="outerHTML" hx-push-url="true" name="q" value="">
+</div>
+
+{{template "repo_list" .}}
+
+{{template "homepage_timeline" .}}
+{{end}}

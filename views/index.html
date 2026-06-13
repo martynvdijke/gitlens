@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitLens</title>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <script src="https://unpkg.com/htmx.org@2.0.4/dist/ext/ws.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/darkly/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <script>!function(){var t=localStorage.getItem("gitlens-theme");t==="light"&&document.documentElement.classList.add("light-theme")}()</script>
+    {{with .User}}{{if and .UmamiURL .UmamiSiteID}}<script async defer src="{{.UmamiURL}}/script.js" data-website-id="{{.UmamiSiteID}}"></script>{{end}}{{end}}
+</head>
+<body>
+    <nav class="navbar navbar-expand border-bottom border-secondary">
+        <div class="container-fluid">
+            <a href="/" class="navbar-brand d-flex align-items-center gap-2">
+                <img src="/static/logo.svg" alt="" width="24" height="24">
+                <span class="fw-semibold fs-5">GitLens</span>
+            </a>
+            <div class="d-flex align-items-center gap-2 ms-auto">
+                <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme">
+                    <svg class="theme-toggle-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <svg class="theme-toggle-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                </button>
+            {{if .User}}
+                <button class="btn btn-sm btn-outline-secondary border-0" hx-get="/settings" hx-target="#main-content" hx-swap="innerHTML" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Settings">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                </button>
+                <img src="{{.User.AvatarURL}}" alt="" class="rounded-circle" width="28" height="28">
+                <span class="text-secondary small">{{.User.Login}}</span>
+                <button class="btn btn-sm btn-outline-danger" hx-post="/auth/logout" hx-target="body">Logout</button>
+            {{end}}
+            </div>
+        </div>
+    </nav>
+
+    {{if .User}}
+    {{template "tab_bar" .}}
+    {{end}}
+
+    <main class="container py-4">
+        {{if .User}}
+        <div id="main-content">
+            {{if .ShowSetup}}
+            {{template "available_repos" .}}
+            {{else}}
+            <div hx-get="/dashboard" hx-trigger="load once" hx-swap="innerHTML" hx-target="#main-content">
+                <div class="d-flex justify-content-center py-5">
+                    <div class="spinner-border text-secondary" role="status">
+                        <span class="visually-hidden">Loading repositories...</span>
+                    </div>
+                </div>
+            </div>
+            {{end}}
+        </div>
+        {{else}}
+        {{template "landing_page" .}}
+        {{end}}
+    </main>
+
+    {{if .User}}{{template "bottom_nav" .}}{{end}}
+
+    <div id="ws-listener" hx-ext="ws" ws-connect="/ws" style="display:none"></div>
+
+    <!-- App version (invisible, used by JS) -->
+    <span id="app-version" data-version="{{appVersion}}" style="display:none"></span>
+
+    <!-- Changelog banner (dismissible, shown on new version) -->
+    <div id="changelog-banner" class="container py-2" style="display:none">
+        <div class="alert alert-info d-flex align-items-center justify-content-between py-2 px-3 mb-0" role="alert">
+            <span class="small">
+                <strong>GitLens {{appVersion}}</strong> — Check out what's new.
+                {{if .User}}<a href="https://github.com/martynvdijke/gitlens/blob/main/CHANGELOG.md" target="_blank" rel="noopener" class="alert-link">View changelog</a>{{end}}
+            </span>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Dismiss"></button>
+        </div>
+    </div>
+
+    <footer class="text-center py-3 text-secondary small border-top border-secondary mt-4">
+    <script type="module" src="/static/js/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
+</body>
+</html>

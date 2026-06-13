@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"embed"
 	"fmt"
 	"html/template"
 	"log"
@@ -31,6 +32,9 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
 )
+
+//go:embed views/*.html
+var viewsFS embed.FS
 
 var Version = "dev" // overridden by ldflags at build time
 
@@ -221,9 +225,7 @@ func main() {
 				return ""
 			}
 		},
-	}).ParseFiles(
-		"static/index.html",
-	))
+	}).ParseFS(viewsFS, "views/*.html"))
 	syncer.SetTemplate(tmpl)
 
 	authHandler := handlers.NewAuthHandler(client, sessionStore, ghClient, providers)
@@ -264,6 +266,7 @@ func main() {
 		authed.GET("/repos", middleware.HTMXOnly(), dashHandler.ListRepos)
 		authed.POST("/repos/:id/sync", dashHandler.SyncRepo)
 		authed.POST("/repos/import-all", dashHandler.ImportAllRepos)
+		authed.GET("/repos/import-progress", dashHandler.ImportProgressHandler)
 		authed.GET("/repos/:id/prs", dashHandler.ListPullRequests)
 		authed.POST("/repos/:id/prs/:number/merge", dashHandler.MergePR)
 		authed.POST("/repos/:id/prs/merge-all", dashHandler.MergeAllPRs)
