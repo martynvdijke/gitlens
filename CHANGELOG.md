@@ -1,3 +1,10 @@
+# [1.16.0](https://github.com/martynvdijke/gitlens/compare/v1.15.0...v1.16.0) (2026-06-14)
+
+
+### Features
+
+* add tracked repos overview card to dashboard ([8afff75](https://github.com/martynvdijke/gitlens/commit/8afff75e71e0b7b468a2ead1fa22d68553a4a5d1))
+
 # [1.15.0](https://github.com/martynvdijke/gitlens/compare/v1.14.0...v1.15.0) (2026-06-13)
 
 
