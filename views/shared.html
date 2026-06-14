@@ -72,6 +72,35 @@
 </ul>
 {{end}}
 
+{{define "repo_overview_card"}}
+<div class="card border-secondary mb-3">
+    <div class="card-body py-2">
+        <div class="row g-2 text-center">
+            <div class="col-6 col-sm">
+                <div class="fs-5 fw-bold">{{.TotalRepos}}</div>
+                <div class="small text-secondary text-uppercase">Repos</div>
+            </div>
+            <div class="col-6 col-sm">
+                <div class="fs-5 fw-bold">{{.OpenPRs}}</div>
+                <div class="small text-secondary text-uppercase">Open PRs</div>
+            </div>
+            <div class="col-6 col-sm">
+                <div class="fs-5 fw-bold {{if gt .FailingRepos 0}}text-danger{{end}}">{{.FailingRepos}}</div>
+                <div class="small text-secondary text-uppercase">Failing</div>
+            </div>
+            <div class="col-6 col-sm">
+                <div class="fs-5 fw-bold">{{.TotalReleases}}</div>
+                <div class="small text-secondary text-uppercase">Releases</div>
+            </div>
+            <div class="col-6 col-sm">
+                <div class="fs-5 fw-bold text-truncate" title="{{.LastSyncTime}}">{{if .LastSyncTime}}{{.LastSyncTime}}{{else}}—{{end}}</div>
+                <div class="small text-secondary text-uppercase">Last Sync</div>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}
+
 {{define "repo_card"}}
 <div class="col-12" id="repo-card-{{.ID}}">
 <div class="card border-secondary" id="repo-{{.ID}}">

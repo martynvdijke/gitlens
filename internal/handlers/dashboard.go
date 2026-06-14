@@ -56,6 +56,14 @@ type DORAMetrics struct {
 	ReleasesPerRepo   float64 `json:"releasesPerRepo"`
 }
 
+type RepoOverview struct {
+	TotalRepos    int
+	OpenPRs       int
+	FailingRepos  int
+	TotalReleases int
+	LastSyncTime  string
+}
+
 type DashboardHandler struct {
 	client *ent.Client
 	store  *mw.SessionStore
@@ -106,6 +114,28 @@ func computeMetrics(repos []*ent.Repository) *DORAMetrics {
 		m.ReleasesPerRepo = math.Round(float64(m.TotalReleases)/float64(m.TotalRepos)*10) / 10
 	}
 	return m
+}
+
+func computeOverview(repos []*ent.Repository) *RepoOverview {
+	o := &RepoOverview{
+		TotalRepos:    len(repos),
+		TotalReleases: 0,
+	}
+	var latestSync time.Time
+	for _, r := range repos {
+		o.OpenPRs += r.OpenPrCount
+		o.TotalReleases += r.ReleaseCount
+		if r.WorkflowStatus == "failure" {
+			o.FailingRepos++
+		}
+		if r.SyncedAt.After(latestSync) {
+			latestSync = r.SyncedAt
+		}
+	}
+	if !latestSync.IsZero() {
+		o.LastSyncTime = latestSync.Format("Jan 2 15:04")
+	}
+	return o
 }
 
 func roundPct(v float64) float64 {
@@ -564,6 +594,7 @@ func (h *DashboardHandler) ReposTab(c *gin.Context) {
 		"ActiveTab":      "repos",
 		"Sort":           sort,
 		"TimelineGroups": timelineGroups,
+		"Overview":       computeOverview(repos),
 	})
 }
 

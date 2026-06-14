@@ -490,6 +490,64 @@ func TestComputeMetrics_Empty(t *testing.T) {
 	}
 }
 
+func TestComputeOverview(t *testing.T) {
+	now := time.Now()
+	repos := []*ent.Repository{
+		{OpenPrCount: 2, ReleaseCount: 3, WorkflowStatus: "success", SyncedAt: now},
+		{OpenPrCount: 1, ReleaseCount: 1, WorkflowStatus: "failure", SyncedAt: now.Add(-time.Hour)},
+		{OpenPrCount: 0, ReleaseCount: 0, WorkflowStatus: "failure", SyncedAt: now.Add(-2 * time.Hour)},
+	}
+	o := computeOverview(repos)
+	if o.TotalRepos != 3 {
+		t.Errorf("expected 3 repos, got %d", o.TotalRepos)
+	}
+	if o.OpenPRs != 3 {
+		t.Errorf("expected 3 open PRs, got %d", o.OpenPRs)
+	}
+	if o.FailingRepos != 2 {
+		t.Errorf("expected 2 failing repos, got %d", o.FailingRepos)
+	}
+	if o.TotalReleases != 4 {
+		t.Errorf("expected 4 releases, got %d", o.TotalReleases)
+	}
+}
+
+func TestComputeOverview_Empty(t *testing.T) {
+	o := computeOverview(nil)
+	if o.TotalRepos != 0 {
+		t.Errorf("expected 0 repos, got %d", o.TotalRepos)
+	}
+	if o.LastSyncTime != "" {
+		t.Errorf("expected empty LastSyncTime, got %q", o.LastSyncTime)
+	}
+}
+
+func TestComputeOverview_SingleRepoNoSync(t *testing.T) {
+	repos := []*ent.Repository{
+		{OpenPrCount: 0, ReleaseCount: 0, WorkflowStatus: ""},
+	}
+	o := computeOverview(repos)
+	if o.TotalRepos != 1 {
+		t.Errorf("expected 1 repo, got %d", o.TotalRepos)
+	}
+	if o.LastSyncTime != "" {
+		t.Errorf("expected empty LastSyncTime for zero sync time, got %q", o.LastSyncTime)
+	}
+}
+
+func TestComputeOverview_LastSyncTime(t *testing.T) {
+	now := time.Now()
+	repos := []*ent.Repository{
+		{SyncedAt: now.Add(-30 * time.Minute)},
+		{SyncedAt: now},
+		{SyncedAt: now.Add(-time.Hour)},
+	}
+	o := computeOverview(repos)
+	if o.LastSyncTime != now.Format("Jan 2 15:04") {
+		t.Errorf("expected LastSyncTime %q, got %q", now.Format("Jan 2 15:04"), o.LastSyncTime)
+	}
+}
+
 func TestComputeMetrics_SingleRepo(t *testing.T) {
 	client := enttest.Open(t, "sqlite3", "file:"+t.TempDir()+"/test.db?_fk=1")
 	u, _ := client.User.Create().
@@ -716,6 +774,117 @@ func TestReposTab_Renders(t *testing.T) {
 	}
 	if !strings.Contains(w.Body.String(), "u/rep1") || !strings.Contains(w.Body.String(), "u/rep2") {
 		t.Errorf("expected both repos in response, body: %s", w.Body.String())
+	}
+}
+
+func TestReposTab_OverviewCardRenders(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().
+		SetGithubID(501).SetLogin("overviewtest").SetAccessToken("tok").Save(context.Background())
+	client.Repository.Create().
+		SetGithubID(40).SetOwner("u").SetName("r1").SetFullName("u/r1").
+		SetHTMLURL("https://github.com/u/r1").SetDefaultBranch("main").SetUserID(u.ID).
+		SetOpenPrCount(2).SetReleaseCount(3).SetWorkflowStatus("failure").
+		SetSyncedAt(time.Now()).
+		Save(context.Background())
+	client.Repository.Create().
+		SetGithubID(41).SetOwner("u").SetName("r2").SetFullName("u/r2").
+		SetHTMLURL("https://github.com/u/r2").SetDefaultBranch("main").SetUserID(u.ID).
+		SetOpenPrCount(1).SetReleaseCount(1).SetWorkflowStatus("success").
+		SetSyncedAt(time.Now().Add(-time.Hour)).
+		Save(context.Background())
+
+	sessionID := store.Set(int64(u.ID))
+	w := httptest.NewRecorder()
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.SetHTMLTemplate(template.Must(template.New("").Funcs(template.FuncMap{
+		"shortSHA":             func(s string) string { return s },
+		"formatTime":           func(t time.Time) string { return "" },
+		"truncate":             func(s string, n int) string { return s },
+		"workflowIcon":         func(status string) string { return "" },
+		"workflowLabel":        func(status string) string { return "" },
+		"hasWorkflowRun":       func(status string) bool { return false },
+		"printf":               func(format string, args ...interface{}) string { return "" },
+		"releaseIcon":          func(conclusion string) string { return "" },
+		"releaseLabel":         func(conclusion string) string { return "" },
+		"hasReleaseConclusion": func(s string) bool { return false },
+		"timeSince":            func(t time.Time) string { return "" },
+		"eventIcon":            func(eventType string) string { return "" },
+		"contains":             func(s, substr string) bool { return strings.Contains(s, substr) },
+		"gt":                   func(a, b int) bool { return a > b },
+	}).Parse(`{{define "repo_overview_card"}}<div class="overview-card"><span class="ov-total">{{.TotalRepos}}</span><span class="ov-prs">{{.OpenPRs}}</span><span class="ov-fail">{{.FailingRepos}}</span><span class="ov-rel">{{.TotalReleases}}</span><span class="ov-sync">{{.LastSyncTime}}</span></div>{{end}}{{define "repos_tab"}}{{if .Repos}}{{template "repo_overview_card" .Overview}}{{end}}{{range .Repos}}<div class="repo">{{.FullName}}</div>{{end}}{{end}}`)))
+	engine.GET("/dashboard", func(c *gin.Context) {
+		c.Set("user_id", int64(u.ID))
+		handler.ReposTab(c)
+	})
+	req := httptest.NewRequest("GET", "/dashboard", nil)
+	req.AddCookie(&http.Cookie{Name: "gitlens_session", Value: sessionID})
+	engine.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	body := w.Body.String()
+	if !strings.Contains(body, "overview-card") {
+		t.Errorf("expected overview card in response, body: %s", body)
+	}
+	if !strings.Contains(body, "ov-total\">2") {
+		t.Errorf("expected 2 total repos, body: %s", body)
+	}
+	if !strings.Contains(body, "ov-prs\">3") {
+		t.Errorf("expected 3 open PRs, body: %s", body)
+	}
+	if !strings.Contains(body, "ov-fail\">1") {
+		t.Errorf("expected 1 failing repo, body: %s", body)
+	}
+	if !strings.Contains(body, "ov-rel\">4") {
+		t.Errorf("expected 4 releases, body: %s", body)
+	}
+	if !strings.Contains(body, "ov-sync") {
+		t.Errorf("expected last sync time in response, body: %s", body)
+	}
+}
+
+func TestReposTab_OverviewCard_HidesWhenNoRepos(t *testing.T) {
+	handler, store, client := newTestDashboardHandler(t)
+	u, _ := client.User.Create().
+		SetGithubID(502).SetLogin("overviewempty").SetAccessToken("tok").Save(context.Background())
+
+	sessionID := store.Set(int64(u.ID))
+	w := httptest.NewRecorder()
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.SetHTMLTemplate(template.Must(template.New("").Funcs(template.FuncMap{
+		"shortSHA":             func(s string) string { return s },
+		"formatTime":           func(t time.Time) string { return "" },
+		"truncate":             func(s string, n int) string { return s },
+		"workflowIcon":         func(status string) string { return "" },
+		"workflowLabel":        func(status string) string { return "" },
+		"hasWorkflowRun":       func(status string) bool { return false },
+		"printf":               func(format string, args ...interface{}) string { return "" },
+		"releaseIcon":          func(conclusion string) string { return "" },
+		"releaseLabel":         func(conclusion string) string { return "" },
+		"hasReleaseConclusion": func(s string) bool { return false },
+		"timeSince":            func(t time.Time) string { return "" },
+		"eventIcon":            func(eventType string) string { return "" },
+		"contains":             func(s, substr string) bool { return strings.Contains(s, substr) },
+		"gt":                   func(a, b int) bool { return a > b },
+	}).Parse(`{{define "repo_overview_card"}}<div class="overview-card">{{.TotalRepos}}</div>{{end}}{{define "repos_tab"}}{{if .Repos}}{{template "repo_overview_card" .Overview}}{{end}}<div class="repo-list">{{range .Repos}}{{.FullName}}{{end}}</div>{{end}}`)))
+	engine.GET("/dashboard", func(c *gin.Context) {
+		c.Set("user_id", int64(u.ID))
+		handler.ReposTab(c)
+	})
+	req := httptest.NewRequest("GET", "/dashboard", nil)
+	req.AddCookie(&http.Cookie{Name: "gitlens_session", Value: sessionID})
+	engine.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	body := w.Body.String()
+	if strings.Contains(body, "overview-card") {
+		t.Errorf("expected no overview card when no repos, body: %s", body)
 	}
 }
 
