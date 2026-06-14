@@ -71,7 +71,7 @@ func serveTestRequestPath(handler gin.HandlerFunc, method, path string, cookies 
 		"workflowIcon":         func(status string) string { return "" },
 		"workflowLabel":        func(status string) string { return "" },
 		"hasWorkflowRun":       func(status string) bool { return false },
-		"printf":               func(format string, args ...interface{}) string { return "" },
+		"printf":               func(format string, args ...any) string { return "" },
 		"releaseIcon":          func(conclusion string) string { return "" },
 		"releaseLabel":         func(conclusion string) string { return "" },
 		"hasReleaseConclusion": func(s string) bool { return false },
@@ -292,7 +292,7 @@ func TestCallback_WithAccessTokenInResponse(t *testing.T) {
 
 	apiSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		resp := map[string]interface{}{
+		resp := map[string]any{
 			"id":         99999,
 			"login":      "newuser",
 			"avatar_url": "https://avatars.example.com/u/99999",

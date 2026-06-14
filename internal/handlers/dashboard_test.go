@@ -47,7 +47,7 @@ func serveListReposRequest(handler gin.HandlerFunc, method, path string, cookies
 		"workflowIcon":         func(status string) string { return "" },
 		"workflowLabel":        func(status string) string { return "" },
 		"hasWorkflowRun":       func(status string) bool { return false },
-		"printf":               func(format string, args ...interface{}) string { return "" },
+		"printf":               func(format string, args ...any) string { return "" },
 		"releaseIcon":          func(conclusion string) string { return "" },
 		"releaseLabel":         func(conclusion string) string { return "" },
 		"hasReleaseConclusion": func(s string) bool { return false },
@@ -72,7 +72,7 @@ func serveDashboardRequest(handler gin.HandlerFunc, method, path string, cookies
 		"workflowIcon":         func(status string) string { return "" },
 		"workflowLabel":        func(status string) string { return "" },
 		"hasWorkflowRun":       func(status string) bool { return false },
-		"printf":               func(format string, args ...interface{}) string { return "" },
+		"printf":               func(format string, args ...any) string { return "" },
 		"releaseIcon":          func(conclusion string) string { return "" },
 		"releaseLabel":         func(conclusion string) string { return "" },
 		"hasReleaseConclusion": func(s string) bool { return false },
@@ -291,7 +291,7 @@ func TestImportAllRepos_Success(t *testing.T) {
 		"workflowIcon":         func(status string) string { return "" },
 		"workflowLabel":        func(status string) string { return "" },
 		"hasWorkflowRun":       func(status string) bool { return false },
-		"printf":               func(format string, args ...interface{}) string { return "" },
+		"printf":               func(format string, args ...any) string { return "" },
 		"releaseIcon":          func(conclusion string) string { return "" },
 		"releaseLabel":         func(conclusion string) string { return "" },
 		"hasReleaseConclusion": func(s string) bool { return false },
@@ -352,7 +352,7 @@ func TestImportAllRepos_NoRepos(t *testing.T) {
 		"workflowIcon":         func(status string) string { return "" },
 		"workflowLabel":        func(status string) string { return "" },
 		"hasWorkflowRun":       func(status string) bool { return false },
-		"printf":               func(format string, args ...interface{}) string { return "" },
+		"printf":               func(format string, args ...any) string { return "" },
 		"releaseIcon":          func(conclusion string) string { return "" },
 		"releaseLabel":         func(conclusion string) string { return "" },
 		"hasReleaseConclusion": func(s string) bool { return false },
@@ -409,7 +409,7 @@ func TestListPullRequests_Success(t *testing.T) {
 		"workflowIcon":         func(status string) string { return "" },
 		"workflowLabel":        func(status string) string { return "" },
 		"hasWorkflowRun":       func(status string) bool { return false },
-		"printf":               func(format string, args ...interface{}) string { return "" },
+		"printf":               func(format string, args ...any) string { return "" },
 		"releaseIcon":          func(conclusion string) string { return "" },
 		"releaseLabel":         func(conclusion string) string { return "" },
 		"hasReleaseConclusion": func(s string) bool { return false },
@@ -465,7 +465,7 @@ func TestListPullRequests_Empty(t *testing.T) {
 		"workflowIcon":         func(status string) string { return "" },
 		"workflowLabel":        func(status string) string { return "" },
 		"hasWorkflowRun":       func(status string) bool { return false },
-		"printf":               func(format string, args ...interface{}) string { return "" },
+		"printf":               func(format string, args ...any) string { return "" },
 		"releaseIcon":          func(conclusion string) string { return "" },
 		"releaseLabel":         func(conclusion string) string { return "" },
 		"hasReleaseConclusion": func(s string) bool { return false },
@@ -648,7 +648,7 @@ func serveImportAllRequest(handler *DashboardHandler, sessionID string, userID i
 		"workflowIcon":         func(status string) string { return "" },
 		"workflowLabel":        func(status string) string { return "" },
 		"hasWorkflowRun":       func(status string) bool { return false },
-		"printf":               func(format string, args ...interface{}) string { return "" },
+		"printf":               func(format string, args ...any) string { return "" },
 		"releaseIcon":          func(conclusion string) string { return "" },
 		"releaseLabel":         func(conclusion string) string { return "" },
 		"hasReleaseConclusion": func(s string) bool { return false },
@@ -805,7 +805,7 @@ func TestReposTab_OverviewCardRenders(t *testing.T) {
 		"workflowIcon":         func(status string) string { return "" },
 		"workflowLabel":        func(status string) string { return "" },
 		"hasWorkflowRun":       func(status string) bool { return false },
-		"printf":               func(format string, args ...interface{}) string { return "" },
+		"printf":               func(format string, args ...any) string { return "" },
 		"releaseIcon":          func(conclusion string) string { return "" },
 		"releaseLabel":         func(conclusion string) string { return "" },
 		"hasReleaseConclusion": func(s string) bool { return false },
@@ -862,7 +862,7 @@ func TestReposTab_OverviewCard_HidesWhenNoRepos(t *testing.T) {
 		"workflowIcon":         func(status string) string { return "" },
 		"workflowLabel":        func(status string) string { return "" },
 		"hasWorkflowRun":       func(status string) bool { return false },
-		"printf":               func(format string, args ...interface{}) string { return "" },
+		"printf":               func(format string, args ...any) string { return "" },
 		"releaseIcon":          func(conclusion string) string { return "" },
 		"releaseLabel":         func(conclusion string) string { return "" },
 		"hasReleaseConclusion": func(s string) bool { return false },
@@ -895,7 +895,7 @@ func servePRsTabRequest(handler gin.HandlerFunc, path string, cookies ...*http.C
 	w := httptest.NewRecorder()
 	engine := gin.New()
 	engine.SetHTMLTemplate(template.Must(template.New("").Funcs(template.FuncMap{
-		"printf": func(format string, args ...interface{}) string { return "" },
+		"printf": func(format string, args ...any) string { return "" },
 	}).Parse(`{{define "prs_tab"}}<div>{{range .PRs}}<div class="pr-item" data-repo="{{.RepoFullName}}">#{{.Number}} {{.Title}} ({{.RepoFullName}})</div>{{else}}<div class="empty">no PRs</div>{{end}}</div>{{end}}`)))
 	engine.GET("/prs", handler)
 	req := httptest.NewRequest("GET", path, nil)
@@ -1109,7 +1109,7 @@ func serveMetricsTabRequest(handler gin.HandlerFunc, path string, cookies ...*ht
 	w := httptest.NewRecorder()
 	engine := gin.New()
 	engine.SetHTMLTemplate(template.Must(template.New("").Funcs(template.FuncMap{
-		"printf":         func(format string, args ...interface{}) string { return "" },
+		"printf":         func(format string, args ...any) string { return "" },
 		"workflowIcon":   func(status string) string { return "" },
 		"workflowLabel":  func(status string) string { return "" },
 		"hasWorkflowRun": func(status string) bool { return false },
@@ -1161,7 +1161,7 @@ func serveIndexRequest(handler gin.HandlerFunc, path string, cookies ...*http.Co
 		"workflowIcon":         func(status string) string { return "" },
 		"workflowLabel":        func(status string) string { return "" },
 		"hasWorkflowRun":       func(status string) bool { return false },
-		"printf":               func(format string, args ...interface{}) string { return "" },
+		"printf":               func(format string, args ...any) string { return "" },
 		"releaseIcon":          func(conclusion string) string { return "" },
 		"releaseLabel":         func(conclusion string) string { return "" },
 		"hasReleaseConclusion": func(s string) bool { return false },
@@ -1252,7 +1252,7 @@ func TestIndex_ShowSetupWhenNoRepos(t *testing.T) {
 		"workflowIcon":         func(status string) string { return "" },
 		"workflowLabel":        func(status string) string { return "" },
 		"hasWorkflowRun":       func(status string) bool { return false },
-		"printf":               func(format string, args ...interface{}) string { return "" },
+		"printf":               func(format string, args ...any) string { return "" },
 		"releaseIcon":          func(conclusion string) string { return "" },
 		"releaseLabel":         func(conclusion string) string { return "" },
 		"hasReleaseConclusion": func(s string) bool { return false },
@@ -1310,7 +1310,7 @@ func TestIndex_RendersNormalWhenHasRepos(t *testing.T) {
 
 func TestParseSortParam_ValidKeys(t *testing.T) {
 	tests := []struct {
-		key           string
+		key            string
 		expectPostSort bool
 	}{
 		{"updated_at", false},
@@ -1410,7 +1410,7 @@ func serveDashboardWithTimeline(handler gin.HandlerFunc, path string, cookies ..
 		"workflowIcon":         func(status string) string { return "" },
 		"workflowLabel":        func(status string) string { return "" },
 		"hasWorkflowRun":       func(status string) bool { return false },
-		"printf":               func(format string, args ...interface{}) string { return "" },
+		"printf":               func(format string, args ...any) string { return "" },
 		"releaseIcon":          func(conclusion string) string { return "" },
 		"releaseLabel":         func(conclusion string) string { return "" },
 		"hasReleaseConclusion": func(s string) bool { return false },

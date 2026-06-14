@@ -352,7 +352,7 @@ func (s *Syncer) recordWorkflowFailureEvent(ctx context.Context, repo *ent.Repos
 		Where(event.TitleContains("build #")).
 		Exist(ctx)
 	if !exists || beforeStatus == "" {
-		meta, _ := json.Marshal(map[string]interface{}{
+		meta, _ := json.Marshal(map[string]any{
 			"run_id": repo.WorkflowRunID,
 			"status": status,
 		})
@@ -384,7 +384,7 @@ func (s *Syncer) recordPRMergeEvents(ctx context.Context, u *ent.User, repo *ent
 		if exists {
 			continue
 		}
-		meta, _ := json.Marshal(map[string]interface{}{
+		meta, _ := json.Marshal(map[string]any{
 			"author":   pr.Author,
 			"number":   pr.Number,
 			"base_ref": pr.BaseRef,

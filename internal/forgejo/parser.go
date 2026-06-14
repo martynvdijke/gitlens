@@ -8,11 +8,11 @@ import "strings"
 // internal/github/client.go.
 func ParseCommitType(msg string) string {
 	msg = strings.TrimSpace(msg)
-	colonIdx := strings.Index(msg, ":")
-	if colonIdx == -1 {
+	before, _, ok := strings.Cut(msg, ":")
+	if !ok {
 		return "other"
 	}
-	prefix := msg[:colonIdx]
+	prefix := before
 	if parenIdx := strings.Index(prefix, "("); parenIdx != -1 {
 		prefix = prefix[:parenIdx]
 	}

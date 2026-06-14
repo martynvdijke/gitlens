@@ -156,7 +156,7 @@ func main() {
 		"hasWorkflowRun": func(status string) bool {
 			return status != "" && status != "unknown"
 		},
-		"printf": func(format string, args ...interface{}) string {
+		"printf": func(format string, args ...any) string {
 			return fmt.Sprintf(format, args...)
 		},
 		"releaseIcon": func(conclusion string) string {

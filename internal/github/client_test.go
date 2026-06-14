@@ -526,7 +526,7 @@ func TestGetCommitsSince_MaxLimit(t *testing.T) {
 		w.Header().Set("X-RateLimit-Reset", "9999999999")
 		// Return 100 commits each page (full page)
 		var commits []string
-		for i := 0; i < 100; i++ {
+		for i := range 100 {
 			commits = append(commits, `{"sha":"a`+fmt.Sprintf("%d", i)+`","commit":{"message":"commit `+fmt.Sprintf("%d", i)+`","committer":{"date":"2024-01-01T00:00:00Z"}}}`)
 		}
 		w.Write([]byte(`[` + strings.Join(commits, ",") + `]`))

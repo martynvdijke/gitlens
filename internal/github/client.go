@@ -418,11 +418,11 @@ func (c *Client) GetCommitsSince(token, owner, repo, branch string, since time.T
 func ParseCommitType(msg string) string {
 	// Parse conventional commit prefix like "feat:", "fix:", "feat(scope):", etc.
 	msg = strings.TrimSpace(msg)
-	colonIdx := strings.Index(msg, ":")
-	if colonIdx == -1 {
+	before, _, ok := strings.Cut(msg, ":")
+	if !ok {
 		return "other"
 	}
-	prefix := msg[:colonIdx]
+	prefix := before
 	// Handle scope like "feat(scope)"
 	if parenIdx := strings.Index(prefix, "("); parenIdx != -1 {
 		prefix = prefix[:parenIdx]

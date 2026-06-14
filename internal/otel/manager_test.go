@@ -273,7 +273,7 @@ func TestConcurrentAccess(t *testing.T) {
 
 	// Reload from multiple goroutines to test mutex safety
 	done := make(chan bool)
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		go func() {
 			if err := m.Reload(context.Background()); err != nil {
 				t.Logf("concurrent reload error (expected with races): %v", err)
@@ -281,7 +281,7 @@ func TestConcurrentAccess(t *testing.T) {
 			done <- true
 		}()
 	}
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		<-done
 	}
 }

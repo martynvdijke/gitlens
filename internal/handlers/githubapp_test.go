@@ -28,28 +28,28 @@ func TestGitHubApp_HandleInstallation_Created(t *testing.T) {
 	u, _ := client.User.Create().
 		SetGithubID(1000).SetLogin("testuser").SetAccessToken("token").Save(context.Background())
 
-	payload := map[string]interface{}{
+	payload := map[string]any{
 		"action": "created",
-		"installation": map[string]interface{}{
+		"installation": map[string]any{
 			"id": 12345,
-			"account": map[string]interface{}{
+			"account": map[string]any{
 				"login": "testuser",
 				"id":    1000,
 			},
 			"repositories_url": "https://api.github.com/installations/12345/repos",
 		},
-		"repositories": []map[string]interface{}{
+		"repositories": []map[string]any{
 			{
 				"id":        200,
 				"name":      "app-repo-1",
 				"full_name": "testuser/app-repo-1",
-				"owner":     map[string]interface{}{"login": "testuser"},
+				"owner":     map[string]any{"login": "testuser"},
 			},
 			{
 				"id":        201,
 				"name":      "app-repo-2",
 				"full_name": "testuser/app-repo-2",
-				"owner":     map[string]interface{}{"login": "testuser"},
+				"owner":     map[string]any{"login": "testuser"},
 			},
 		},
 	}
@@ -90,21 +90,21 @@ func TestGitHubApp_HandleInstallation_Created(t *testing.T) {
 func TestGitHubApp_HandleInstallation_NoMatchingUser(t *testing.T) {
 	handler, _ := newTestGitHubAppHandler(t)
 
-	payload := map[string]interface{}{
+	payload := map[string]any{
 		"action": "created",
-		"installation": map[string]interface{}{
+		"installation": map[string]any{
 			"id": 12345,
-			"account": map[string]interface{}{
+			"account": map[string]any{
 				"login": "nonexistent-user",
 				"id":    99999,
 			},
 		},
-		"repositories": []map[string]interface{}{
+		"repositories": []map[string]any{
 			{
 				"id":        300,
 				"name":      "some-repo",
 				"full_name": "nonexistent-user/some-repo",
-				"owner":     map[string]interface{}{"login": "nonexistent-user"},
+				"owner":     map[string]any{"login": "nonexistent-user"},
 			},
 		},
 	}
@@ -132,21 +132,21 @@ func TestGitHubApp_HandleInstallation_Removed(t *testing.T) {
 		SetFullName("removaltest/gone-repo").SetHTMLURL("https://github.com/removaltest/gone-repo").
 		SetDefaultBranch("main").SetUserID(u.ID).Save(context.Background())
 
-	payload := map[string]interface{}{
+	payload := map[string]any{
 		"action": "removed",
-		"installation": map[string]interface{}{
+		"installation": map[string]any{
 			"id": 12345,
-			"account": map[string]interface{}{
+			"account": map[string]any{
 				"login": "removaltest",
 				"id":    2000,
 			},
 		},
-		"repositories": []map[string]interface{}{
+		"repositories": []map[string]any{
 			{
 				"id":        400,
 				"name":      "gone-repo",
 				"full_name": "removaltest/gone-repo",
-				"owner":     map[string]interface{}{"login": "removaltest"},
+				"owner":     map[string]any{"login": "removaltest"},
 			},
 		},
 	}
@@ -171,11 +171,11 @@ func TestGitHubApp_HandleInstallation_Removed(t *testing.T) {
 func TestGitHubApp_HandleInstallation_Deleted(t *testing.T) {
 	handler, _ := newTestGitHubAppHandler(t)
 
-	payload := map[string]interface{}{
+	payload := map[string]any{
 		"action": "deleted",
-		"installation": map[string]interface{}{
+		"installation": map[string]any{
 			"id": 12345,
-			"account": map[string]interface{}{
+			"account": map[string]any{
 				"login": "anyone",
 				"id":    3000,
 			},
