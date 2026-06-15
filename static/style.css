@@ -380,7 +380,7 @@ body, .card, .navbar, .nav-tabs, footer, .modal-content,
 /* Add bottom padding for fixed nav on mobile */
 @media (max-width: 767.98px) {
     main.container {
-        padding-bottom: 4.5rem;
+        padding-bottom: 7rem;
     }
 }
 
