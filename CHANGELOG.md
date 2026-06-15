@@ -1,3 +1,10 @@
+## [1.16.1](https://github.com/martynvdijke/gitlens/compare/v1.16.0...v1.16.1) (2026-06-15)
+
+
+### Bug Fixes
+
+* wrap footer in container and increase mobile bottom padding ([7524c61](https://github.com/martynvdijke/gitlens/commit/7524c61c4b1e77c5dae222f9afe09b54b449c08f))
+
 # [1.16.0](https://github.com/martynvdijke/gitlens/compare/v1.15.0...v1.16.0) (2026-06-14)
 
 
