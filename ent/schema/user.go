@@ -36,6 +36,11 @@ func (User) Fields() []ent.Field {
 		field.String("forgejo_access_token").Optional(),
 		field.String("forgejo_url").Optional(),
 
+		// E-ink mode preference for e-ink note-taking tablet displays.
+		// When enabled, the UI renders in high-contrast black-on-white
+		// with no animations, shadows, or color-only indicators.
+		field.Bool("eink_mode").Default(false),
+
 		// JSON array of github repo full_names the user has
 		// acknowledged in the cross-provider warning. Stored as a
 		// plain string (SQLite has no native JSON type);

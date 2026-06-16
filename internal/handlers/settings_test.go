@@ -278,3 +278,81 @@ func TestSettingsHandler_UpdateUmami_PartialInput(t *testing.T) {
 		t.Fatalf("expected error about both fields required, got: %s", w.Body.String())
 	}
 }
+
+func TestSettingsHandler_UpdateEinkMode_Enable(t *testing.T) {
+	handler, _ := newTestSettingsHandler(t, "")
+	client := handler.client
+	u, _ := client.User.Create().SetGithubID(1001).SetLogin("eink1").SetAccessToken("tok").Save(context.Background())
+
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Set("user_id", int64(u.ID))
+	c.Request = httptest.NewRequest("POST", "/test", strings.NewReader("enabled=true"))
+	c.Request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	handler.UpdateEinkMode(c)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d, body: %s", w.Code, w.Body.String())
+	}
+	if !strings.Contains(w.Body.String(), "enabled") {
+		t.Fatalf("expected 'enabled' in response, got: %s", w.Body.String())
+	}
+
+	updated, _ := client.User.Get(context.Background(), int(u.ID))
+	if !updated.EinkMode {
+		t.Fatal("expected eink_mode to be true after enabling")
+	}
+}
+
+func TestSettingsHandler_UpdateEinkMode_Disable(t *testing.T) {
+	handler, _ := newTestSettingsHandler(t, "")
+	client := handler.client
+	u, _ := client.User.Create().SetGithubID(1002).SetLogin("eink2").SetAccessToken("tok").SetEinkMode(true).Save(context.Background())
+
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Set("user_id", int64(u.ID))
+	c.Request = httptest.NewRequest("POST", "/test", strings.NewReader("enabled=false"))
+	c.Request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	handler.UpdateEinkMode(c)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d, body: %s", w.Code, w.Body.String())
+	}
+	if !strings.Contains(w.Body.String(), "disabled") {
+		t.Fatalf("expected 'disabled' in response, got: %s", w.Body.String())
+	}
+
+	updated, _ := client.User.Get(context.Background(), int(u.ID))
+	if updated.EinkMode {
+		t.Fatal("expected eink_mode to be false after disabling")
+	}
+}
+
+func TestSettingsHandler_UpdateEinkMode_EmptyForm(t *testing.T) {
+	handler, _ := newTestSettingsHandler(t, "")
+	client := handler.client
+	u, _ := client.User.Create().SetGithubID(1003).SetLogin("eink3").SetAccessToken("tok").SetEinkMode(true).Save(context.Background())
+
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Set("user_id", int64(u.ID))
+	c.Request = httptest.NewRequest("POST", "/test", strings.NewReader(""))
+	c.Request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	handler.UpdateEinkMode(c)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d, body: %s", w.Code, w.Body.String())
+	}
+	if !strings.Contains(w.Body.String(), "disabled") {
+		t.Fatalf("expected 'disabled' in response, got: %s", w.Body.String())
+	}
+
+	updated, _ := client.User.Get(context.Background(), int(u.ID))
+	if updated.EinkMode {
+		t.Fatal("expected eink_mode to be false when form value is not 'true'")
+	}
+}

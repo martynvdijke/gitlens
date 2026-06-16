@@ -1,0 +1,519 @@
+/* ===========================
+   E-INK MODE
+   ===========================
+   Activated by .eink-mode on <html>.
+   Overrides the dark (default) and light themes with a
+   high-contrast black-on-white palette optimized for
+   e-ink note-taking tablet displays.
+   =========================== */
+
+/* ===========================
+   3.2 / 3.3: High-contrast palette
+   =========================== */
+.eink-mode,
+.eink-mode :root {
+    --bg-primary: #ffffff !important;
+    --bg-secondary: #f8f8f8 !important;
+    --bg-tertiary: #f0f0f0 !important;
+    --bg-elevated: #ffffff !important;
+    --bg-surface: #cccccc !important;
+    --bg-input: #ffffff !important;
+    --bg-nav: #ffffff !important;
+
+    --text-primary: #000000 !important;
+    --text-secondary: #333333 !important;
+    --text-accent: #000000 !important;
+
+    --border-default: #cccccc !important;
+    --border-muted: #dddddd !important;
+
+    --accent-success: #000000 !important;
+    --accent-danger: #000000 !important;
+    --accent-warning: #000000 !important;
+    --accent-info: #000000 !important;
+    --accent-active: #000000 !important;
+    --accent-checked-bg: #000000 !important;
+    --accent-checked-border: #000000 !important;
+
+    --scrollbar-track: #ffffff !important;
+    --scrollbar-thumb: #cccccc !important;
+    --scrollbar-thumb-hover: #aaaaaa !important;
+
+    --skeleton-bg: #f0f0f0 !important;
+    --skeleton-border: #cccccc !important;
+    --skeleton-shimmer-from: #e0e0e0 !important;
+    --skeleton-shimmer-to: #cccccc !important;
+
+    --progress-bg: #e0e0e0 !important;
+
+    --btn-outline-secondary-color: #000000 !important;
+    --btn-outline-secondary-border: #cccccc !important;
+    --btn-outline-secondary-hover-bg: #e0e0e0 !important;
+    --btn-outline-danger-color: #000000 !important;
+
+    --badge-bg: #e0e0e0 !important;
+
+    --bs-body-bg: #ffffff !important;
+    --bs-body-color: #000000 !important;
+}
+
+/* Force all text to black/white */
+.eink-mode,
+.eink-mode body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+/* Override all Bootstrap color classes to black/white/grays */
+.eink-mode .text-light,
+.eink-mode .text-dark,
+.eink-mode .text-white,
+.eink-mode .text-muted {
+    color: #000000 !important;
+}
+.eink-mode .text-secondary {
+    color: #333333 !important;
+}
+.eink-mode .text-info,
+.eink-mode .text-success,
+.eink-mode .text-danger,
+.eink-mode .text-warning,
+.eink-mode .text-primary {
+    color: #000000 !important;
+}
+.eink-mode .bg-dark,
+.eink-mode .bg-light,
+.eink-mode .bg-black,
+.eink-mode .bg-white,
+.eink-mode .bg-transparent {
+    background-color: #ffffff !important;
+}
+.eink-mode .bg-success,
+.eink-mode .bg-danger,
+.eink-mode .bg-warning,
+.eink-mode .bg-info,
+.eink-mode .bg-primary {
+    background-color: #ffffff !important;
+}
+.eink-mode .border-secondary,
+.eink-mode .border-light,
+.eink-mode .border-dark,
+.eink-mode .border-info,
+.eink-mode .border-success,
+.eink-mode .border-danger,
+.eink-mode .border-warning {
+    border-color: #cccccc !important;
+}
+
+/* ===========================
+   3.4: Disable all animations/transitions
+   =========================== */
+.eink-mode *,
+.eink-mode *::before,
+.eink-mode *::after {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+}
+
+/* ===========================
+   3.5: Remove shadows, gradients, filters
+   =========================== */
+.eink-mode * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    filter: none !important;
+}
+.eink-mode .card {
+    box-shadow: none !important;
+    border: 1px solid #cccccc !important;
+}
+.eink-mode .progress-bar {
+    background-image: none !important;
+    background-color: #000000 !important;
+}
+.eink-mode .progress {
+    background-color: #e0e0e0 !important;
+}
+
+/* ===========================
+   3.6: Badge/status text labels
+   =========================== */
+.eink-mode .badge {
+    border: 1px solid #000000 !important;
+    color: #000000 !important;
+    background-color: #ffffff !important;
+    font-weight: 600 !important;
+}
+.eink-mode .badge.bg-success,
+.eink-mode .badge.bg-danger,
+.eink-mode .badge.bg-warning,
+.eink-mode .badge.bg-info,
+.eink-mode .badge.bg-secondary {
+    background-color: #ffffff !important;
+    border: 1px solid #000000 !important;
+}
+
+/* ===========================
+   3.7: Remove Chart.js canvas styling
+   =========================== */
+.eink-mode canvas {
+    filter: none !important;
+}
+
+/* ===========================
+   3.8: Feed event icon colors → black
+   =========================== */
+.eink-mode .feed-event-release svg,
+.eink-mode .feed-event-workflow_failure svg,
+.eink-mode .feed-event-pr_merge svg,
+.eink-mode .feed-event-release svg *,
+.eink-mode .feed-event-workflow_failure svg *,
+.eink-mode .feed-event-pr_merge svg * {
+    stroke: #000000 !important;
+    color: #000000 !important;
+}
+
+/* ===========================
+   4.1-4.3: Minimum 48px touch targets
+   =========================== */
+.eink-mode .btn,
+.eink-mode .btn-sm,
+.eink-mode .btn-group-sm > .btn,
+.eink-mode .nav-link,
+.eink-mode .navbar .btn-sm,
+.eink-mode .theme-toggle-btn,
+.eink-mode .btn-outline-secondary.border-0 {
+    min-width: 48px !important;
+    min-height: 48px !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 0.75rem !important;
+}
+.eink-mode .bottom-nav .nav-link {
+    min-height: 48px !important;
+    padding: 0.5rem !important;
+}
+.eink-mode .card .btn-sm {
+    min-width: 48px !important;
+    min-height: 48px !important;
+}
+.eink-mode .repo-stats .btn-sm {
+    min-width: 48px !important;
+    min-height: 48px !important;
+    padding: 0.5rem 0.75rem !important;
+}
+.eink-mode .form-select,
+.eink-mode .form-control {
+    min-height: 48px !important;
+}
+
+/* ===========================
+   4.2: Touch target spacing
+   =========================== */
+.eink-mode .d-flex.gap-1,
+.eink-mode .d-flex.gap-2,
+.eink-mode .d-flex.gap-3,
+.eink-mode .gap-1,
+.eink-mode .gap-2,
+.eink-mode .gap-3 {
+    gap: 8px !important;
+}
+
+/* ===========================
+   5.1: Base font size
+   =========================== */
+.eink-mode,
+.eink-mode body,
+.eink-mode .small,
+.eink-mode p,
+.eink-mode span,
+.eink-mode div:not([class*="fs-"]) {
+    font-size: 18px !important;
+}
+.eink-mode .small {
+    font-size: 16px !important;
+}
+
+/* ===========================
+   5.2: Card titles
+   =========================== */
+.eink-mode .card-title,
+.eink-mode h5,
+.eink-mode h6,
+.eink-mode .fw-semibold.h4,
+.eink-mode .fw-semibold.h5 {
+    font-size: 20px !important;
+    font-weight: 700 !important;
+}
+
+/* ===========================
+   5.3: Key metric values
+   =========================== */
+.eink-mode .repo_overview_card .fs-5,
+.eink-mode .fw-bold.fs-5,
+.eink-mode [class*="fs-5"].fw-bold {
+    font-size: 32px !important;
+    font-weight: 700 !important;
+}
+
+/* ===========================
+   5.4: Repo names
+   =========================== */
+.eink-mode .text-info.fw-semibold.text-decoration-none.fs-6,
+.eink-mode a.text-info {
+    font-size: 18px !important;
+    font-weight: 600 !important;
+}
+.eink-mode .badge[style*="font-size:0.6rem"] {
+    font-size: 14px !important;
+}
+
+/* ===========================
+   5.5: Replace icon-only indicators with text
+   =========================== */
+.eink-mode .feed-event-release svg,
+.eink-mode .feed-event-workflow_failure svg,
+.eink-mode .feed-event-pr_merge svg,
+.eink-mode #bottom-nav svg,
+.eink-mode #tab-bar svg,
+.eink-mode .btn svg:not(.theme-toggle-sun):not(.theme-toggle-moon),
+.eink-mode .navbar-brand img {
+    display: none !important;
+}
+/* Add text labels for nav items in e-ink mode */
+.eink-mode #bottom-nav .nav-link span.small {
+    display: block !important;
+    font-size: 14px !important;
+}
+.eink-mode #tab-bar .nav-link {
+    font-size: 16px !important;
+}
+
+/* ===========================
+   5.6: Inline info (no hover tooltips)
+   =========================== */
+.eink-mode [data-bs-toggle="tooltip"] {
+    /* Tooltip content should be visible without hover */
+    position: relative;
+}
+.eink-mode [data-bs-toggle="tooltip"]::after {
+    display: none !important; /* Hide BS tooltips — show info inline instead */
+}
+
+/* ===========================
+   7.2: Refresh button prominence
+   =========================== */
+.eink-mode .eink-refresh-btn {
+    display: inline-flex !important;
+    background: #ffffff !important;
+    border: 2px solid #000000 !important;
+    color: #000000 !important;
+    font-weight: 700 !important;
+    padding: 0.5rem 1rem !important;
+}
+
+/* ===========================
+   Navbar / footer adjustments
+   =========================== */
+.eink-mode nav,
+.eink-mode .navbar,
+.eink-mode footer {
+    background-color: #ffffff !important;
+    border-color: #cccccc !important;
+}
+.eink-mode .nav-tabs {
+    border-bottom-color: #cccccc !important;
+}
+.eink-mode .nav-tabs .nav-link {
+    color: #000000 !important;
+}
+.eink-mode .nav-tabs .nav-link.active {
+    border-bottom: 2px solid #000000 !important;
+}
+.eink-mode .nav-tabs .nav-link:hover {
+    border-color: #cccccc !important;
+}
+
+/* ===========================
+   Table / form adjustments
+   =========================== */
+.eink-mode table,
+.eink-mode .table,
+.eink-mode th,
+.eink-mode td {
+    border-color: #cccccc !important;
+    color: #000000 !important;
+    background-color: #ffffff !important;
+}
+.eink-mode .table-dark {
+    background-color: #ffffff !important;
+}
+.eink-mode .form-control,
+.eink-mode .form-select,
+.eink-mode .input-group-text {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border-color: #cccccc !important;
+}
+.eink-mode .form-check-input {
+    background-color: #ffffff !important;
+    border-color: #000000 !important;
+}
+.eink-mode .form-check-input:checked {
+    background-color: #000000 !important;
+    border-color: #000000 !important;
+}
+.eink-mode .form-switch .form-check-input {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e") !important;
+}
+
+/* ===========================
+   Card adjustments
+   =========================== */
+.eink-mode .card {
+    background-color: #ffffff !important;
+    border: 1px solid #cccccc !important;
+}
+.eink-mode .card-body {
+    background-color: #ffffff !important;
+}
+.eink-mode .list-group-item {
+    background-color: #ffffff !important;
+    border-color: #cccccc !important;
+    color: #000000 !important;
+}
+
+/* ===========================
+   Alert adjustments
+   =========================== */
+.eink-mode .alert {
+    background-color: #ffffff !important;
+    border: 1px solid #000000 !important;
+    color: #000000 !important;
+}
+.eink-mode .alert-danger {
+    border-color: #000000 !important;
+}
+.eink-mode .alert-warning {
+    border-color: #000000 !important;
+}
+.eink-mode .alert-info {
+    border-color: #000000 !important;
+}
+.eink-mode .alert-link {
+    color: #000000 !important;
+}
+
+/* ===========================
+   Code / pre adjustments
+   =========================== */
+.eink-mode code,
+.eink-mode pre,
+.eink-mode .font-monospace {
+    color: #000000 !important;
+    background-color: #f0f0f0 !important;
+}
+
+/* ===========================
+   Nav pills / admin
+   =========================== */
+.eink-mode .nav-pills .nav-link {
+    color: #000000 !important;
+    border: 1px solid #cccccc !important;
+}
+.eink-mode .nav-pills .nav-link.active {
+    background-color: #ffffff !important;
+    border-color: #000000 !important;
+    color: #000000 !important;
+}
+
+/* ===========================
+   Links
+   =========================== */
+.eink-mode a,
+.eink-mode a:link,
+.eink-mode a:visited {
+    color: #000000 !important;
+    text-decoration: underline !important;
+}
+.eink-mode a.text-info {
+    color: #000000 !important;
+}
+
+/* ===========================
+   HTMX indicator
+   =========================== */
+.eink-mode .htmx-indicator {
+    color: #000000 !important;
+}
+.eink-mode .spinner-border,
+.eink-mode .spinner-grow {
+    border-color: #000000 !important;
+    border-right-color: transparent !important;
+}
+
+/* ===========================
+   Skeleton loading
+   =========================== */
+.eink-mode .repo-card-skeleton {
+    background: #f0f0f0 !important;
+    border-color: #cccccc !important;
+}
+.eink-mode .skeleton-line {
+    background: #e0e0e0 !important;
+    animation: none !important;
+}
+
+/* ===========================
+   Pagination
+   =========================== */
+.eink-mode .page-link {
+    background-color: #ffffff !important;
+    border-color: #cccccc !important;
+    color: #000000 !important;
+}
+
+/* ===========================
+   Scrollbar
+   =========================== */
+.eink-mode ::-webkit-scrollbar-track {
+    background: #ffffff !important;
+}
+.eink-mode ::-webkit-scrollbar-thumb {
+    background: #cccccc !important;
+}
+
+/* ===========================
+   Bottom nav
+   =========================== */
+.eink-mode .bottom-nav {
+    background-color: #ffffff !important;
+    border-top-color: #cccccc !important;
+}
+.eink-mode .bottom-nav .nav-link.active,
+.eink-mode .bottom-nav .nav-link:active {
+    color: #000000 !important;
+}
+
+/* ===========================
+   Feed event hover
+   =========================== */
+.eink-mode .feed-event-release:hover,
+.eink-mode .feed-event-workflow_failure:hover,
+.eink-mode .feed-event-pr_merge:hover {
+    background: #e0e0e0 !important;
+}
+
+/* ===========================
+   Changelog banner close button
+   =========================== */
+.eink-mode .btn-close {
+    filter: none !important;
+    opacity: 1 !important;
+}

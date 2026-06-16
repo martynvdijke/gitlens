@@ -235,6 +235,20 @@ func (_c *UserCreate) SetNillableForgejoURL(v *string) *UserCreate {
 	return _c
 }
 
+// SetEinkMode sets the "eink_mode" field.
+func (_c *UserCreate) SetEinkMode(v bool) *UserCreate {
+	_c.mutation.SetEinkMode(v)
+	return _c
+}
+
+// SetNillableEinkMode sets the "eink_mode" field if the given value is not nil.
+func (_c *UserCreate) SetNillableEinkMode(v *bool) *UserCreate {
+	if v != nil {
+		_c.SetEinkMode(*v)
+	}
+	return _c
+}
+
 // SetDismissedForgejoWarningFor sets the "dismissed_forgejo_warning_for" field.
 func (_c *UserCreate) SetDismissedForgejoWarningFor(v string) *UserCreate {
 	_c.mutation.SetDismissedForgejoWarningFor(v)
@@ -311,6 +325,10 @@ func (_c *UserCreate) defaults() {
 		v := user.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
 	}
+	if _, ok := _c.mutation.EinkMode(); !ok {
+		v := user.DefaultEinkMode
+		_c.mutation.SetEinkMode(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -332,6 +350,9 @@ func (_c *UserCreate) check() error {
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
+	}
+	if _, ok := _c.mutation.EinkMode(); !ok {
+		return &ValidationError{Name: "eink_mode", err: errors.New(`ent: missing required field "User.eink_mode"`)}
 	}
 	return nil
 }
@@ -426,6 +447,10 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.ForgejoURL(); ok {
 		_spec.SetField(user.FieldForgejoURL, field.TypeString, value)
 		_node.ForgejoURL = value
+	}
+	if value, ok := _c.mutation.EinkMode(); ok {
+		_spec.SetField(user.FieldEinkMode, field.TypeBool, value)
+		_node.EinkMode = value
 	}
 	if value, ok := _c.mutation.DismissedForgejoWarningFor(); ok {
 		_spec.SetField(user.FieldDismissedForgejoWarningFor, field.TypeString, value)

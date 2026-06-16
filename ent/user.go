@@ -51,6 +51,8 @@ type User struct {
 	ForgejoAccessToken string `json:"forgejo_access_token,omitempty"`
 	// ForgejoURL holds the value of the "forgejo_url" field.
 	ForgejoURL string `json:"forgejo_url,omitempty"`
+	// EinkMode holds the value of the "eink_mode" field.
+	EinkMode bool `json:"eink_mode,omitempty"`
 	// DismissedForgejoWarningFor holds the value of the "dismissed_forgejo_warning_for" field.
 	DismissedForgejoWarningFor string `json:"dismissed_forgejo_warning_for,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -82,7 +84,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldIsAdmin:
+		case user.FieldIsAdmin, user.FieldEinkMode:
 			values[i] = new(sql.NullBool)
 		case user.FieldID, user.FieldGithubID, user.FieldSyncIntervalMinutes, user.FieldForgejoID:
 			values[i] = new(sql.NullInt64)
@@ -213,6 +215,12 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.ForgejoURL = value.String
 			}
+		case user.FieldEinkMode:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field eink_mode", values[i])
+			} else if value.Valid {
+				_m.EinkMode = value.Bool
+			}
 		case user.FieldDismissedForgejoWarningFor:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field dismissed_forgejo_warning_for", values[i])
@@ -310,6 +318,9 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("forgejo_url=")
 	builder.WriteString(_m.ForgejoURL)
+	builder.WriteString(", ")
+	builder.WriteString("eink_mode=")
+	builder.WriteString(fmt.Sprintf("%v", _m.EinkMode))
 	builder.WriteString(", ")
 	builder.WriteString("dismissed_forgejo_warning_for=")
 	builder.WriteString(_m.DismissedForgejoWarningFor)

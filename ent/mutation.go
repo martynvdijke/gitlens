@@ -4887,6 +4887,7 @@ type UserMutation struct {
 	forgejo_name                  *string
 	forgejo_access_token          *string
 	forgejo_url                   *string
+	eink_mode                     *bool
 	dismissed_forgejo_warning_for *string
 	clearedFields                 map[string]struct{}
 	repositories                  map[int]struct{}
@@ -5811,6 +5812,42 @@ func (m *UserMutation) ResetForgejoURL() {
 	delete(m.clearedFields, user.FieldForgejoURL)
 }
 
+// SetEinkMode sets the "eink_mode" field.
+func (m *UserMutation) SetEinkMode(b bool) {
+	m.eink_mode = &b
+}
+
+// EinkMode returns the value of the "eink_mode" field in the mutation.
+func (m *UserMutation) EinkMode() (r bool, exists bool) {
+	v := m.eink_mode
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEinkMode returns the old "eink_mode" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldEinkMode(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEinkMode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEinkMode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEinkMode: %w", err)
+	}
+	return oldValue.EinkMode, nil
+}
+
+// ResetEinkMode resets all changes to the "eink_mode" field.
+func (m *UserMutation) ResetEinkMode() {
+	m.eink_mode = nil
+}
+
 // SetDismissedForgejoWarningFor sets the "dismissed_forgejo_warning_for" field.
 func (m *UserMutation) SetDismissedForgejoWarningFor(s string) {
 	m.dismissed_forgejo_warning_for = &s
@@ -5948,7 +5985,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 18)
+	fields := make([]string, 0, 19)
 	if m.github_id != nil {
 		fields = append(fields, user.FieldGithubID)
 	}
@@ -6000,6 +6037,9 @@ func (m *UserMutation) Fields() []string {
 	if m.forgejo_url != nil {
 		fields = append(fields, user.FieldForgejoURL)
 	}
+	if m.eink_mode != nil {
+		fields = append(fields, user.FieldEinkMode)
+	}
 	if m.dismissed_forgejo_warning_for != nil {
 		fields = append(fields, user.FieldDismissedForgejoWarningFor)
 	}
@@ -6045,6 +6085,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.ForgejoAccessToken()
 	case user.FieldForgejoURL:
 		return m.ForgejoURL()
+	case user.FieldEinkMode:
+		return m.EinkMode()
 	case user.FieldDismissedForgejoWarningFor:
 		return m.DismissedForgejoWarningFor()
 	}
@@ -6090,6 +6132,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldForgejoAccessToken(ctx)
 	case user.FieldForgejoURL:
 		return m.OldForgejoURL(ctx)
+	case user.FieldEinkMode:
+		return m.OldEinkMode(ctx)
 	case user.FieldDismissedForgejoWarningFor:
 		return m.OldDismissedForgejoWarningFor(ctx)
 	}
@@ -6219,6 +6263,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetForgejoURL(v)
+		return nil
+	case user.FieldEinkMode:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEinkMode(v)
 		return nil
 	case user.FieldDismissedForgejoWarningFor:
 		v, ok := value.(string)
@@ -6440,6 +6491,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldForgejoURL:
 		m.ResetForgejoURL()
+		return nil
+	case user.FieldEinkMode:
+		m.ResetEinkMode()
 		return nil
 	case user.FieldDismissedForgejoWarningFor:
 		m.ResetDismissedForgejoWarningFor()

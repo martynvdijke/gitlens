@@ -87,4 +87,8 @@ func init() {
 	userDescCreatedAt := userFields[10].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
+	// userDescEinkMode is the schema descriptor for eink_mode field.
+	userDescEinkMode := userFields[17].Descriptor()
+	// user.DefaultEinkMode holds the default value on creation for the eink_mode field.
+	user.DefaultEinkMode = userDescEinkMode.Default.(bool)
 }

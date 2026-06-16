@@ -348,6 +348,23 @@ func (h *SettingsHandler) computeForgejoWarning(ctx context.Context, u *ent.User
 	return w
 }
 
+// UpdateEinkMode toggles e-ink mode for the current user.
+func (h *SettingsHandler) UpdateEinkMode(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	enabled := c.PostForm("enabled") == "true"
+
+	_, err := h.client.User.UpdateOneID(int(userID)).
+		SetEinkMode(enabled).
+		Save(c.Request.Context())
+	if err != nil {
+		log.Printf("Error updating e-ink mode: %v", err)
+		c.String(http.StatusInternalServerError, "Failed to update e-ink mode")
+		return
+	}
+
+	c.String(http.StatusOK, "E-ink mode %s", map[bool]string{true: "enabled", false: "disabled"}[enabled])
+}
+
 // DisconnectForgejo clears all forgejo fields on the user.
 func (h *SettingsHandler) DisconnectForgejo(c *gin.Context) {
 	userID := c.GetInt64("user_id")

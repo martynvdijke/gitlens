@@ -280,6 +280,7 @@ func main() {
 		authed.POST("/settings/forgejo/disconnect", settingsHandler.DisconnectForgejo)
 		authed.GET("/settings/forgejo/available", settingsHandler.AvailableForgejoRepos)
 		authed.POST("/settings/forgejo/select", settingsHandler.SelectForgejoRepos)
+		authed.POST("/settings/eink", settingsHandler.UpdateEinkMode)
 		authed.POST("/settings/forgejo/warning/dismiss", settingsHandler.DismissForgejoWarning)
 		authed.DELETE("/repos/:id", settingsHandler.RemoveRepo)
 

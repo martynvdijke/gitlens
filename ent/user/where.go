@@ -140,6 +140,11 @@ func ForgejoURL(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldForgejoURL, v))
 }
 
+// EinkMode applies equality check predicate on the "eink_mode" field. It's identical to EinkModeEQ.
+func EinkMode(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldEinkMode, v))
+}
+
 // DismissedForgejoWarningFor applies equality check predicate on the "dismissed_forgejo_warning_for" field. It's identical to DismissedForgejoWarningForEQ.
 func DismissedForgejoWarningFor(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldDismissedForgejoWarningFor, v))
@@ -1178,6 +1183,16 @@ func ForgejoURLEqualFold(v string) predicate.User {
 // ForgejoURLContainsFold applies the ContainsFold predicate on the "forgejo_url" field.
 func ForgejoURLContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldForgejoURL, v))
+}
+
+// EinkModeEQ applies the EQ predicate on the "eink_mode" field.
+func EinkModeEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldEinkMode, v))
+}
+
+// EinkModeNEQ applies the NEQ predicate on the "eink_mode" field.
+func EinkModeNEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldEinkMode, v))
 }
 
 // DismissedForgejoWarningForEQ applies the EQ predicate on the "dismissed_forgejo_warning_for" field.

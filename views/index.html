@@ -10,7 +10,8 @@
     <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/darkly/bootstrap.min.css">
     <link rel="stylesheet" href="/static/style.css">
-    <script>!function(){var t=localStorage.getItem("gitlens-theme");t==="light"&&document.documentElement.classList.add("light-theme")}()</script>
+    <link rel="stylesheet" href="/static/eink.css">
+    <script>!function(){var t=localStorage.getItem("gitlens-theme");t==="light"&&document.documentElement.classList.add("light-theme");{{if and .User .User.EinkMode}}document.documentElement.classList.add("eink-mode"){{end}}var e=new URLSearchParams(window.location.search);e.get("eink")==="1"&&document.documentElement.classList.add("eink-mode")}()</script>
     {{with .User}}{{if and .UmamiURL .UmamiSiteID}}<script async defer src="{{.UmamiURL}}/script.js" data-website-id="{{.UmamiSiteID}}"></script>{{end}}{{end}}
 </head>
 <body>

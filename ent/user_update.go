@@ -354,6 +354,20 @@ func (_u *UserUpdate) ClearForgejoURL() *UserUpdate {
 	return _u
 }
 
+// SetEinkMode sets the "eink_mode" field.
+func (_u *UserUpdate) SetEinkMode(v bool) *UserUpdate {
+	_u.mutation.SetEinkMode(v)
+	return _u
+}
+
+// SetNillableEinkMode sets the "eink_mode" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableEinkMode(v *bool) *UserUpdate {
+	if v != nil {
+		_u.SetEinkMode(*v)
+	}
+	return _u
+}
+
 // SetDismissedForgejoWarningFor sets the "dismissed_forgejo_warning_for" field.
 func (_u *UserUpdate) SetDismissedForgejoWarningFor(v string) *UserUpdate {
 	_u.mutation.SetDismissedForgejoWarningFor(v)
@@ -543,6 +557,9 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.ForgejoURLCleared() {
 		_spec.ClearField(user.FieldForgejoURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.EinkMode(); ok {
+		_spec.SetField(user.FieldEinkMode, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.DismissedForgejoWarningFor(); ok {
 		_spec.SetField(user.FieldDismissedForgejoWarningFor, field.TypeString, value)
@@ -940,6 +957,20 @@ func (_u *UserUpdateOne) ClearForgejoURL() *UserUpdateOne {
 	return _u
 }
 
+// SetEinkMode sets the "eink_mode" field.
+func (_u *UserUpdateOne) SetEinkMode(v bool) *UserUpdateOne {
+	_u.mutation.SetEinkMode(v)
+	return _u
+}
+
+// SetNillableEinkMode sets the "eink_mode" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableEinkMode(v *bool) *UserUpdateOne {
+	if v != nil {
+		_u.SetEinkMode(*v)
+	}
+	return _u
+}
+
 // SetDismissedForgejoWarningFor sets the "dismissed_forgejo_warning_for" field.
 func (_u *UserUpdateOne) SetDismissedForgejoWarningFor(v string) *UserUpdateOne {
 	_u.mutation.SetDismissedForgejoWarningFor(v)
@@ -1159,6 +1190,9 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if _u.mutation.ForgejoURLCleared() {
 		_spec.ClearField(user.FieldForgejoURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.EinkMode(); ok {
+		_spec.SetField(user.FieldEinkMode, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.DismissedForgejoWarningFor(); ok {
 		_spec.SetField(user.FieldDismissedForgejoWarningFor, field.TypeString, value)

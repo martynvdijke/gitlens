@@ -48,6 +48,8 @@ const (
 	FieldForgejoAccessToken = "forgejo_access_token"
 	// FieldForgejoURL holds the string denoting the forgejo_url field in the database.
 	FieldForgejoURL = "forgejo_url"
+	// FieldEinkMode holds the string denoting the eink_mode field in the database.
+	FieldEinkMode = "eink_mode"
 	// FieldDismissedForgejoWarningFor holds the string denoting the dismissed_forgejo_warning_for field in the database.
 	FieldDismissedForgejoWarningFor = "dismissed_forgejo_warning_for"
 	// EdgeRepositories holds the string denoting the repositories edge name in mutations.
@@ -83,6 +85,7 @@ var Columns = []string{
 	FieldForgejoName,
 	FieldForgejoAccessToken,
 	FieldForgejoURL,
+	FieldEinkMode,
 	FieldDismissedForgejoWarningFor,
 }
 
@@ -103,6 +106,8 @@ var (
 	DefaultIsAdmin bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
+	// DefaultEinkMode holds the default value on creation for the "eink_mode" field.
+	DefaultEinkMode bool
 )
 
 // OrderOption defines the ordering options for the User queries.
@@ -196,6 +201,11 @@ func ByForgejoAccessToken(opts ...sql.OrderTermOption) OrderOption {
 // ByForgejoURL orders the results by the forgejo_url field.
 func ByForgejoURL(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldForgejoURL, opts...).ToFunc()
+}
+
+// ByEinkMode orders the results by the eink_mode field.
+func ByEinkMode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEinkMode, opts...).ToFunc()
 }
 
 // ByDismissedForgejoWarningFor orders the results by the dismissed_forgejo_warning_for field.

@@ -153,6 +153,7 @@ var (
 		{Name: "forgejo_name", Type: field.TypeString, Nullable: true},
 		{Name: "forgejo_access_token", Type: field.TypeString, Nullable: true},
 		{Name: "forgejo_url", Type: field.TypeString, Nullable: true},
+		{Name: "eink_mode", Type: field.TypeBool, Default: false},
 		{Name: "dismissed_forgejo_warning_for", Type: field.TypeString, Nullable: true},
 	}
 	// UsersTable holds the schema information for the "users" table.

@@ -86,6 +86,20 @@
 
     <div class="card border-secondary mb-4">
         <div class="card-body">
+            <h5 class="card-title">Display</h5>
+            <p class="card-text text-secondary small">E-ink mode optimizes the UI for e-ink note-taking tablet displays: high-contrast black-on-white, no animations, larger text, and text-labeled status indicators.</p>
+            <form hx-post="/settings/eink" hx-target="#eink-status" hx-swap="innerHTML" class="d-flex align-items-center gap-2">
+                <div class="form-check form-switch">
+                    <input type="checkbox" name="enabled" value="true" class="form-check-input" id="eink-switch" role="switch" {{if .User.EinkMode}}checked{{end}} onchange="this.form.requestSubmit()">
+                    <label class="form-check-label small" for="eink-switch">E-ink Mode</label>
+                </div>
+                <span id="eink-status"></span>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-secondary mb-4">
+        <div class="card-body">
             <h5 class="card-title">GitHub Webhook</h5>
             <p class="card-text text-secondary small">Set up this URL as a GitHub webhook to automatically sync on every push.</p>
             <div class="d-flex align-items-center gap-2 mb-2">
