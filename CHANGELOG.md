@@ -1,3 +1,10 @@
+# [1.17.0](https://github.com/martynvdijke/gitlens/compare/v1.16.2...v1.17.0) (2026-06-16)
+
+
+### Features
+
+* add e-ink mode with toggle, CSS, and handler tests ([24c04b2](https://github.com/martynvdijke/gitlens/commit/24c04b2cfd8bdf25054c72d0e9b8efc8947e8379))
+
 ## [1.16.2](https://github.com/martynvdijke/gitlens/compare/v1.16.1...v1.16.2) (2026-06-15)
 
 ## [1.16.1](https://github.com/martynvdijke/gitlens/compare/v1.16.0...v1.16.1) (2026-06-15)
