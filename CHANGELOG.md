@@ -1,3 +1,10 @@
+## [1.17.1](https://github.com/martynvdijke/gitlens/compare/v1.17.0...v1.17.1) (2026-06-17)
+
+
+### Bug Fixes
+
+* e-ink mode blank icon buttons, live HTMX toggle, and dead CSS ([bd830a2](https://github.com/martynvdijke/gitlens/commit/bd830a28d17ef8b5d900b9af888312a448814163)), closes [#bottom-nav](https://github.com/martynvdijke/gitlens/issues/bottom-nav) [#tab-bar](https://github.com/martynvdijke/gitlens/issues/tab-bar)
+
 # [1.17.0](https://github.com/martynvdijke/gitlens/compare/v1.16.2...v1.17.0) (2026-06-16)
 
 
