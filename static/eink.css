@@ -10,8 +10,7 @@
 /* ===========================
    3.2 / 3.3: High-contrast palette
    =========================== */
-.eink-mode,
-.eink-mode :root {
+.eink-mode {
     --bg-primary: #ffffff !important;
     --bg-secondary: #f8f8f8 !important;
     --bg-tertiary: #f0f0f0 !important;
@@ -230,7 +229,6 @@
    =========================== */
 .eink-mode,
 .eink-mode body,
-.eink-mode .small,
 .eink-mode p,
 .eink-mode span,
 .eink-mode div:not([class*="fs-"]) {
@@ -275,14 +273,13 @@
 }
 
 /* ===========================
-   5.5: Replace icon-only indicators with text
+   5.5: Hide icons only where text labels exist
    =========================== */
 .eink-mode .feed-event-release svg,
 .eink-mode .feed-event-workflow_failure svg,
 .eink-mode .feed-event-pr_merge svg,
 .eink-mode #bottom-nav svg,
 .eink-mode #tab-bar svg,
-.eink-mode .btn svg:not(.theme-toggle-sun):not(.theme-toggle-moon),
 .eink-mode .navbar-brand img {
     display: none !important;
 }
@@ -293,29 +290,6 @@
 }
 .eink-mode #tab-bar .nav-link {
     font-size: 16px !important;
-}
-
-/* ===========================
-   5.6: Inline info (no hover tooltips)
-   =========================== */
-.eink-mode [data-bs-toggle="tooltip"] {
-    /* Tooltip content should be visible without hover */
-    position: relative;
-}
-.eink-mode [data-bs-toggle="tooltip"]::after {
-    display: none !important; /* Hide BS tooltips — show info inline instead */
-}
-
-/* ===========================
-   7.2: Refresh button prominence
-   =========================== */
-.eink-mode .eink-refresh-btn {
-    display: inline-flex !important;
-    background: #ffffff !important;
-    border: 2px solid #000000 !important;
-    color: #000000 !important;
-    font-weight: 700 !important;
-    padding: 0.5rem 1rem !important;
 }
 
 /* ===========================

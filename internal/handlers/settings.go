@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -362,7 +363,12 @@ func (h *SettingsHandler) UpdateEinkMode(c *gin.Context) {
 		return
 	}
 
-	c.String(http.StatusOK, "E-ink mode %s", map[bool]string{true: "enabled", false: "disabled"}[enabled])
+	// Return HTML (not plain text) so HTMX executes the inline script,
+	// toggling the eink-mode class on <html> without a full page reload.
+	state := map[bool]string{true: "enabled", false: "disabled"}[enabled]
+	op := map[bool]string{true: "add", false: "remove"}[enabled]
+	body := fmt.Sprintf("E-ink mode %s<script>document.documentElement.classList.%s('eink-mode')</script>", state, op)
+	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(body))
 }
 
 // DisconnectForgejo clears all forgejo fields on the user.

@@ -282,7 +282,10 @@ func TestSettingsHandler_UpdateUmami_PartialInput(t *testing.T) {
 func TestSettingsHandler_UpdateEinkMode_Enable(t *testing.T) {
 	handler, _ := newTestSettingsHandler(t, "")
 	client := handler.client
-	u, _ := client.User.Create().SetGithubID(1001).SetLogin("eink1").SetAccessToken("tok").Save(context.Background())
+	u, err := client.User.Create().SetGithubID(1001).SetLogin("eink1").SetAccessToken("tok").Save(context.Background())
+	if err != nil {
+		t.Fatalf("failed to create user: %v", err)
+	}
 
 	gin.SetMode(gin.TestMode)
 	w := httptest.NewRecorder()
@@ -298,8 +301,14 @@ func TestSettingsHandler_UpdateEinkMode_Enable(t *testing.T) {
 	if !strings.Contains(w.Body.String(), "enabled") {
 		t.Fatalf("expected 'enabled' in response, got: %s", w.Body.String())
 	}
+	if !strings.Contains(w.Body.String(), "classList.add('eink-mode')") {
+		t.Fatalf("expected live-toggle script in response, got: %s", w.Body.String())
+	}
 
-	updated, _ := client.User.Get(context.Background(), int(u.ID))
+	updated, err := client.User.Get(context.Background(), int(u.ID))
+	if err != nil {
+		t.Fatalf("failed to fetch user: %v", err)
+	}
 	if !updated.EinkMode {
 		t.Fatal("expected eink_mode to be true after enabling")
 	}
@@ -308,7 +317,10 @@ func TestSettingsHandler_UpdateEinkMode_Enable(t *testing.T) {
 func TestSettingsHandler_UpdateEinkMode_Disable(t *testing.T) {
 	handler, _ := newTestSettingsHandler(t, "")
 	client := handler.client
-	u, _ := client.User.Create().SetGithubID(1002).SetLogin("eink2").SetAccessToken("tok").SetEinkMode(true).Save(context.Background())
+	u, err := client.User.Create().SetGithubID(1002).SetLogin("eink2").SetAccessToken("tok").SetEinkMode(true).Save(context.Background())
+	if err != nil {
+		t.Fatalf("failed to create user: %v", err)
+	}
 
 	gin.SetMode(gin.TestMode)
 	w := httptest.NewRecorder()
@@ -324,8 +336,14 @@ func TestSettingsHandler_UpdateEinkMode_Disable(t *testing.T) {
 	if !strings.Contains(w.Body.String(), "disabled") {
 		t.Fatalf("expected 'disabled' in response, got: %s", w.Body.String())
 	}
+	if !strings.Contains(w.Body.String(), "classList.remove('eink-mode')") {
+		t.Fatalf("expected live-toggle script in response, got: %s", w.Body.String())
+	}
 
-	updated, _ := client.User.Get(context.Background(), int(u.ID))
+	updated, err := client.User.Get(context.Background(), int(u.ID))
+	if err != nil {
+		t.Fatalf("failed to fetch user: %v", err)
+	}
 	if updated.EinkMode {
 		t.Fatal("expected eink_mode to be false after disabling")
 	}
@@ -334,7 +352,10 @@ func TestSettingsHandler_UpdateEinkMode_Disable(t *testing.T) {
 func TestSettingsHandler_UpdateEinkMode_EmptyForm(t *testing.T) {
 	handler, _ := newTestSettingsHandler(t, "")
 	client := handler.client
-	u, _ := client.User.Create().SetGithubID(1003).SetLogin("eink3").SetAccessToken("tok").SetEinkMode(true).Save(context.Background())
+	u, err := client.User.Create().SetGithubID(1003).SetLogin("eink3").SetAccessToken("tok").SetEinkMode(true).Save(context.Background())
+	if err != nil {
+		t.Fatalf("failed to create user: %v", err)
+	}
 
 	gin.SetMode(gin.TestMode)
 	w := httptest.NewRecorder()
@@ -351,7 +372,10 @@ func TestSettingsHandler_UpdateEinkMode_EmptyForm(t *testing.T) {
 		t.Fatalf("expected 'disabled' in response, got: %s", w.Body.String())
 	}
 
-	updated, _ := client.User.Get(context.Background(), int(u.ID))
+	updated, err := client.User.Get(context.Background(), int(u.ID))
+	if err != nil {
+		t.Fatalf("failed to fetch user: %v", err)
+	}
 	if updated.EinkMode {
 		t.Fatal("expected eink_mode to be false when form value is not 'true'")
 	}
