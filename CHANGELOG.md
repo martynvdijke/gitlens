@@ -1,3 +1,10 @@
+## [1.17.2](https://github.com/martynvdijke/gitlens/compare/v1.17.1...v1.17.2) (2026-06-18)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies to v1.14.46 ([#13](https://github.com/martynvdijke/gitlens/issues/13)) ([922c22f](https://github.com/martynvdijke/gitlens/commit/922c22f73f0570ceca3f3feb10dacbebb20e8e3c))
+
 ## [1.17.1](https://github.com/martynvdijke/gitlens/compare/v1.17.0...v1.17.1) (2026-06-17)
 
 
