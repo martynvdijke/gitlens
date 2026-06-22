@@ -430,6 +430,117 @@ func TestPullRequestsJSON(t *testing.T) {
 	}
 }
 
+func TestSyncOne_RecordsSnapshot(t *testing.T) {
+	syncer, client := newTestSyncer(t)
+	ctx := context.Background()
+
+	u, err := client.User.Create().
+		SetGithubID(150).
+		SetLogin("snaptest").
+		SetAccessToken("token").
+		Save(ctx)
+	if err != nil {
+		t.Fatalf("create user: %v", err)
+	}
+
+	repo, err := client.Repository.Create().
+		SetGithubID(15).SetOwner("user").SetName("snap-repo").
+		SetFullName("user/snap-repo").SetHTMLURL("https://github.com/user/snap-repo").
+		SetDefaultBranch("main").SetUserID(u.ID).
+		Save(ctx)
+	if err != nil {
+		t.Fatalf("create repo: %v", err)
+	}
+
+	apiPages := make(map[string]int)
+	apiSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		apiPages[r.URL.Path]++
+		page := apiPages[r.URL.Path]
+		switch {
+		case strings.HasSuffix(r.URL.Path, "/commits"):
+			w.Write([]byte(`[
+				{"sha":"a1b2c3","commit":{"message":"feat: add","committer":{"date":"2024-06-01T10:00:00Z"}}},
+				{"sha":"d4e5f6","commit":{"message":"fix: bug","committer":{"date":"2024-06-02T10:00:00Z"}}},
+				{"sha":"g7h8i9","commit":{"message":"docs: readme","committer":{"date":"2024-06-03T10:00:00Z"}}}
+			]`))
+		case strings.HasSuffix(r.URL.Path, "/releases"):
+			if page == 1 {
+				w.Write([]byte(`[{"tag_name":"v1.0.0","name":"Version 1","published_at":"2024-06-15T10:00:00Z"}]`))
+			} else {
+				w.Write([]byte(`[]`))
+			}
+		case strings.HasSuffix(r.URL.Path, "/actions/runs"):
+			w.Write([]byte(`{"workflow_runs":[
+				{"id":1,"status":"completed","conclusion":"success"},
+				{"id":2,"status":"completed","conclusion":"success"}
+			]}`))
+		case strings.HasSuffix(r.URL.Path, "/pulls"):
+			w.Write([]byte(`[]`))
+		default:
+			http.Error(w, "not found", http.StatusNotFound)
+		}
+	}))
+	defer apiSrv.Close()
+	syncer.gh.APIURL = apiSrv.URL
+
+	result := syncer.SyncOne(ctx, repo)
+	if result == nil {
+		t.Fatal("SyncOne returned nil")
+	}
+
+	// Query the MetricSnapshot that should have been recorded
+	snapshots, err := client.MetricSnapshot.Query().
+		All(ctx)
+	if err != nil {
+		t.Fatalf("query snapshots: %v", err)
+	}
+	if len(snapshots) != 1 {
+		t.Fatalf("expected 1 snapshot, got %d", len(snapshots))
+	}
+
+	snap := snapshots[0]
+	if snap.RepoID != repo.ID {
+		t.Errorf("expected repo_id %d, got %d", repo.ID, snap.RepoID)
+	}
+	if snap.Timestamp.IsZero() {
+		t.Error("expected timestamp to be set")
+	}
+
+	// Verify commit type counts match the mock data
+	if snap.FeatCount != 1 {
+		t.Errorf("expected 1 feat, got %d", snap.FeatCount)
+	}
+	if snap.FixCount != 1 {
+		t.Errorf("expected 1 fix, got %d", snap.FixCount)
+	}
+	if snap.DocsCount != 1 {
+		t.Errorf("expected 1 docs, got %d", snap.DocsCount)
+	}
+	if snap.ChoreCount != 0 {
+		t.Errorf("expected 0 chores, got %d", snap.ChoreCount)
+	}
+	if snap.TotalCommitsFetched != 3 {
+		t.Errorf("expected 3 commits fetched, got %d", snap.TotalCommitsFetched)
+	}
+
+	// Verify release data
+	if snap.ReleaseCount != 1 {
+		t.Errorf("expected 1 release, got %d", snap.ReleaseCount)
+	}
+
+	// Verify workflow data
+	if snap.WorkflowSuccessCount != 2 {
+		t.Errorf("expected 2 workflow successes, got %d", snap.WorkflowSuccessCount)
+	}
+	if snap.WorkflowFailureCount != 0 {
+		t.Errorf("expected 0 workflow failures, got %d", snap.WorkflowFailureCount)
+	}
+	if snap.WorkflowStatus != "success" {
+		t.Errorf("expected workflow status 'success', got '%s'", snap.WorkflowStatus)
+	}
+}
+
 func TestSyncOneByGithubID(t *testing.T) {
 	syncer, client := newTestSyncer(t)
 	ctx := context.Background()

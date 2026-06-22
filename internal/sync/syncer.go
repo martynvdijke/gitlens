@@ -136,6 +136,7 @@ func (s *Syncer) SyncOne(ctx context.Context, repo *ent.Repository) *ent.Reposit
 	}
 
 	s.recordEvents(ctx, u, repo, beforeReleaseTag, beforeWorkflowStatus, beforeReleaseConclusion)
+	s.recordSnapshot(ctx, repo)
 
 	if s.hub != nil {
 		s.broadcastUpdate(repo, u)
@@ -397,6 +398,27 @@ func (s *Syncer) recordPRMergeEvents(ctx context.Context, u *ent.User, repo *ent
 			SetMetadata(string(meta)).
 			SetTimestamp(pr.CreatedAt).
 			Save(ctx)
+	}
+}
+
+func (s *Syncer) recordSnapshot(ctx context.Context, repo *ent.Repository) {
+	_, err := s.client.MetricSnapshot.Create().
+		SetRepoID(repo.ID).
+		SetTimestamp(time.Now()).
+		SetFeatCount(repo.FeatCount).
+		SetFixCount(repo.FixCount).
+		SetDocsCount(repo.DocsCount).
+		SetChoreCount(repo.ChoreCount).
+		SetOtherCommitCount(repo.OtherCommitCount).
+		SetTotalCommitsFetched(repo.TotalCommitsFetched).
+		SetReleaseCount(repo.ReleaseCount).
+		SetAvgLeadTimeHours(repo.AvgLeadTimeHours).
+		SetWorkflowSuccessCount(repo.WorkflowSuccessCount).
+		SetWorkflowFailureCount(repo.WorkflowFailureCount).
+		SetWorkflowStatus(repo.WorkflowStatus).
+		Save(ctx)
+	if err != nil {
+		log.Printf("Error recording metric snapshot for %s: %v", repo.FullName, err)
 	}
 }
 

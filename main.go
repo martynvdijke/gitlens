@@ -236,6 +236,7 @@ func main() {
 	gitHubAppHandler := handlers.NewGitHubAppHandler(client)
 	webhookHandler := handlers.NewWebhookHandler(client, syncer, os.Getenv("GITHUB_WEBHOOK_SECRET"))
 	feedHandler := handlers.NewFeedHandler(client)
+	trendsHandler := handlers.NewTrendsHandler(client)
 	adminHandler := handlers.NewAdminHandler(client, otelManager)
 
 	r := gin.Default()
@@ -284,6 +285,8 @@ func main() {
 		authed.POST("/settings/forgejo/warning/dismiss", settingsHandler.DismissForgejoWarning)
 		authed.DELETE("/repos/:id", settingsHandler.RemoveRepo)
 
+		authed.GET("/metrics/history", trendsHandler.MetricsHistory)
+		authed.GET("/trends", middleware.HTMXOnly(), trendsHandler.TrendsPage)
 		authed.GET("/charts/data", chartHandler.Data)
 		authed.GET("/feed", feedHandler.Feed)
 		authed.POST("/feed/filter", feedHandler.FeedFilter)

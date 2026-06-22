@@ -1,5 +1,6 @@
 import { toggleTheme, initTheme } from './theme.js';
 import { loadChartData } from './charts.js';
+import { loadTrendsData } from './trends.js';
 import { forgejoLogin } from './forgejo.js';
 import { copyToClipboard } from './clipboard.js';
 
@@ -8,6 +9,7 @@ import { copyToClipboard } from './clipboard.js';
 (window as any).forgejoLogin = forgejoLogin;
 (window as any).copyToClipboard = copyToClipboard;
 (window as any).loadChartData = loadChartData;
+(window as any).loadTrendsData = loadTrendsData;
 
 // Initialize theme and tooltips on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
@@ -27,6 +29,17 @@ document.addEventListener('htmx:afterSwap', (e: Event) => {
     const target = detail?.target as HTMLElement | null;
     if (target && target.querySelector('[data-chart-init]')) {
         loadChartData('');
+    }
+    if (target && target.querySelector('[data-trends-init]')) {
+        loadTrendsData();
+    }
+});
+
+// Auto-init trends when dropdowns change (delegated event listener)
+document.addEventListener('change', (e: Event) => {
+    const el = e.target as HTMLElement;
+    if (el.id === 'trends-range' || el.id === 'trends-repo') {
+        loadTrendsData();
     }
 });
 

@@ -12,6 +12,9 @@ type AdminConfig func(*sql.Selector)
 // Event is the predicate function for event builders.
 type Event func(*sql.Selector)
 
+// MetricSnapshot is the predicate function for metricsnapshot builders.
+type MetricSnapshot func(*sql.Selector)
+
 // Repository is the predicate function for repository builders.
 type Repository func(*sql.Selector)
 

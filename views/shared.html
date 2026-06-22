@@ -15,6 +15,11 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="d-block mx-auto"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         <span class="small d-block" style="font-size:0.65rem">Metrics</span>
     </a>
+    <a href="/trends" class="nav-link text-center px-2 {{if eq .ActiveTab "trends"}}active{{end}}"
+       hx-get="/trends" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="d-block mx-auto"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        <span class="small d-block" style="font-size:0.65rem">Trends</span>
+    </a>
     <a href="/settings" class="nav-link text-center px-2 {{if eq .ActiveTab "settings"}}active{{end}}"
        hx-get="/settings" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="d-block mx-auto"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
@@ -51,6 +56,13 @@
            hx-get="/metrics" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             Metrics
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="/trends" class="nav-link {{if eq .ActiveTab "trends"}}active{{end}}"
+           hx-get="/trends" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            Trends
         </a>
     </li>
     <li class="nav-item">

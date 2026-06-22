@@ -16,6 +16,8 @@ type Tx struct {
 	AdminConfig *AdminConfigClient
 	// Event is the client for interacting with the Event builders.
 	Event *EventClient
+	// MetricSnapshot is the client for interacting with the MetricSnapshot builders.
+	MetricSnapshot *MetricSnapshotClient
 	// Repository is the client for interacting with the Repository builders.
 	Repository *RepositoryClient
 	// User is the client for interacting with the User builders.
@@ -153,6 +155,7 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.AdminConfig = NewAdminConfigClient(tx.config)
 	tx.Event = NewEventClient(tx.config)
+	tx.MetricSnapshot = NewMetricSnapshotClient(tx.config)
 	tx.Repository = NewRepositoryClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }

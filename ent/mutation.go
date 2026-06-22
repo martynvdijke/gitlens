@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"gitlens/ent/adminconfig"
 	"gitlens/ent/event"
+	"gitlens/ent/metricsnapshot"
 	"gitlens/ent/predicate"
 	"gitlens/ent/repository"
 	"gitlens/ent/user"
@@ -27,10 +28,11 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeAdminConfig = "AdminConfig"
-	TypeEvent       = "Event"
-	TypeRepository  = "Repository"
-	TypeUser        = "User"
+	TypeAdminConfig    = "AdminConfig"
+	TypeEvent          = "Event"
+	TypeMetricSnapshot = "MetricSnapshot"
+	TypeRepository     = "Repository"
+	TypeUser           = "User"
 )
 
 // AdminConfigMutation represents an operation that mutates the AdminConfig nodes in the graph.
@@ -1363,6 +1365,1568 @@ func (m *EventMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *EventMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Event edge %s", name)
+}
+
+// MetricSnapshotMutation represents an operation that mutates the MetricSnapshot nodes in the graph.
+type MetricSnapshotMutation struct {
+	config
+	op                        Op
+	typ                       string
+	id                        *int
+	repo_id                   *int
+	addrepo_id                *int
+	timestamp                 *time.Time
+	feat_count                *int
+	addfeat_count             *int
+	fix_count                 *int
+	addfix_count              *int
+	docs_count                *int
+	adddocs_count             *int
+	chore_count               *int
+	addchore_count            *int
+	other_commit_count        *int
+	addother_commit_count     *int
+	total_commits_fetched     *int
+	addtotal_commits_fetched  *int
+	release_count             *int
+	addrelease_count          *int
+	avg_lead_time_hours       *float64
+	addavg_lead_time_hours    *float64
+	workflow_success_count    *int
+	addworkflow_success_count *int
+	workflow_failure_count    *int
+	addworkflow_failure_count *int
+	workflow_status           *string
+	clearedFields             map[string]struct{}
+	done                      bool
+	oldValue                  func(context.Context) (*MetricSnapshot, error)
+	predicates                []predicate.MetricSnapshot
+}
+
+var _ ent.Mutation = (*MetricSnapshotMutation)(nil)
+
+// metricsnapshotOption allows management of the mutation configuration using functional options.
+type metricsnapshotOption func(*MetricSnapshotMutation)
+
+// newMetricSnapshotMutation creates new mutation for the MetricSnapshot entity.
+func newMetricSnapshotMutation(c config, op Op, opts ...metricsnapshotOption) *MetricSnapshotMutation {
+	m := &MetricSnapshotMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeMetricSnapshot,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withMetricSnapshotID sets the ID field of the mutation.
+func withMetricSnapshotID(id int) metricsnapshotOption {
+	return func(m *MetricSnapshotMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *MetricSnapshot
+		)
+		m.oldValue = func(ctx context.Context) (*MetricSnapshot, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().MetricSnapshot.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withMetricSnapshot sets the old MetricSnapshot of the mutation.
+func withMetricSnapshot(node *MetricSnapshot) metricsnapshotOption {
+	return func(m *MetricSnapshotMutation) {
+		m.oldValue = func(context.Context) (*MetricSnapshot, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m MetricSnapshotMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m MetricSnapshotMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *MetricSnapshotMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *MetricSnapshotMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().MetricSnapshot.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetRepoID sets the "repo_id" field.
+func (m *MetricSnapshotMutation) SetRepoID(i int) {
+	m.repo_id = &i
+	m.addrepo_id = nil
+}
+
+// RepoID returns the value of the "repo_id" field in the mutation.
+func (m *MetricSnapshotMutation) RepoID() (r int, exists bool) {
+	v := m.repo_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRepoID returns the old "repo_id" field's value of the MetricSnapshot entity.
+// If the MetricSnapshot object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MetricSnapshotMutation) OldRepoID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRepoID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRepoID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRepoID: %w", err)
+	}
+	return oldValue.RepoID, nil
+}
+
+// AddRepoID adds i to the "repo_id" field.
+func (m *MetricSnapshotMutation) AddRepoID(i int) {
+	if m.addrepo_id != nil {
+		*m.addrepo_id += i
+	} else {
+		m.addrepo_id = &i
+	}
+}
+
+// AddedRepoID returns the value that was added to the "repo_id" field in this mutation.
+func (m *MetricSnapshotMutation) AddedRepoID() (r int, exists bool) {
+	v := m.addrepo_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetRepoID resets all changes to the "repo_id" field.
+func (m *MetricSnapshotMutation) ResetRepoID() {
+	m.repo_id = nil
+	m.addrepo_id = nil
+}
+
+// SetTimestamp sets the "timestamp" field.
+func (m *MetricSnapshotMutation) SetTimestamp(t time.Time) {
+	m.timestamp = &t
+}
+
+// Timestamp returns the value of the "timestamp" field in the mutation.
+func (m *MetricSnapshotMutation) Timestamp() (r time.Time, exists bool) {
+	v := m.timestamp
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimestamp returns the old "timestamp" field's value of the MetricSnapshot entity.
+// If the MetricSnapshot object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MetricSnapshotMutation) OldTimestamp(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimestamp is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimestamp requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimestamp: %w", err)
+	}
+	return oldValue.Timestamp, nil
+}
+
+// ResetTimestamp resets all changes to the "timestamp" field.
+func (m *MetricSnapshotMutation) ResetTimestamp() {
+	m.timestamp = nil
+}
+
+// SetFeatCount sets the "feat_count" field.
+func (m *MetricSnapshotMutation) SetFeatCount(i int) {
+	m.feat_count = &i
+	m.addfeat_count = nil
+}
+
+// FeatCount returns the value of the "feat_count" field in the mutation.
+func (m *MetricSnapshotMutation) FeatCount() (r int, exists bool) {
+	v := m.feat_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFeatCount returns the old "feat_count" field's value of the MetricSnapshot entity.
+// If the MetricSnapshot object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MetricSnapshotMutation) OldFeatCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFeatCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFeatCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFeatCount: %w", err)
+	}
+	return oldValue.FeatCount, nil
+}
+
+// AddFeatCount adds i to the "feat_count" field.
+func (m *MetricSnapshotMutation) AddFeatCount(i int) {
+	if m.addfeat_count != nil {
+		*m.addfeat_count += i
+	} else {
+		m.addfeat_count = &i
+	}
+}
+
+// AddedFeatCount returns the value that was added to the "feat_count" field in this mutation.
+func (m *MetricSnapshotMutation) AddedFeatCount() (r int, exists bool) {
+	v := m.addfeat_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearFeatCount clears the value of the "feat_count" field.
+func (m *MetricSnapshotMutation) ClearFeatCount() {
+	m.feat_count = nil
+	m.addfeat_count = nil
+	m.clearedFields[metricsnapshot.FieldFeatCount] = struct{}{}
+}
+
+// FeatCountCleared returns if the "feat_count" field was cleared in this mutation.
+func (m *MetricSnapshotMutation) FeatCountCleared() bool {
+	_, ok := m.clearedFields[metricsnapshot.FieldFeatCount]
+	return ok
+}
+
+// ResetFeatCount resets all changes to the "feat_count" field.
+func (m *MetricSnapshotMutation) ResetFeatCount() {
+	m.feat_count = nil
+	m.addfeat_count = nil
+	delete(m.clearedFields, metricsnapshot.FieldFeatCount)
+}
+
+// SetFixCount sets the "fix_count" field.
+func (m *MetricSnapshotMutation) SetFixCount(i int) {
+	m.fix_count = &i
+	m.addfix_count = nil
+}
+
+// FixCount returns the value of the "fix_count" field in the mutation.
+func (m *MetricSnapshotMutation) FixCount() (r int, exists bool) {
+	v := m.fix_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFixCount returns the old "fix_count" field's value of the MetricSnapshot entity.
+// If the MetricSnapshot object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MetricSnapshotMutation) OldFixCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFixCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFixCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFixCount: %w", err)
+	}
+	return oldValue.FixCount, nil
+}
+
+// AddFixCount adds i to the "fix_count" field.
+func (m *MetricSnapshotMutation) AddFixCount(i int) {
+	if m.addfix_count != nil {
+		*m.addfix_count += i
+	} else {
+		m.addfix_count = &i
+	}
+}
+
+// AddedFixCount returns the value that was added to the "fix_count" field in this mutation.
+func (m *MetricSnapshotMutation) AddedFixCount() (r int, exists bool) {
+	v := m.addfix_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearFixCount clears the value of the "fix_count" field.
+func (m *MetricSnapshotMutation) ClearFixCount() {
+	m.fix_count = nil
+	m.addfix_count = nil
+	m.clearedFields[metricsnapshot.FieldFixCount] = struct{}{}
+}
+
+// FixCountCleared returns if the "fix_count" field was cleared in this mutation.
+func (m *MetricSnapshotMutation) FixCountCleared() bool {
+	_, ok := m.clearedFields[metricsnapshot.FieldFixCount]
+	return ok
+}
+
+// ResetFixCount resets all changes to the "fix_count" field.
+func (m *MetricSnapshotMutation) ResetFixCount() {
+	m.fix_count = nil
+	m.addfix_count = nil
+	delete(m.clearedFields, metricsnapshot.FieldFixCount)
+}
+
+// SetDocsCount sets the "docs_count" field.
+func (m *MetricSnapshotMutation) SetDocsCount(i int) {
+	m.docs_count = &i
+	m.adddocs_count = nil
+}
+
+// DocsCount returns the value of the "docs_count" field in the mutation.
+func (m *MetricSnapshotMutation) DocsCount() (r int, exists bool) {
+	v := m.docs_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDocsCount returns the old "docs_count" field's value of the MetricSnapshot entity.
+// If the MetricSnapshot object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MetricSnapshotMutation) OldDocsCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDocsCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDocsCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDocsCount: %w", err)
+	}
+	return oldValue.DocsCount, nil
+}
+
+// AddDocsCount adds i to the "docs_count" field.
+func (m *MetricSnapshotMutation) AddDocsCount(i int) {
+	if m.adddocs_count != nil {
+		*m.adddocs_count += i
+	} else {
+		m.adddocs_count = &i
+	}
+}
+
+// AddedDocsCount returns the value that was added to the "docs_count" field in this mutation.
+func (m *MetricSnapshotMutation) AddedDocsCount() (r int, exists bool) {
+	v := m.adddocs_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDocsCount clears the value of the "docs_count" field.
+func (m *MetricSnapshotMutation) ClearDocsCount() {
+	m.docs_count = nil
+	m.adddocs_count = nil
+	m.clearedFields[metricsnapshot.FieldDocsCount] = struct{}{}
+}
+
+// DocsCountCleared returns if the "docs_count" field was cleared in this mutation.
+func (m *MetricSnapshotMutation) DocsCountCleared() bool {
+	_, ok := m.clearedFields[metricsnapshot.FieldDocsCount]
+	return ok
+}
+
+// ResetDocsCount resets all changes to the "docs_count" field.
+func (m *MetricSnapshotMutation) ResetDocsCount() {
+	m.docs_count = nil
+	m.adddocs_count = nil
+	delete(m.clearedFields, metricsnapshot.FieldDocsCount)
+}
+
+// SetChoreCount sets the "chore_count" field.
+func (m *MetricSnapshotMutation) SetChoreCount(i int) {
+	m.chore_count = &i
+	m.addchore_count = nil
+}
+
+// ChoreCount returns the value of the "chore_count" field in the mutation.
+func (m *MetricSnapshotMutation) ChoreCount() (r int, exists bool) {
+	v := m.chore_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldChoreCount returns the old "chore_count" field's value of the MetricSnapshot entity.
+// If the MetricSnapshot object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MetricSnapshotMutation) OldChoreCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldChoreCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldChoreCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldChoreCount: %w", err)
+	}
+	return oldValue.ChoreCount, nil
+}
+
+// AddChoreCount adds i to the "chore_count" field.
+func (m *MetricSnapshotMutation) AddChoreCount(i int) {
+	if m.addchore_count != nil {
+		*m.addchore_count += i
+	} else {
+		m.addchore_count = &i
+	}
+}
+
+// AddedChoreCount returns the value that was added to the "chore_count" field in this mutation.
+func (m *MetricSnapshotMutation) AddedChoreCount() (r int, exists bool) {
+	v := m.addchore_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearChoreCount clears the value of the "chore_count" field.
+func (m *MetricSnapshotMutation) ClearChoreCount() {
+	m.chore_count = nil
+	m.addchore_count = nil
+	m.clearedFields[metricsnapshot.FieldChoreCount] = struct{}{}
+}
+
+// ChoreCountCleared returns if the "chore_count" field was cleared in this mutation.
+func (m *MetricSnapshotMutation) ChoreCountCleared() bool {
+	_, ok := m.clearedFields[metricsnapshot.FieldChoreCount]
+	return ok
+}
+
+// ResetChoreCount resets all changes to the "chore_count" field.
+func (m *MetricSnapshotMutation) ResetChoreCount() {
+	m.chore_count = nil
+	m.addchore_count = nil
+	delete(m.clearedFields, metricsnapshot.FieldChoreCount)
+}
+
+// SetOtherCommitCount sets the "other_commit_count" field.
+func (m *MetricSnapshotMutation) SetOtherCommitCount(i int) {
+	m.other_commit_count = &i
+	m.addother_commit_count = nil
+}
+
+// OtherCommitCount returns the value of the "other_commit_count" field in the mutation.
+func (m *MetricSnapshotMutation) OtherCommitCount() (r int, exists bool) {
+	v := m.other_commit_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOtherCommitCount returns the old "other_commit_count" field's value of the MetricSnapshot entity.
+// If the MetricSnapshot object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MetricSnapshotMutation) OldOtherCommitCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOtherCommitCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOtherCommitCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOtherCommitCount: %w", err)
+	}
+	return oldValue.OtherCommitCount, nil
+}
+
+// AddOtherCommitCount adds i to the "other_commit_count" field.
+func (m *MetricSnapshotMutation) AddOtherCommitCount(i int) {
+	if m.addother_commit_count != nil {
+		*m.addother_commit_count += i
+	} else {
+		m.addother_commit_count = &i
+	}
+}
+
+// AddedOtherCommitCount returns the value that was added to the "other_commit_count" field in this mutation.
+func (m *MetricSnapshotMutation) AddedOtherCommitCount() (r int, exists bool) {
+	v := m.addother_commit_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearOtherCommitCount clears the value of the "other_commit_count" field.
+func (m *MetricSnapshotMutation) ClearOtherCommitCount() {
+	m.other_commit_count = nil
+	m.addother_commit_count = nil
+	m.clearedFields[metricsnapshot.FieldOtherCommitCount] = struct{}{}
+}
+
+// OtherCommitCountCleared returns if the "other_commit_count" field was cleared in this mutation.
+func (m *MetricSnapshotMutation) OtherCommitCountCleared() bool {
+	_, ok := m.clearedFields[metricsnapshot.FieldOtherCommitCount]
+	return ok
+}
+
+// ResetOtherCommitCount resets all changes to the "other_commit_count" field.
+func (m *MetricSnapshotMutation) ResetOtherCommitCount() {
+	m.other_commit_count = nil
+	m.addother_commit_count = nil
+	delete(m.clearedFields, metricsnapshot.FieldOtherCommitCount)
+}
+
+// SetTotalCommitsFetched sets the "total_commits_fetched" field.
+func (m *MetricSnapshotMutation) SetTotalCommitsFetched(i int) {
+	m.total_commits_fetched = &i
+	m.addtotal_commits_fetched = nil
+}
+
+// TotalCommitsFetched returns the value of the "total_commits_fetched" field in the mutation.
+func (m *MetricSnapshotMutation) TotalCommitsFetched() (r int, exists bool) {
+	v := m.total_commits_fetched
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTotalCommitsFetched returns the old "total_commits_fetched" field's value of the MetricSnapshot entity.
+// If the MetricSnapshot object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MetricSnapshotMutation) OldTotalCommitsFetched(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTotalCommitsFetched is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTotalCommitsFetched requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTotalCommitsFetched: %w", err)
+	}
+	return oldValue.TotalCommitsFetched, nil
+}
+
+// AddTotalCommitsFetched adds i to the "total_commits_fetched" field.
+func (m *MetricSnapshotMutation) AddTotalCommitsFetched(i int) {
+	if m.addtotal_commits_fetched != nil {
+		*m.addtotal_commits_fetched += i
+	} else {
+		m.addtotal_commits_fetched = &i
+	}
+}
+
+// AddedTotalCommitsFetched returns the value that was added to the "total_commits_fetched" field in this mutation.
+func (m *MetricSnapshotMutation) AddedTotalCommitsFetched() (r int, exists bool) {
+	v := m.addtotal_commits_fetched
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearTotalCommitsFetched clears the value of the "total_commits_fetched" field.
+func (m *MetricSnapshotMutation) ClearTotalCommitsFetched() {
+	m.total_commits_fetched = nil
+	m.addtotal_commits_fetched = nil
+	m.clearedFields[metricsnapshot.FieldTotalCommitsFetched] = struct{}{}
+}
+
+// TotalCommitsFetchedCleared returns if the "total_commits_fetched" field was cleared in this mutation.
+func (m *MetricSnapshotMutation) TotalCommitsFetchedCleared() bool {
+	_, ok := m.clearedFields[metricsnapshot.FieldTotalCommitsFetched]
+	return ok
+}
+
+// ResetTotalCommitsFetched resets all changes to the "total_commits_fetched" field.
+func (m *MetricSnapshotMutation) ResetTotalCommitsFetched() {
+	m.total_commits_fetched = nil
+	m.addtotal_commits_fetched = nil
+	delete(m.clearedFields, metricsnapshot.FieldTotalCommitsFetched)
+}
+
+// SetReleaseCount sets the "release_count" field.
+func (m *MetricSnapshotMutation) SetReleaseCount(i int) {
+	m.release_count = &i
+	m.addrelease_count = nil
+}
+
+// ReleaseCount returns the value of the "release_count" field in the mutation.
+func (m *MetricSnapshotMutation) ReleaseCount() (r int, exists bool) {
+	v := m.release_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReleaseCount returns the old "release_count" field's value of the MetricSnapshot entity.
+// If the MetricSnapshot object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MetricSnapshotMutation) OldReleaseCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReleaseCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReleaseCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReleaseCount: %w", err)
+	}
+	return oldValue.ReleaseCount, nil
+}
+
+// AddReleaseCount adds i to the "release_count" field.
+func (m *MetricSnapshotMutation) AddReleaseCount(i int) {
+	if m.addrelease_count != nil {
+		*m.addrelease_count += i
+	} else {
+		m.addrelease_count = &i
+	}
+}
+
+// AddedReleaseCount returns the value that was added to the "release_count" field in this mutation.
+func (m *MetricSnapshotMutation) AddedReleaseCount() (r int, exists bool) {
+	v := m.addrelease_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearReleaseCount clears the value of the "release_count" field.
+func (m *MetricSnapshotMutation) ClearReleaseCount() {
+	m.release_count = nil
+	m.addrelease_count = nil
+	m.clearedFields[metricsnapshot.FieldReleaseCount] = struct{}{}
+}
+
+// ReleaseCountCleared returns if the "release_count" field was cleared in this mutation.
+func (m *MetricSnapshotMutation) ReleaseCountCleared() bool {
+	_, ok := m.clearedFields[metricsnapshot.FieldReleaseCount]
+	return ok
+}
+
+// ResetReleaseCount resets all changes to the "release_count" field.
+func (m *MetricSnapshotMutation) ResetReleaseCount() {
+	m.release_count = nil
+	m.addrelease_count = nil
+	delete(m.clearedFields, metricsnapshot.FieldReleaseCount)
+}
+
+// SetAvgLeadTimeHours sets the "avg_lead_time_hours" field.
+func (m *MetricSnapshotMutation) SetAvgLeadTimeHours(f float64) {
+	m.avg_lead_time_hours = &f
+	m.addavg_lead_time_hours = nil
+}
+
+// AvgLeadTimeHours returns the value of the "avg_lead_time_hours" field in the mutation.
+func (m *MetricSnapshotMutation) AvgLeadTimeHours() (r float64, exists bool) {
+	v := m.avg_lead_time_hours
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAvgLeadTimeHours returns the old "avg_lead_time_hours" field's value of the MetricSnapshot entity.
+// If the MetricSnapshot object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MetricSnapshotMutation) OldAvgLeadTimeHours(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAvgLeadTimeHours is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAvgLeadTimeHours requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAvgLeadTimeHours: %w", err)
+	}
+	return oldValue.AvgLeadTimeHours, nil
+}
+
+// AddAvgLeadTimeHours adds f to the "avg_lead_time_hours" field.
+func (m *MetricSnapshotMutation) AddAvgLeadTimeHours(f float64) {
+	if m.addavg_lead_time_hours != nil {
+		*m.addavg_lead_time_hours += f
+	} else {
+		m.addavg_lead_time_hours = &f
+	}
+}
+
+// AddedAvgLeadTimeHours returns the value that was added to the "avg_lead_time_hours" field in this mutation.
+func (m *MetricSnapshotMutation) AddedAvgLeadTimeHours() (r float64, exists bool) {
+	v := m.addavg_lead_time_hours
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearAvgLeadTimeHours clears the value of the "avg_lead_time_hours" field.
+func (m *MetricSnapshotMutation) ClearAvgLeadTimeHours() {
+	m.avg_lead_time_hours = nil
+	m.addavg_lead_time_hours = nil
+	m.clearedFields[metricsnapshot.FieldAvgLeadTimeHours] = struct{}{}
+}
+
+// AvgLeadTimeHoursCleared returns if the "avg_lead_time_hours" field was cleared in this mutation.
+func (m *MetricSnapshotMutation) AvgLeadTimeHoursCleared() bool {
+	_, ok := m.clearedFields[metricsnapshot.FieldAvgLeadTimeHours]
+	return ok
+}
+
+// ResetAvgLeadTimeHours resets all changes to the "avg_lead_time_hours" field.
+func (m *MetricSnapshotMutation) ResetAvgLeadTimeHours() {
+	m.avg_lead_time_hours = nil
+	m.addavg_lead_time_hours = nil
+	delete(m.clearedFields, metricsnapshot.FieldAvgLeadTimeHours)
+}
+
+// SetWorkflowSuccessCount sets the "workflow_success_count" field.
+func (m *MetricSnapshotMutation) SetWorkflowSuccessCount(i int) {
+	m.workflow_success_count = &i
+	m.addworkflow_success_count = nil
+}
+
+// WorkflowSuccessCount returns the value of the "workflow_success_count" field in the mutation.
+func (m *MetricSnapshotMutation) WorkflowSuccessCount() (r int, exists bool) {
+	v := m.workflow_success_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWorkflowSuccessCount returns the old "workflow_success_count" field's value of the MetricSnapshot entity.
+// If the MetricSnapshot object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MetricSnapshotMutation) OldWorkflowSuccessCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWorkflowSuccessCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWorkflowSuccessCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWorkflowSuccessCount: %w", err)
+	}
+	return oldValue.WorkflowSuccessCount, nil
+}
+
+// AddWorkflowSuccessCount adds i to the "workflow_success_count" field.
+func (m *MetricSnapshotMutation) AddWorkflowSuccessCount(i int) {
+	if m.addworkflow_success_count != nil {
+		*m.addworkflow_success_count += i
+	} else {
+		m.addworkflow_success_count = &i
+	}
+}
+
+// AddedWorkflowSuccessCount returns the value that was added to the "workflow_success_count" field in this mutation.
+func (m *MetricSnapshotMutation) AddedWorkflowSuccessCount() (r int, exists bool) {
+	v := m.addworkflow_success_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearWorkflowSuccessCount clears the value of the "workflow_success_count" field.
+func (m *MetricSnapshotMutation) ClearWorkflowSuccessCount() {
+	m.workflow_success_count = nil
+	m.addworkflow_success_count = nil
+	m.clearedFields[metricsnapshot.FieldWorkflowSuccessCount] = struct{}{}
+}
+
+// WorkflowSuccessCountCleared returns if the "workflow_success_count" field was cleared in this mutation.
+func (m *MetricSnapshotMutation) WorkflowSuccessCountCleared() bool {
+	_, ok := m.clearedFields[metricsnapshot.FieldWorkflowSuccessCount]
+	return ok
+}
+
+// ResetWorkflowSuccessCount resets all changes to the "workflow_success_count" field.
+func (m *MetricSnapshotMutation) ResetWorkflowSuccessCount() {
+	m.workflow_success_count = nil
+	m.addworkflow_success_count = nil
+	delete(m.clearedFields, metricsnapshot.FieldWorkflowSuccessCount)
+}
+
+// SetWorkflowFailureCount sets the "workflow_failure_count" field.
+func (m *MetricSnapshotMutation) SetWorkflowFailureCount(i int) {
+	m.workflow_failure_count = &i
+	m.addworkflow_failure_count = nil
+}
+
+// WorkflowFailureCount returns the value of the "workflow_failure_count" field in the mutation.
+func (m *MetricSnapshotMutation) WorkflowFailureCount() (r int, exists bool) {
+	v := m.workflow_failure_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWorkflowFailureCount returns the old "workflow_failure_count" field's value of the MetricSnapshot entity.
+// If the MetricSnapshot object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MetricSnapshotMutation) OldWorkflowFailureCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWorkflowFailureCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWorkflowFailureCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWorkflowFailureCount: %w", err)
+	}
+	return oldValue.WorkflowFailureCount, nil
+}
+
+// AddWorkflowFailureCount adds i to the "workflow_failure_count" field.
+func (m *MetricSnapshotMutation) AddWorkflowFailureCount(i int) {
+	if m.addworkflow_failure_count != nil {
+		*m.addworkflow_failure_count += i
+	} else {
+		m.addworkflow_failure_count = &i
+	}
+}
+
+// AddedWorkflowFailureCount returns the value that was added to the "workflow_failure_count" field in this mutation.
+func (m *MetricSnapshotMutation) AddedWorkflowFailureCount() (r int, exists bool) {
+	v := m.addworkflow_failure_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearWorkflowFailureCount clears the value of the "workflow_failure_count" field.
+func (m *MetricSnapshotMutation) ClearWorkflowFailureCount() {
+	m.workflow_failure_count = nil
+	m.addworkflow_failure_count = nil
+	m.clearedFields[metricsnapshot.FieldWorkflowFailureCount] = struct{}{}
+}
+
+// WorkflowFailureCountCleared returns if the "workflow_failure_count" field was cleared in this mutation.
+func (m *MetricSnapshotMutation) WorkflowFailureCountCleared() bool {
+	_, ok := m.clearedFields[metricsnapshot.FieldWorkflowFailureCount]
+	return ok
+}
+
+// ResetWorkflowFailureCount resets all changes to the "workflow_failure_count" field.
+func (m *MetricSnapshotMutation) ResetWorkflowFailureCount() {
+	m.workflow_failure_count = nil
+	m.addworkflow_failure_count = nil
+	delete(m.clearedFields, metricsnapshot.FieldWorkflowFailureCount)
+}
+
+// SetWorkflowStatus sets the "workflow_status" field.
+func (m *MetricSnapshotMutation) SetWorkflowStatus(s string) {
+	m.workflow_status = &s
+}
+
+// WorkflowStatus returns the value of the "workflow_status" field in the mutation.
+func (m *MetricSnapshotMutation) WorkflowStatus() (r string, exists bool) {
+	v := m.workflow_status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWorkflowStatus returns the old "workflow_status" field's value of the MetricSnapshot entity.
+// If the MetricSnapshot object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MetricSnapshotMutation) OldWorkflowStatus(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWorkflowStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWorkflowStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWorkflowStatus: %w", err)
+	}
+	return oldValue.WorkflowStatus, nil
+}
+
+// ClearWorkflowStatus clears the value of the "workflow_status" field.
+func (m *MetricSnapshotMutation) ClearWorkflowStatus() {
+	m.workflow_status = nil
+	m.clearedFields[metricsnapshot.FieldWorkflowStatus] = struct{}{}
+}
+
+// WorkflowStatusCleared returns if the "workflow_status" field was cleared in this mutation.
+func (m *MetricSnapshotMutation) WorkflowStatusCleared() bool {
+	_, ok := m.clearedFields[metricsnapshot.FieldWorkflowStatus]
+	return ok
+}
+
+// ResetWorkflowStatus resets all changes to the "workflow_status" field.
+func (m *MetricSnapshotMutation) ResetWorkflowStatus() {
+	m.workflow_status = nil
+	delete(m.clearedFields, metricsnapshot.FieldWorkflowStatus)
+}
+
+// Where appends a list predicates to the MetricSnapshotMutation builder.
+func (m *MetricSnapshotMutation) Where(ps ...predicate.MetricSnapshot) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the MetricSnapshotMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *MetricSnapshotMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.MetricSnapshot, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *MetricSnapshotMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *MetricSnapshotMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (MetricSnapshot).
+func (m *MetricSnapshotMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *MetricSnapshotMutation) Fields() []string {
+	fields := make([]string, 0, 13)
+	if m.repo_id != nil {
+		fields = append(fields, metricsnapshot.FieldRepoID)
+	}
+	if m.timestamp != nil {
+		fields = append(fields, metricsnapshot.FieldTimestamp)
+	}
+	if m.feat_count != nil {
+		fields = append(fields, metricsnapshot.FieldFeatCount)
+	}
+	if m.fix_count != nil {
+		fields = append(fields, metricsnapshot.FieldFixCount)
+	}
+	if m.docs_count != nil {
+		fields = append(fields, metricsnapshot.FieldDocsCount)
+	}
+	if m.chore_count != nil {
+		fields = append(fields, metricsnapshot.FieldChoreCount)
+	}
+	if m.other_commit_count != nil {
+		fields = append(fields, metricsnapshot.FieldOtherCommitCount)
+	}
+	if m.total_commits_fetched != nil {
+		fields = append(fields, metricsnapshot.FieldTotalCommitsFetched)
+	}
+	if m.release_count != nil {
+		fields = append(fields, metricsnapshot.FieldReleaseCount)
+	}
+	if m.avg_lead_time_hours != nil {
+		fields = append(fields, metricsnapshot.FieldAvgLeadTimeHours)
+	}
+	if m.workflow_success_count != nil {
+		fields = append(fields, metricsnapshot.FieldWorkflowSuccessCount)
+	}
+	if m.workflow_failure_count != nil {
+		fields = append(fields, metricsnapshot.FieldWorkflowFailureCount)
+	}
+	if m.workflow_status != nil {
+		fields = append(fields, metricsnapshot.FieldWorkflowStatus)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *MetricSnapshotMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case metricsnapshot.FieldRepoID:
+		return m.RepoID()
+	case metricsnapshot.FieldTimestamp:
+		return m.Timestamp()
+	case metricsnapshot.FieldFeatCount:
+		return m.FeatCount()
+	case metricsnapshot.FieldFixCount:
+		return m.FixCount()
+	case metricsnapshot.FieldDocsCount:
+		return m.DocsCount()
+	case metricsnapshot.FieldChoreCount:
+		return m.ChoreCount()
+	case metricsnapshot.FieldOtherCommitCount:
+		return m.OtherCommitCount()
+	case metricsnapshot.FieldTotalCommitsFetched:
+		return m.TotalCommitsFetched()
+	case metricsnapshot.FieldReleaseCount:
+		return m.ReleaseCount()
+	case metricsnapshot.FieldAvgLeadTimeHours:
+		return m.AvgLeadTimeHours()
+	case metricsnapshot.FieldWorkflowSuccessCount:
+		return m.WorkflowSuccessCount()
+	case metricsnapshot.FieldWorkflowFailureCount:
+		return m.WorkflowFailureCount()
+	case metricsnapshot.FieldWorkflowStatus:
+		return m.WorkflowStatus()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *MetricSnapshotMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case metricsnapshot.FieldRepoID:
+		return m.OldRepoID(ctx)
+	case metricsnapshot.FieldTimestamp:
+		return m.OldTimestamp(ctx)
+	case metricsnapshot.FieldFeatCount:
+		return m.OldFeatCount(ctx)
+	case metricsnapshot.FieldFixCount:
+		return m.OldFixCount(ctx)
+	case metricsnapshot.FieldDocsCount:
+		return m.OldDocsCount(ctx)
+	case metricsnapshot.FieldChoreCount:
+		return m.OldChoreCount(ctx)
+	case metricsnapshot.FieldOtherCommitCount:
+		return m.OldOtherCommitCount(ctx)
+	case metricsnapshot.FieldTotalCommitsFetched:
+		return m.OldTotalCommitsFetched(ctx)
+	case metricsnapshot.FieldReleaseCount:
+		return m.OldReleaseCount(ctx)
+	case metricsnapshot.FieldAvgLeadTimeHours:
+		return m.OldAvgLeadTimeHours(ctx)
+	case metricsnapshot.FieldWorkflowSuccessCount:
+		return m.OldWorkflowSuccessCount(ctx)
+	case metricsnapshot.FieldWorkflowFailureCount:
+		return m.OldWorkflowFailureCount(ctx)
+	case metricsnapshot.FieldWorkflowStatus:
+		return m.OldWorkflowStatus(ctx)
+	}
+	return nil, fmt.Errorf("unknown MetricSnapshot field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *MetricSnapshotMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case metricsnapshot.FieldRepoID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRepoID(v)
+		return nil
+	case metricsnapshot.FieldTimestamp:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimestamp(v)
+		return nil
+	case metricsnapshot.FieldFeatCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFeatCount(v)
+		return nil
+	case metricsnapshot.FieldFixCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFixCount(v)
+		return nil
+	case metricsnapshot.FieldDocsCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDocsCount(v)
+		return nil
+	case metricsnapshot.FieldChoreCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetChoreCount(v)
+		return nil
+	case metricsnapshot.FieldOtherCommitCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOtherCommitCount(v)
+		return nil
+	case metricsnapshot.FieldTotalCommitsFetched:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTotalCommitsFetched(v)
+		return nil
+	case metricsnapshot.FieldReleaseCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReleaseCount(v)
+		return nil
+	case metricsnapshot.FieldAvgLeadTimeHours:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAvgLeadTimeHours(v)
+		return nil
+	case metricsnapshot.FieldWorkflowSuccessCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWorkflowSuccessCount(v)
+		return nil
+	case metricsnapshot.FieldWorkflowFailureCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWorkflowFailureCount(v)
+		return nil
+	case metricsnapshot.FieldWorkflowStatus:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWorkflowStatus(v)
+		return nil
+	}
+	return fmt.Errorf("unknown MetricSnapshot field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *MetricSnapshotMutation) AddedFields() []string {
+	var fields []string
+	if m.addrepo_id != nil {
+		fields = append(fields, metricsnapshot.FieldRepoID)
+	}
+	if m.addfeat_count != nil {
+		fields = append(fields, metricsnapshot.FieldFeatCount)
+	}
+	if m.addfix_count != nil {
+		fields = append(fields, metricsnapshot.FieldFixCount)
+	}
+	if m.adddocs_count != nil {
+		fields = append(fields, metricsnapshot.FieldDocsCount)
+	}
+	if m.addchore_count != nil {
+		fields = append(fields, metricsnapshot.FieldChoreCount)
+	}
+	if m.addother_commit_count != nil {
+		fields = append(fields, metricsnapshot.FieldOtherCommitCount)
+	}
+	if m.addtotal_commits_fetched != nil {
+		fields = append(fields, metricsnapshot.FieldTotalCommitsFetched)
+	}
+	if m.addrelease_count != nil {
+		fields = append(fields, metricsnapshot.FieldReleaseCount)
+	}
+	if m.addavg_lead_time_hours != nil {
+		fields = append(fields, metricsnapshot.FieldAvgLeadTimeHours)
+	}
+	if m.addworkflow_success_count != nil {
+		fields = append(fields, metricsnapshot.FieldWorkflowSuccessCount)
+	}
+	if m.addworkflow_failure_count != nil {
+		fields = append(fields, metricsnapshot.FieldWorkflowFailureCount)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *MetricSnapshotMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case metricsnapshot.FieldRepoID:
+		return m.AddedRepoID()
+	case metricsnapshot.FieldFeatCount:
+		return m.AddedFeatCount()
+	case metricsnapshot.FieldFixCount:
+		return m.AddedFixCount()
+	case metricsnapshot.FieldDocsCount:
+		return m.AddedDocsCount()
+	case metricsnapshot.FieldChoreCount:
+		return m.AddedChoreCount()
+	case metricsnapshot.FieldOtherCommitCount:
+		return m.AddedOtherCommitCount()
+	case metricsnapshot.FieldTotalCommitsFetched:
+		return m.AddedTotalCommitsFetched()
+	case metricsnapshot.FieldReleaseCount:
+		return m.AddedReleaseCount()
+	case metricsnapshot.FieldAvgLeadTimeHours:
+		return m.AddedAvgLeadTimeHours()
+	case metricsnapshot.FieldWorkflowSuccessCount:
+		return m.AddedWorkflowSuccessCount()
+	case metricsnapshot.FieldWorkflowFailureCount:
+		return m.AddedWorkflowFailureCount()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *MetricSnapshotMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case metricsnapshot.FieldRepoID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddRepoID(v)
+		return nil
+	case metricsnapshot.FieldFeatCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddFeatCount(v)
+		return nil
+	case metricsnapshot.FieldFixCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddFixCount(v)
+		return nil
+	case metricsnapshot.FieldDocsCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDocsCount(v)
+		return nil
+	case metricsnapshot.FieldChoreCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddChoreCount(v)
+		return nil
+	case metricsnapshot.FieldOtherCommitCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOtherCommitCount(v)
+		return nil
+	case metricsnapshot.FieldTotalCommitsFetched:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTotalCommitsFetched(v)
+		return nil
+	case metricsnapshot.FieldReleaseCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddReleaseCount(v)
+		return nil
+	case metricsnapshot.FieldAvgLeadTimeHours:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddAvgLeadTimeHours(v)
+		return nil
+	case metricsnapshot.FieldWorkflowSuccessCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWorkflowSuccessCount(v)
+		return nil
+	case metricsnapshot.FieldWorkflowFailureCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWorkflowFailureCount(v)
+		return nil
+	}
+	return fmt.Errorf("unknown MetricSnapshot numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *MetricSnapshotMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(metricsnapshot.FieldFeatCount) {
+		fields = append(fields, metricsnapshot.FieldFeatCount)
+	}
+	if m.FieldCleared(metricsnapshot.FieldFixCount) {
+		fields = append(fields, metricsnapshot.FieldFixCount)
+	}
+	if m.FieldCleared(metricsnapshot.FieldDocsCount) {
+		fields = append(fields, metricsnapshot.FieldDocsCount)
+	}
+	if m.FieldCleared(metricsnapshot.FieldChoreCount) {
+		fields = append(fields, metricsnapshot.FieldChoreCount)
+	}
+	if m.FieldCleared(metricsnapshot.FieldOtherCommitCount) {
+		fields = append(fields, metricsnapshot.FieldOtherCommitCount)
+	}
+	if m.FieldCleared(metricsnapshot.FieldTotalCommitsFetched) {
+		fields = append(fields, metricsnapshot.FieldTotalCommitsFetched)
+	}
+	if m.FieldCleared(metricsnapshot.FieldReleaseCount) {
+		fields = append(fields, metricsnapshot.FieldReleaseCount)
+	}
+	if m.FieldCleared(metricsnapshot.FieldAvgLeadTimeHours) {
+		fields = append(fields, metricsnapshot.FieldAvgLeadTimeHours)
+	}
+	if m.FieldCleared(metricsnapshot.FieldWorkflowSuccessCount) {
+		fields = append(fields, metricsnapshot.FieldWorkflowSuccessCount)
+	}
+	if m.FieldCleared(metricsnapshot.FieldWorkflowFailureCount) {
+		fields = append(fields, metricsnapshot.FieldWorkflowFailureCount)
+	}
+	if m.FieldCleared(metricsnapshot.FieldWorkflowStatus) {
+		fields = append(fields, metricsnapshot.FieldWorkflowStatus)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *MetricSnapshotMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *MetricSnapshotMutation) ClearField(name string) error {
+	switch name {
+	case metricsnapshot.FieldFeatCount:
+		m.ClearFeatCount()
+		return nil
+	case metricsnapshot.FieldFixCount:
+		m.ClearFixCount()
+		return nil
+	case metricsnapshot.FieldDocsCount:
+		m.ClearDocsCount()
+		return nil
+	case metricsnapshot.FieldChoreCount:
+		m.ClearChoreCount()
+		return nil
+	case metricsnapshot.FieldOtherCommitCount:
+		m.ClearOtherCommitCount()
+		return nil
+	case metricsnapshot.FieldTotalCommitsFetched:
+		m.ClearTotalCommitsFetched()
+		return nil
+	case metricsnapshot.FieldReleaseCount:
+		m.ClearReleaseCount()
+		return nil
+	case metricsnapshot.FieldAvgLeadTimeHours:
+		m.ClearAvgLeadTimeHours()
+		return nil
+	case metricsnapshot.FieldWorkflowSuccessCount:
+		m.ClearWorkflowSuccessCount()
+		return nil
+	case metricsnapshot.FieldWorkflowFailureCount:
+		m.ClearWorkflowFailureCount()
+		return nil
+	case metricsnapshot.FieldWorkflowStatus:
+		m.ClearWorkflowStatus()
+		return nil
+	}
+	return fmt.Errorf("unknown MetricSnapshot nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *MetricSnapshotMutation) ResetField(name string) error {
+	switch name {
+	case metricsnapshot.FieldRepoID:
+		m.ResetRepoID()
+		return nil
+	case metricsnapshot.FieldTimestamp:
+		m.ResetTimestamp()
+		return nil
+	case metricsnapshot.FieldFeatCount:
+		m.ResetFeatCount()
+		return nil
+	case metricsnapshot.FieldFixCount:
+		m.ResetFixCount()
+		return nil
+	case metricsnapshot.FieldDocsCount:
+		m.ResetDocsCount()
+		return nil
+	case metricsnapshot.FieldChoreCount:
+		m.ResetChoreCount()
+		return nil
+	case metricsnapshot.FieldOtherCommitCount:
+		m.ResetOtherCommitCount()
+		return nil
+	case metricsnapshot.FieldTotalCommitsFetched:
+		m.ResetTotalCommitsFetched()
+		return nil
+	case metricsnapshot.FieldReleaseCount:
+		m.ResetReleaseCount()
+		return nil
+	case metricsnapshot.FieldAvgLeadTimeHours:
+		m.ResetAvgLeadTimeHours()
+		return nil
+	case metricsnapshot.FieldWorkflowSuccessCount:
+		m.ResetWorkflowSuccessCount()
+		return nil
+	case metricsnapshot.FieldWorkflowFailureCount:
+		m.ResetWorkflowFailureCount()
+		return nil
+	case metricsnapshot.FieldWorkflowStatus:
+		m.ResetWorkflowStatus()
+		return nil
+	}
+	return fmt.Errorf("unknown MetricSnapshot field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *MetricSnapshotMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *MetricSnapshotMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *MetricSnapshotMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *MetricSnapshotMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *MetricSnapshotMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *MetricSnapshotMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *MetricSnapshotMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown MetricSnapshot unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *MetricSnapshotMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown MetricSnapshot edge %s", name)
 }
 
 // RepositoryMutation represents an operation that mutates the Repository nodes in the graph.

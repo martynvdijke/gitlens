@@ -13,6 +13,7 @@ import (
 
 	"gitlens/ent/adminconfig"
 	"gitlens/ent/event"
+	"gitlens/ent/metricsnapshot"
 	"gitlens/ent/repository"
 	"gitlens/ent/user"
 
@@ -31,6 +32,8 @@ type Client struct {
 	AdminConfig *AdminConfigClient
 	// Event is the client for interacting with the Event builders.
 	Event *EventClient
+	// MetricSnapshot is the client for interacting with the MetricSnapshot builders.
+	MetricSnapshot *MetricSnapshotClient
 	// Repository is the client for interacting with the Repository builders.
 	Repository *RepositoryClient
 	// User is the client for interacting with the User builders.
@@ -48,6 +51,7 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.AdminConfig = NewAdminConfigClient(c.config)
 	c.Event = NewEventClient(c.config)
+	c.MetricSnapshot = NewMetricSnapshotClient(c.config)
 	c.Repository = NewRepositoryClient(c.config)
 	c.User = NewUserClient(c.config)
 }
@@ -140,12 +144,13 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:         ctx,
-		config:      cfg,
-		AdminConfig: NewAdminConfigClient(cfg),
-		Event:       NewEventClient(cfg),
-		Repository:  NewRepositoryClient(cfg),
-		User:        NewUserClient(cfg),
+		ctx:            ctx,
+		config:         cfg,
+		AdminConfig:    NewAdminConfigClient(cfg),
+		Event:          NewEventClient(cfg),
+		MetricSnapshot: NewMetricSnapshotClient(cfg),
+		Repository:     NewRepositoryClient(cfg),
+		User:           NewUserClient(cfg),
 	}, nil
 }
 
@@ -163,12 +168,13 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:         ctx,
-		config:      cfg,
-		AdminConfig: NewAdminConfigClient(cfg),
-		Event:       NewEventClient(cfg),
-		Repository:  NewRepositoryClient(cfg),
-		User:        NewUserClient(cfg),
+		ctx:            ctx,
+		config:         cfg,
+		AdminConfig:    NewAdminConfigClient(cfg),
+		Event:          NewEventClient(cfg),
+		MetricSnapshot: NewMetricSnapshotClient(cfg),
+		Repository:     NewRepositoryClient(cfg),
+		User:           NewUserClient(cfg),
 	}, nil
 }
 
@@ -199,6 +205,7 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	c.AdminConfig.Use(hooks...)
 	c.Event.Use(hooks...)
+	c.MetricSnapshot.Use(hooks...)
 	c.Repository.Use(hooks...)
 	c.User.Use(hooks...)
 }
@@ -208,6 +215,7 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.AdminConfig.Intercept(interceptors...)
 	c.Event.Intercept(interceptors...)
+	c.MetricSnapshot.Intercept(interceptors...)
 	c.Repository.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
 }
@@ -219,6 +227,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.AdminConfig.mutate(ctx, m)
 	case *EventMutation:
 		return c.Event.mutate(ctx, m)
+	case *MetricSnapshotMutation:
+		return c.MetricSnapshot.mutate(ctx, m)
 	case *RepositoryMutation:
 		return c.Repository.mutate(ctx, m)
 	case *UserMutation:
@@ -491,6 +501,139 @@ func (c *EventClient) mutate(ctx context.Context, m *EventMutation) (Value, erro
 		return (&EventDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Event mutation op: %q", m.Op())
+	}
+}
+
+// MetricSnapshotClient is a client for the MetricSnapshot schema.
+type MetricSnapshotClient struct {
+	config
+}
+
+// NewMetricSnapshotClient returns a client for the MetricSnapshot from the given config.
+func NewMetricSnapshotClient(c config) *MetricSnapshotClient {
+	return &MetricSnapshotClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `metricsnapshot.Hooks(f(g(h())))`.
+func (c *MetricSnapshotClient) Use(hooks ...Hook) {
+	c.hooks.MetricSnapshot = append(c.hooks.MetricSnapshot, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `metricsnapshot.Intercept(f(g(h())))`.
+func (c *MetricSnapshotClient) Intercept(interceptors ...Interceptor) {
+	c.inters.MetricSnapshot = append(c.inters.MetricSnapshot, interceptors...)
+}
+
+// Create returns a builder for creating a MetricSnapshot entity.
+func (c *MetricSnapshotClient) Create() *MetricSnapshotCreate {
+	mutation := newMetricSnapshotMutation(c.config, OpCreate)
+	return &MetricSnapshotCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of MetricSnapshot entities.
+func (c *MetricSnapshotClient) CreateBulk(builders ...*MetricSnapshotCreate) *MetricSnapshotCreateBulk {
+	return &MetricSnapshotCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *MetricSnapshotClient) MapCreateBulk(slice any, setFunc func(*MetricSnapshotCreate, int)) *MetricSnapshotCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &MetricSnapshotCreateBulk{err: fmt.Errorf("calling to MetricSnapshotClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*MetricSnapshotCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &MetricSnapshotCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for MetricSnapshot.
+func (c *MetricSnapshotClient) Update() *MetricSnapshotUpdate {
+	mutation := newMetricSnapshotMutation(c.config, OpUpdate)
+	return &MetricSnapshotUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *MetricSnapshotClient) UpdateOne(_m *MetricSnapshot) *MetricSnapshotUpdateOne {
+	mutation := newMetricSnapshotMutation(c.config, OpUpdateOne, withMetricSnapshot(_m))
+	return &MetricSnapshotUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *MetricSnapshotClient) UpdateOneID(id int) *MetricSnapshotUpdateOne {
+	mutation := newMetricSnapshotMutation(c.config, OpUpdateOne, withMetricSnapshotID(id))
+	return &MetricSnapshotUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for MetricSnapshot.
+func (c *MetricSnapshotClient) Delete() *MetricSnapshotDelete {
+	mutation := newMetricSnapshotMutation(c.config, OpDelete)
+	return &MetricSnapshotDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *MetricSnapshotClient) DeleteOne(_m *MetricSnapshot) *MetricSnapshotDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *MetricSnapshotClient) DeleteOneID(id int) *MetricSnapshotDeleteOne {
+	builder := c.Delete().Where(metricsnapshot.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &MetricSnapshotDeleteOne{builder}
+}
+
+// Query returns a query builder for MetricSnapshot.
+func (c *MetricSnapshotClient) Query() *MetricSnapshotQuery {
+	return &MetricSnapshotQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeMetricSnapshot},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a MetricSnapshot entity by its id.
+func (c *MetricSnapshotClient) Get(ctx context.Context, id int) (*MetricSnapshot, error) {
+	return c.Query().Where(metricsnapshot.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *MetricSnapshotClient) GetX(ctx context.Context, id int) *MetricSnapshot {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *MetricSnapshotClient) Hooks() []Hook {
+	return c.hooks.MetricSnapshot
+}
+
+// Interceptors returns the client interceptors.
+func (c *MetricSnapshotClient) Interceptors() []Interceptor {
+	return c.inters.MetricSnapshot
+}
+
+func (c *MetricSnapshotClient) mutate(ctx context.Context, m *MetricSnapshotMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&MetricSnapshotCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&MetricSnapshotUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&MetricSnapshotUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&MetricSnapshotDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown MetricSnapshot mutation op: %q", m.Op())
 	}
 }
 
@@ -795,9 +938,9 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		AdminConfig, Event, Repository, User []ent.Hook
+		AdminConfig, Event, MetricSnapshot, Repository, User []ent.Hook
 	}
 	inters struct {
-		AdminConfig, Event, Repository, User []ent.Interceptor
+		AdminConfig, Event, MetricSnapshot, Repository, User []ent.Interceptor
 	}
 )

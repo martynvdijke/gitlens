@@ -58,6 +58,36 @@ var (
 			},
 		},
 	}
+	// MetricSnapshotsColumns holds the columns for the "metric_snapshots" table.
+	MetricSnapshotsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "repo_id", Type: field.TypeInt},
+		{Name: "timestamp", Type: field.TypeTime},
+		{Name: "feat_count", Type: field.TypeInt, Nullable: true},
+		{Name: "fix_count", Type: field.TypeInt, Nullable: true},
+		{Name: "docs_count", Type: field.TypeInt, Nullable: true},
+		{Name: "chore_count", Type: field.TypeInt, Nullable: true},
+		{Name: "other_commit_count", Type: field.TypeInt, Nullable: true},
+		{Name: "total_commits_fetched", Type: field.TypeInt, Nullable: true},
+		{Name: "release_count", Type: field.TypeInt, Nullable: true},
+		{Name: "avg_lead_time_hours", Type: field.TypeFloat64, Nullable: true},
+		{Name: "workflow_success_count", Type: field.TypeInt, Nullable: true},
+		{Name: "workflow_failure_count", Type: field.TypeInt, Nullable: true},
+		{Name: "workflow_status", Type: field.TypeString, Nullable: true},
+	}
+	// MetricSnapshotsTable holds the schema information for the "metric_snapshots" table.
+	MetricSnapshotsTable = &schema.Table{
+		Name:       "metric_snapshots",
+		Columns:    MetricSnapshotsColumns,
+		PrimaryKey: []*schema.Column{MetricSnapshotsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "metricsnapshot_repo_id_timestamp",
+				Unique:  false,
+				Columns: []*schema.Column{MetricSnapshotsColumns[1], MetricSnapshotsColumns[2]},
+			},
+		},
+	}
 	// RepositoriesColumns holds the columns for the "repositories" table.
 	RepositoriesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -173,6 +203,7 @@ var (
 	Tables = []*schema.Table{
 		AdminConfigsTable,
 		EventsTable,
+		MetricSnapshotsTable,
 		RepositoriesTable,
 		UsersTable,
 	}
