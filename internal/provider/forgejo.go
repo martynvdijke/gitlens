@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	ghclient "gitlens/internal/github"
 	"gitlens/internal/forgejo"
+	ghclient "gitlens/internal/github"
 )
 
 // ForgejoAdapter wraps a *forgejo.Client so it satisfies the Provider

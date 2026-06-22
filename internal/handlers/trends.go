@@ -23,21 +23,21 @@ func NewTrendsHandler(client *ent.Client) *TrendsHandler {
 
 // snapshotJSON is the JSON representation of a single MetricSnapshot row.
 type snapshotJSON struct {
-	ID                  int     `json:"id"`
-	RepoID              int     `json:"repo_id"`
-	RepoName            string  `json:"repo_name"`
-	Timestamp           string  `json:"timestamp"`
-	FeatCount           int     `json:"feat_count"`
-	FixCount            int     `json:"fix_count"`
-	DocsCount           int     `json:"docs_count"`
-	ChoreCount          int     `json:"chore_count"`
-	OtherCommitCount    int     `json:"other_commit_count"`
-	TotalCommitsFetched int     `json:"total_commits_fetched"`
-	ReleaseCount        int     `json:"release_count"`
-	AvgLeadTimeHours    float64 `json:"avg_lead_time_hours"`
-	WorkflowSuccessCount int    `json:"workflow_success_count"`
-	WorkflowFailureCount int    `json:"workflow_failure_count"`
-	WorkflowStatus      string  `json:"workflow_status"`
+	ID                   int     `json:"id"`
+	RepoID               int     `json:"repo_id"`
+	RepoName             string  `json:"repo_name"`
+	Timestamp            string  `json:"timestamp"`
+	FeatCount            int     `json:"feat_count"`
+	FixCount             int     `json:"fix_count"`
+	DocsCount            int     `json:"docs_count"`
+	ChoreCount           int     `json:"chore_count"`
+	OtherCommitCount     int     `json:"other_commit_count"`
+	TotalCommitsFetched  int     `json:"total_commits_fetched"`
+	ReleaseCount         int     `json:"release_count"`
+	AvgLeadTimeHours     float64 `json:"avg_lead_time_hours"`
+	WorkflowSuccessCount int     `json:"workflow_success_count"`
+	WorkflowFailureCount int     `json:"workflow_failure_count"`
+	WorkflowStatus       string  `json:"workflow_status"`
 }
 
 // MetricsHistoryResponse is the JSON response from /metrics/history.

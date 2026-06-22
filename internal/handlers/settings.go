@@ -56,10 +56,10 @@ func (h *SettingsHandler) Index(c *gin.Context) {
 	forgejoWarning := h.computeForgejoWarning(c.Request.Context(), u, repos)
 
 	c.HTML(http.StatusOK, "settings", gin.H{
-		"User":            u,
-		"Repos":           repos,
-		"WebhookURL":      webhookURL,
-		"ForgejoWarning":  forgejoWarning,
+		"User":           u,
+		"Repos":          repos,
+		"WebhookURL":     webhookURL,
+		"ForgejoWarning": forgejoWarning,
 	})
 }
 
@@ -400,7 +400,7 @@ func (h *SettingsHandler) AvailableForgejoRepos(c *gin.Context) {
 	}
 	if u.ForgejoID == 0 || u.ForgejoAccessToken == "" {
 		c.HTML(http.StatusOK, "available_repos", gin.H{
-			"NoForgejo": true,
+			"NoForgejo":  true,
 			"ForgejoURL": os.Getenv("FORGEJO_DEFAULT_URL"),
 		})
 		return

@@ -216,7 +216,6 @@ func TestMetricsHistory_FilterByDateRange(t *testing.T) {
 	}
 }
 
-
 func TestMetricsHistory_NoSnapshots(t *testing.T) {
 	handler, client := newTestTrendsHandler(t)
 	ctx := context.Background()

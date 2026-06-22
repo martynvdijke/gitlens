@@ -80,4 +80,3 @@ func (Repository) Indexes() []ent.Index {
 		index.Fields("forgejo_full_name"),
 	}
 }
-

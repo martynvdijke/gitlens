@@ -36,16 +36,16 @@ func parseSince(since string) time.Time {
 
 // DORAChartData is the JSON payload returned by the /charts/data endpoint.
 type DORAChartData struct {
-	Metrics *DORAMetrics           `json:"metrics"`
-	Repos   []RepoChartData        `json:"repos"`
+	Metrics *DORAMetrics    `json:"metrics"`
+	Repos   []RepoChartData `json:"repos"`
 }
 
 type RepoChartData struct {
-	FullName           string  `json:"fullName"`
+	FullName            string  `json:"fullName"`
 	TotalCommitsFetched int     `json:"totalCommitsFetched"`
-	WorkflowStatus     string  `json:"workflowStatus"`
-	ReleaseCount       int     `json:"releaseCount"`
-	AvgLeadTimeHours   float64 `json:"avgLeadTimeHours"`
+	WorkflowStatus      string  `json:"workflowStatus"`
+	ReleaseCount        int     `json:"releaseCount"`
+	AvgLeadTimeHours    float64 `json:"avgLeadTimeHours"`
 }
 
 // Data returns chart data as JSON, optionally filtered by a since parameter.
@@ -97,5 +97,3 @@ func (h *ChartHandler) Data(c *gin.Context) {
 		Repos:   repoData,
 	})
 }
-
-

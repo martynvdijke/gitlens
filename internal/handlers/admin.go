@@ -12,8 +12,8 @@ import (
 )
 
 type AdminHandler struct {
-	client       *ent.Client
-	otelManager  *otel.Manager
+	client      *ent.Client
+	otelManager *otel.Manager
 }
 
 func NewAdminHandler(client *ent.Client, otelManager *otel.Manager) *AdminHandler {

@@ -68,11 +68,11 @@ type DashboardHandler struct {
 	client *ent.Client
 	store  *mw.SessionStore
 	gh     *github.Client
-	syncer *	appsync.Syncer
+	syncer *appsync.Syncer
 	bgCtx  context.Context
 }
 
-func NewDashboardHandler(client *ent.Client, store *mw.SessionStore, gh *github.Client, syncer *	appsync.Syncer) *DashboardHandler {
+func NewDashboardHandler(client *ent.Client, store *mw.SessionStore, gh *github.Client, syncer *appsync.Syncer) *DashboardHandler {
 	return &DashboardHandler{client: client, store: store, gh: gh, syncer: syncer, bgCtx: context.Background()}
 }
 

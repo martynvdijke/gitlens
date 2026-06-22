@@ -67,13 +67,13 @@ func TestParseSince_90d(t *testing.T) {
 func TestDORAChartData_JSONSerialization(t *testing.T) {
 	data := DORAChartData{
 		Metrics: &DORAMetrics{
-			TotalRepos:       3,
-			TotalReleases:    10,
-			TotalCommits:     200,
-			FeatPct:          45.0,
-			FixPct:           30.0,
-			DocsPct:          15.0,
-			ChorePct:         10.0,
+			TotalRepos:        3,
+			TotalReleases:     10,
+			TotalCommits:      200,
+			FeatPct:           45.0,
+			FixPct:            30.0,
+			DocsPct:           15.0,
+			ChorePct:          10.0,
 			WorkflowSuccesses: 80,
 			WorkflowFailures:  20,
 			WorkflowPassRate:  80.0,

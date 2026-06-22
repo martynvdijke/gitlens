@@ -143,9 +143,9 @@ type gjRelease struct {
 }
 
 type gjPullRequest struct {
-	Number    int    `json:"number"`
-	Title     string `json:"title"`
-	User      struct {
+	Number int    `json:"number"`
+	Title  string `json:"title"`
+	User   struct {
 		Login string `json:"login"`
 	} `json:"user"`
 	CreatedAt string `json:"created_at"`
@@ -156,11 +156,11 @@ type gjPullRequest struct {
 	Base struct {
 		Ref string `json:"ref"`
 	} `json:"base"`
-	Merged     bool   `json:"merged"`
-	MergedAt   string `json:"merged_at"`
-	Mergeable  bool   `json:"mergeable"`
-	HeadRef    string `json:"head_ref"`
-	State      string `json:"state"`
+	Merged    bool   `json:"merged"`
+	MergedAt  string `json:"merged_at"`
+	Mergeable bool   `json:"mergeable"`
+	HeadRef   string `json:"head_ref"`
+	State     string `json:"state"`
 }
 
 // --- OAuth ---
@@ -384,8 +384,8 @@ func (c *Client) ListReleases(ctx context.Context, token, owner, repo string) ([
 		if err != nil {
 			return all, err
 		}
-	var gjReleases []gjRelease
-	if err := json.NewDecoder(resp.Body).Decode(&gjReleases); err != nil {
+		var gjReleases []gjRelease
+		if err := json.NewDecoder(resp.Body).Decode(&gjReleases); err != nil {
 			resp.Body.Close()
 			return all, fmt.Errorf("decoding releases: %w", err)
 		}

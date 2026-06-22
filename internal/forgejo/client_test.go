@@ -123,9 +123,9 @@ func TestListRepositories_Pagination(t *testing.T) {
 	var page1 []gjRepo
 	for i := 1; i <= 50; i++ {
 		page1 = append(page1, gjRepo{
-			ID: int64(i),
-			Name: fmt.Sprintf("repo%d", i),
-			FullName: fmt.Sprintf("user/repo%d", i),
+			ID:            int64(i),
+			Name:          fmt.Sprintf("repo%d", i),
+			FullName:      fmt.Sprintf("user/repo%d", i),
 			DefaultBranch: "main",
 		})
 	}
@@ -259,11 +259,17 @@ func TestListPullRequests(t *testing.T) {
 			{
 				Number: 1,
 				Title:  "Fix the thing",
-				User:   struct{ Login string `json:"login"` }{Login: "contributor"},
+				User: struct {
+					Login string `json:"login"`
+				}{Login: "contributor"},
 				HTMLURL: ts.URL + "/user/myrepo/pulls/1",
-				Head:   struct{ Ref string `json:"ref"` }{Ref: "fix-thing"},
-				Base:   struct{ Ref string `json:"ref"` }{Ref: "main"},
-				State:  "open",
+				Head: struct {
+					Ref string `json:"ref"`
+				}{Ref: "fix-thing"},
+				Base: struct {
+					Ref string `json:"ref"`
+				}{Ref: "main"},
+				State: "open",
 			},
 		})
 	}))
@@ -295,19 +301,31 @@ func TestListRecentlyMergedPRs(t *testing.T) {
 				Merged:  true,
 				State:   "closed",
 				HTMLURL: ts.URL + "/user/myrepo/pulls/2",
-				User:    struct{ Login string `json:"login"` }{Login: "dev"},
-				Head:    struct{ Ref string `json:"ref"` }{Ref: "feature"},
-				Base:    struct{ Ref string `json:"ref"` }{Ref: "main"},
+				User: struct {
+					Login string `json:"login"`
+				}{Login: "dev"},
+				Head: struct {
+					Ref string `json:"ref"`
+				}{Ref: "feature"},
+				Base: struct {
+					Ref string `json:"ref"`
+				}{Ref: "main"},
 			},
 			{
-				Number: 3,
-				Title:  "Closed without merge",
-				Merged: false,
-				State:  "closed",
+				Number:  3,
+				Title:   "Closed without merge",
+				Merged:  false,
+				State:   "closed",
 				HTMLURL: ts.URL + "/user/myrepo/pulls/3",
-				User:   struct{ Login string `json:"login"` }{Login: "dev"},
-				Head:   struct{ Ref string `json:"ref"` }{Ref: "wontfix"},
-				Base:   struct{ Ref string `json:"ref"` }{Ref: "main"},
+				User: struct {
+					Login string `json:"login"`
+				}{Login: "dev"},
+				Head: struct {
+					Ref string `json:"ref"`
+				}{Ref: "wontfix"},
+				Base: struct {
+					Ref string `json:"ref"`
+				}{Ref: "main"},
 			},
 		})
 	}))
