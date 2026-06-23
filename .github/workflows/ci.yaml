@@ -35,6 +35,15 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
+      - name: Check formatting
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "The following files are not formatted with go fmt:"
+            echo "$unformatted"
+            exit 1
+          fi
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
