@@ -1,3 +1,10 @@
+## [1.17.6](https://github.com/martynvdijke/gitlens/compare/v1.17.5...v1.17.6) (2026-06-23)
+
+
+### Bug Fixes
+
+* add go format check step and clean up go.sum ([b295e38](https://github.com/martynvdijke/gitlens/commit/b295e38793ad875e11e86a659c53ef7e749acf28))
+
 ## [1.17.5](https://github.com/martynvdijke/gitlens/compare/v1.17.4...v1.17.5) (2026-06-22)
 
 
