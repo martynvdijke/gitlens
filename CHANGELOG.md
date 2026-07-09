@@ -1,3 +1,11 @@
+## [1.17.13](https://github.com/martynvdijke/gitlens/compare/v1.17.12...v1.17.13) (2026-07-09)
+
+
+### Bug Fixes
+
+* add merge feedback toasts and fix mobile layout ([7269386](https://github.com/martynvdijke/gitlens/commit/726938691de6c08341d113fdd8130846358017c5))
+* add merge feedback toasts and fix mobile layout ([89c484a](https://github.com/martynvdijke/gitlens/commit/89c484a6101ac03e892b9b88d7e4937f08aa20c1))
+
 ## [1.17.12](https://github.com/martynvdijke/gitlens/compare/v1.17.11...v1.17.12) (2026-07-09)
 
 ## [1.17.11](https://github.com/martynvdijke/gitlens/compare/v1.17.10...v1.17.11) (2026-07-08)
