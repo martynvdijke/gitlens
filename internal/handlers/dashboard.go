@@ -867,28 +867,28 @@ func (h *DashboardHandler) MergePR(c *gin.Context) {
 	if err != nil {
 		log.Printf("Error merging PR #%d for %s: %v", prNumber, r.FullName, err)
 		c.HTML(http.StatusOK, "repo_card_with_toast", gin.H{
-			"Repo":          r,
-			"ToastType":     "danger",
-			"ToastMessage":  fmt.Sprintf("Failed to merge #%d", prNumber),
-			"ToastDetails":  err.Error(),
+			"Repo":         r,
+			"ToastType":    "danger",
+			"ToastMessage": fmt.Sprintf("Failed to merge #%d", prNumber),
+			"ToastDetails": err.Error(),
 		})
 		return
 	}
 	if !merged {
 		c.HTML(http.StatusOK, "repo_card_with_toast", gin.H{
-			"Repo":          r,
-			"ToastType":     "warning",
-			"ToastMessage":  fmt.Sprintf("Merge failed for #%d", prNumber),
-			"ToastDetails":  msg,
+			"Repo":         r,
+			"ToastType":    "warning",
+			"ToastMessage": fmt.Sprintf("Merge failed for #%d", prNumber),
+			"ToastDetails": msg,
 		})
 		return
 	}
 
 	r = h.syncer.SyncOne(ctx, r)
 	c.HTML(http.StatusOK, "repo_card_with_toast", gin.H{
-		"Repo":          r,
-		"ToastType":     "success",
-		"ToastMessage":  fmt.Sprintf("PR #%d merged successfully", prNumber),
+		"Repo":         r,
+		"ToastType":    "success",
+		"ToastMessage": fmt.Sprintf("PR #%d merged successfully", prNumber),
 	})
 }
 
@@ -937,16 +937,16 @@ func (h *DashboardHandler) MergeAllPRs(c *gin.Context) {
 
 	if len(failed) > 0 {
 		c.HTML(http.StatusOK, "repo_card_with_toast", gin.H{
-			"Repo":          r,
-			"ToastType":     "warning",
-			"ToastMessage":  fmt.Sprintf("Merged %d PR(s)", len(prs)-len(failed)),
-			"ToastDetails":  fmt.Sprintf("Failed: %v", failed),
+			"Repo":         r,
+			"ToastType":    "warning",
+			"ToastMessage": fmt.Sprintf("Merged %d PR(s)", len(prs)-len(failed)),
+			"ToastDetails": fmt.Sprintf("Failed: %v", failed),
 		})
 	} else {
 		c.HTML(http.StatusOK, "repo_card_with_toast", gin.H{
-			"Repo":          r,
-			"ToastType":     "success",
-			"ToastMessage":  fmt.Sprintf("All %d PR(s) merged successfully!", len(prs)),
+			"Repo":         r,
+			"ToastType":    "success",
+			"ToastMessage": fmt.Sprintf("All %d PR(s) merged successfully!", len(prs)),
 		})
 	}
 }
