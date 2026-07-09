@@ -1019,6 +1019,9 @@ func TestMergeSinglePR_Success(t *testing.T) {
 	w := httptest.NewRecorder()
 	gin.SetMode(gin.TestMode)
 	engine := gin.New()
+	engine.SetHTMLTemplate(template.Must(template.New("").Funcs(template.FuncMap{
+		"printf": fmt.Sprintf,
+	}).Parse(`{{define "prs_tab"}}<div>{{range .PRs}}<div class="pr-item">#{{.Number}}</div>{{else}}<div class="empty">no PRs</div>{{end}}</div>{{end}}{{define "merge_toast"}}{{if .ToastType}}<div id="toast-container" hx-swap-oob="beforeend"><div class="toast">{{.ToastMessage}}{{if .ToastDetails}} <small>{{.ToastDetails}}</small>{{end}}</div></div>{{end}}{{end}}{{define "prs_tab_with_toast"}}{{template "merge_toast" .}}{{template "prs_tab" .}}{{end}}`)))
 	engine.POST("/prs/merge", func(c *gin.Context) { c.Set("user_id", int64(u.ID)); handler.MergeSinglePR(c) })
 	body := strings.NewReader(fmt.Sprintf(`{"repo_id":%d,"pr_number":42}`, r.ID))
 	req := httptest.NewRequest("POST", "/prs/merge", body)
@@ -1085,6 +1088,9 @@ func TestBatchMergePRs_Success(t *testing.T) {
 	w := httptest.NewRecorder()
 	gin.SetMode(gin.TestMode)
 	engine := gin.New()
+	engine.SetHTMLTemplate(template.Must(template.New("").Funcs(template.FuncMap{
+		"printf": fmt.Sprintf,
+	}).Parse(`{{define "prs_tab"}}<div>{{range .PRs}}<div class="pr-item">#{{.Number}}</div>{{else}}<div class="empty">no PRs</div>{{end}}</div>{{end}}{{define "merge_toast"}}{{if .ToastType}}<div id="toast-container" hx-swap-oob="beforeend"><div class="toast">{{.ToastMessage}}{{if .ToastDetails}} <small>{{.ToastDetails}}</small>{{end}}</div></div>{{end}}{{end}}{{define "prs_tab_with_toast"}}{{template "merge_toast" .}}{{template "prs_tab" .}}{{end}}`)))
 	engine.POST("/prs/batch-merge", func(c *gin.Context) { c.Set("user_id", int64(u.ID)); handler.BatchMergePRs(c) })
 	form := fmt.Sprintf("pr_ids=%d:1&pr_ids=%d:2", r1.ID, r2.ID)
 	req := httptest.NewRequest("POST", "/prs/batch-merge", strings.NewReader(form))
@@ -1094,8 +1100,8 @@ func TestBatchMergePRs_Success(t *testing.T) {
 	if w.Code != http.StatusOK {
 		t.Errorf("expected 200, got %d: %s", w.Code, w.Body.String())
 	}
-	if !strings.Contains(w.Body.String(), "2 PR(s) merged") {
-		t.Errorf("expected 2 merges, got: %s", w.Body.String())
+	if !strings.Contains(w.Body.String(), "All 2 PR") {
+		t.Errorf("expected all 2 merged, got: %s", w.Body.String())
 	}
 	if callCount != 12 {
 		t.Errorf("expected 12 API calls (2 merges + 5 sync × 2 repos), got %d", callCount)

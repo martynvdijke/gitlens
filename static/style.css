@@ -376,6 +376,12 @@ body, .card, .navbar, .nav-tabs, footer, .modal-content,
 .bottom-nav .nav-link svg {
     margin-bottom: 1px;
 }
+@media (max-width: 767.98px) {
+    .bottom-nav .nav-link {
+        max-width: 20%;
+        padding: 0.35rem 0 !important;
+    }
+}
 
 /* Add bottom padding for fixed nav on mobile */
 @media (max-width: 767.98px) {
@@ -474,7 +480,7 @@ body, .card, .navbar, .nav-tabs, footer, .modal-content,
 /* ===========================
    Mobile: PR queue card layout
    =========================== */
-@media (max-width: 767.98px) {
+@media (min-width: 576px) and (max-width: 767.98px) {
     .pr-queue-scroll {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
@@ -484,6 +490,29 @@ body, .card, .navbar, .nav-tabs, footer, .modal-content,
     }
     .pr-queue-scroll .pr-header {
         min-width: 600px;
+    }
+}
+@media (max-width: 575.98px) {
+    .pr-queue-scroll .pr-row,
+    .pr-queue-scroll .pr-header {
+        min-width: auto;
+    }
+    .pr-queue-scroll {
+        overflow-x: initial;
+    }
+}
+
+/* ===========================
+   Mobile: prevent overflow on small screens
+   =========================== */
+@media (max-width: 575.98px) {
+    #main-content .card,
+    #main-content .card-body {
+        max-width: 100%;
+        overflow-wrap: break-word;
+    }
+    #main-content .col-12 {
+        max-width: 100%;
     }
 }
 
@@ -615,3 +644,45 @@ body, .card, .navbar, .nav-tabs, footer, .modal-content,
 .landing-features svg[stroke="#d29922"] { stroke: var(--accent-warning) !important; }
 .landing-hero svg[stroke="#f85149"],
 .landing-features svg[stroke="#f85149"] { stroke: var(--accent-danger) !important; }
+
+/* ===========================
+   Toast notifications for merge feedback
+   =========================== */
+.toast-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    left: 1rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    pointer-events: none;
+    max-width: 420px;
+    margin-left: auto;
+}
+.toast-container .toast {
+    pointer-events: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    animation: toast-slide-in 0.3s ease-out;
+    margin-bottom: 0;
+}
+.toast-container .toast-dismissing {
+    animation: toast-slide-out 0.3s ease-in forwards;
+}
+@keyframes toast-slide-in {
+    from { opacity: 0; transform: translateX(100%); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes toast-slide-out {
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(100%); }
+}
+
+@media (max-width: 576px) {
+    .toast-container {
+        left: 0.5rem;
+        right: 0.5rem;
+        max-width: none;
+    }
+}

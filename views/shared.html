@@ -1,5 +1,5 @@
 {{define "bottom_nav"}}
-<nav class="d-md-none fixed-bottom border-top border-secondary bg-dark bottom-nav nav nav-pills justify-content-around py-1" id="bottom-nav">
+<nav class="d-md-none fixed-bottom border-top border-secondary bg-dark bottom-nav nav nav-pills justify-content-between py-1" id="bottom-nav">
     <a href="/dashboard" class="nav-link text-center px-2 {{if eq .ActiveTab "repos"}}active{{end}}"
        hx-get="/dashboard" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="d-block mx-auto"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
@@ -246,7 +246,7 @@
         <span class="fw-semibold small">Pull Requests ({{.Count}})</span>
         <div class="d-flex align-items-center gap-2">
             {{if gt .Count 1}}
-            <button class="btn btn-sm btn-success" hx-post="/repos/{{.Repo.ID}}/prs/merge-all" hx-target="#repo-card-{{.Repo.ID}}" hx-swap="outerHTML" hx-confirm="Merge all {{.Count}} open pull requests?" hx-indicator="#merge-all-spinner-{{.Repo.ID}}">Merge All</button>
+            <button class="btn btn-sm btn-success" hx-post="/repos/{{.Repo.ID}}/prs/merge-all" hx-target="#repo-card-{{.Repo.ID}}" hx-swap="outerHTML" hx-confirm="Merge all {{.Count}} open pull requests?" hx-indicator="#merge-all-spinner-{{.Repo.ID}}" hx-disabled-elt="this">Merge All</button>
             <span id="merge-all-spinner-{{.Repo.ID}}" class="htmx-indicator small text-info">Merging...</span>
             {{end}}
             <button class="btn btn-sm btn-outline-info" hx-post="/repos/{{.Repo.ID}}/renovate/rebase-all" hx-target="#repo-card-{{.Repo.ID}}" hx-swap="outerHTML" hx-confirm="Trigger Renovate to rebase all open PRs?" hx-indicator="#rebase-all-spinner-{{.Repo.ID}}">Rebase All</button>
@@ -260,7 +260,7 @@
                 <a href="{{.HTMLURL}}" target="_blank" rel="noopener" class="text-info text-decoration-none small fw-medium text-truncate">#{{.Number}} {{.Title}}</a>
                 <span class="text-secondary small">{{.Author}} &middot; {{printf "%.10s" .CreatedAt}} &middot; {{.HeadRef}} → {{.BaseRef}}</span>
             </div>
-            <button class="btn btn-sm btn-success flex-shrink-0" hx-post="/repos/{{$.Repo.ID}}/prs/{{.Number}}/merge" hx-target="#repo-card-{{$.Repo.ID}}" hx-swap="outerHTML" hx-confirm="Merge PR #{{.Number}}?" hx-indicator="#pr-spin-{{$.Repo.ID}}-{{.Number}}">Merge</button>
+            <button class="btn btn-sm btn-success flex-shrink-0" hx-post="/repos/{{$.Repo.ID}}/prs/{{.Number}}/merge" hx-target="#repo-card-{{$.Repo.ID}}" hx-swap="outerHTML" hx-confirm="Merge PR #{{.Number}}?" hx-indicator="#pr-spin-{{$.Repo.ID}}-{{.Number}}" hx-disabled-elt="this">Merge</button>
             <span id="pr-spin-{{$.Repo.ID}}-{{.Number}}" class="htmx-indicator small text-info">Merging...</span>
         </div>
         {{end}}

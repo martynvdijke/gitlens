@@ -63,7 +63,26 @@
         {{end}}
     </main>
 
+    <div id="toast-container" class="toast-container"></div>
+
     {{if .User}}{{template "bottom_nav" .}}{{end}}
+
+    <script>
+    // Auto-dismiss toasts after 4 seconds
+    document.addEventListener('htmx:afterSettle', function(evt) {
+        var container = document.getElementById('toast-container');
+        if (!container) return;
+        container.querySelectorAll('.toast.show').forEach(function(t) {
+            if (t.dataset.dismissTimer) return;
+            t.dataset.dismissTimer = '1';
+            setTimeout(function() {
+                t.classList.remove('show');
+                t.classList.add('toast-dismissing');
+                setTimeout(function() { if (t.parentNode) t.remove(); }, 300);
+            }, 4000);
+        });
+    });
+    </script>
 
     <div id="ws-listener" hx-ext="ws" ws-connect="/ws" style="display:none"></div>
 

@@ -600,16 +600,32 @@ func (h *DashboardHandler) ReposTab(c *gin.Context) {
 
 // PRsTab renders the unified cross-repo PR queue.
 func (h *DashboardHandler) PRsTab(c *gin.Context) {
-	userID := c.GetInt64("user_id")
-	u, _ := h.client.User.Get(c.Request.Context(), int(userID))
+	data, err := h.fetchPRTabData(c.Request.Context(), int(c.GetInt64("user_id")), c.Query("repo"))
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "prs_tab", gin.H{"Error": "Failed to fetch data"})
+		return
+	}
+	c.HTML(http.StatusOK, "prs_tab", data)
+}
+
+type mergeRequest struct {
+	RepoID   int `json:"repo_id" form:"repo_id"`
+	PRNumber int `json:"pr_number" form:"pr_number"`
+}
+
+// fetchPRTabData loads the data needed to render the PR queue tab.
+func (h *DashboardHandler) fetchPRTabData(ctx context.Context, userID int, filterRepo string) (map[string]interface{}, error) {
+	u, err := h.client.User.Get(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
 
 	repos, err := h.client.Repository.Query().
-		Where(repository.HasUserWith(user.ID(int(userID)))).
+		Where(repository.HasUserWith(user.ID(userID))).
 		Order(ent.Desc(repository.FieldUpdatedAt)).
-		All(c.Request.Context())
+		All(ctx)
 	if err != nil {
-		c.HTML(http.StatusInternalServerError, "prs_tab", gin.H{"Error": "Failed to fetch repositories"})
-		return
+		return nil, err
 	}
 
 	var allPRs []PRQueueItem
@@ -636,12 +652,10 @@ func (h *DashboardHandler) PRsTab(c *gin.Context) {
 		}
 	}
 
-	// Sort newest first
 	sort.Slice(allPRs, func(i, j int) bool {
 		return allPRs[i].CreatedAt > allPRs[j].CreatedAt
 	})
 
-	filterRepo := c.Query("repo")
 	if filterRepo != "" {
 		var filtered []PRQueueItem
 		for _, pr := range allPRs {
@@ -652,18 +666,13 @@ func (h *DashboardHandler) PRsTab(c *gin.Context) {
 		allPRs = filtered
 	}
 
-	c.HTML(http.StatusOK, "prs_tab", gin.H{
+	return gin.H{
 		"User":       u,
 		"PRs":        allPRs,
 		"Repos":      repos,
 		"FilterRepo": filterRepo,
 		"ActiveTab":  "prs",
-	})
-}
-
-type mergeRequest struct {
-	RepoID   int `json:"repo_id" form:"repo_id"`
-	PRNumber int `json:"pr_number" form:"pr_number"`
+	}, nil
 }
 
 // MergeSinglePR merges a single PR from the unified queue.
@@ -701,12 +710,28 @@ func (h *DashboardHandler) MergeSinglePR(c *gin.Context) {
 		return
 	}
 	if !merged {
-		c.String(http.StatusConflict, "Merge failed: %s", msg)
+		h.syncer.SyncOne(ctx, r)
+		data, fetchErr := h.fetchPRTabData(ctx, int(userID), c.Query("repo"))
+		if fetchErr != nil {
+			c.String(http.StatusInternalServerError, "Failed to refresh PR queue")
+			return
+		}
+		data["ToastType"] = "warning"
+		data["ToastMessage"] = fmt.Sprintf("Merge failed for #%d", req.PRNumber)
+		data["ToastDetails"] = msg
+		c.HTML(http.StatusOK, "prs_tab_with_toast", data)
 		return
 	}
 
 	h.syncer.SyncOne(ctx, r)
-	c.String(http.StatusOK, "PR #%d merged successfully", req.PRNumber)
+	data, err := h.fetchPRTabData(ctx, int(userID), c.Query("repo"))
+	if err != nil {
+		c.String(http.StatusOK, "PR #%d merged successfully", req.PRNumber)
+		return
+	}
+	data["ToastType"] = "success"
+	data["ToastMessage"] = fmt.Sprintf("PR #%d merged successfully", req.PRNumber)
+	c.HTML(http.StatusOK, "prs_tab_with_toast", data)
 }
 
 // BatchMergePRs merges selected PRs from the unified queue.
@@ -771,11 +796,22 @@ func (h *DashboardHandler) BatchMergePRs(c *gin.Context) {
 	}
 
 	total := len(merged) + len(failed)
-	if len(failed) == 0 {
-		c.String(http.StatusOK, "All %d PR(s) merged successfully!", total)
-	} else {
-		c.String(http.StatusOK, "Merged %d/%d. Failed: %s", len(merged), total, strings.Join(failed, ", "))
+
+	data, err := h.fetchPRTabData(ctx, int(userID), c.Query("repo"))
+	if err != nil {
+		c.String(http.StatusOK, "Merged %d/%d", len(merged), total)
+		return
 	}
+
+	if len(failed) == 0 {
+		data["ToastType"] = "success"
+		data["ToastMessage"] = fmt.Sprintf("All %d PR(s) merged successfully!", total)
+	} else {
+		data["ToastType"] = "warning"
+		data["ToastMessage"] = fmt.Sprintf("Merged %d/%d", len(merged), total)
+		data["ToastDetails"] = fmt.Sprintf("Failed: %s", strings.Join(failed, ", "))
+	}
+	c.HTML(http.StatusOK, "prs_tab_with_toast", data)
 }
 
 // MetricsTab renders the DORA metrics page.
@@ -830,16 +866,30 @@ func (h *DashboardHandler) MergePR(c *gin.Context) {
 	merged, msg, err := h.gh.MergePullRequest(u.AccessToken, r.Owner, r.Name, prNumber)
 	if err != nil {
 		log.Printf("Error merging PR #%d for %s: %v", prNumber, r.FullName, err)
-		c.String(http.StatusInternalServerError, "Failed to merge PR: %v", err)
+		c.HTML(http.StatusOK, "repo_card_with_toast", gin.H{
+			"Repo":          r,
+			"ToastType":     "danger",
+			"ToastMessage":  fmt.Sprintf("Failed to merge #%d", prNumber),
+			"ToastDetails":  err.Error(),
+		})
 		return
 	}
 	if !merged {
-		c.String(http.StatusConflict, "Merge failed: %s", msg)
+		c.HTML(http.StatusOK, "repo_card_with_toast", gin.H{
+			"Repo":          r,
+			"ToastType":     "warning",
+			"ToastMessage":  fmt.Sprintf("Merge failed for #%d", prNumber),
+			"ToastDetails":  msg,
+		})
 		return
 	}
 
 	r = h.syncer.SyncOne(ctx, r)
-	c.HTML(http.StatusOK, "repo_card", r)
+	c.HTML(http.StatusOK, "repo_card_with_toast", gin.H{
+		"Repo":          r,
+		"ToastType":     "success",
+		"ToastMessage":  fmt.Sprintf("PR #%d merged successfully", prNumber),
+	})
 }
 
 func (h *DashboardHandler) MergeAllPRs(c *gin.Context) {
@@ -886,9 +936,18 @@ func (h *DashboardHandler) MergeAllPRs(c *gin.Context) {
 	r = h.syncer.SyncOne(ctx, r)
 
 	if len(failed) > 0 {
-		c.String(http.StatusOK, "Merged %d PR(s). Failed: %v", len(prs)-len(failed), failed)
+		c.HTML(http.StatusOK, "repo_card_with_toast", gin.H{
+			"Repo":          r,
+			"ToastType":     "warning",
+			"ToastMessage":  fmt.Sprintf("Merged %d PR(s)", len(prs)-len(failed)),
+			"ToastDetails":  fmt.Sprintf("Failed: %v", failed),
+		})
 	} else {
-		c.String(http.StatusOK, "All %d PR(s) merged successfully!", len(prs))
+		c.HTML(http.StatusOK, "repo_card_with_toast", gin.H{
+			"Repo":          r,
+			"ToastType":     "success",
+			"ToastMessage":  fmt.Sprintf("All %d PR(s) merged successfully!", len(prs)),
+		})
 	}
 }
 

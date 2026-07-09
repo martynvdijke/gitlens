@@ -1,0 +1,21 @@
+{{define "merge_toast"}}
+{{if .ToastType}}
+<div id="toast-container" hx-swap-oob="beforeend">
+    <div class="toast alert alert-{{.ToastType}} alert-dismissible fade show" role="alert">
+        {{.ToastMessage}}
+        {{if .ToastDetails}}<br><small class="text-secondary">{{.ToastDetails}}</small>{{end}}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</div>
+{{end}}
+{{end}}
+
+{{define "repo_card_with_toast"}}
+{{template "merge_toast" .}}
+{{template "repo_card" .Repo}}
+{{end}}
+
+{{define "prs_tab_with_toast"}}
+{{template "merge_toast" .}}
+{{template "prs_tab" .}}
+{{end}}

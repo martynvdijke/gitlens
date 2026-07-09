@@ -15,7 +15,7 @@
 </div>
 
 {{if .PRs}}
-<form id="pr-queue-form" hx-post="/prs/batch-merge" hx-target="#pr-queue-status" hx-swap="innerHTML" hx-indicator="#batch-spinner">
+<form id="pr-queue-form" hx-post="/prs/batch-merge" hx-target="#main-content" hx-swap="innerHTML" hx-indicator="#batch-spinner">
     <div id="pr-queue-status"></div>
 
     <!-- Mobile: stacked card layout -->
@@ -33,7 +33,7 @@
                             <span class="text-secondary small">{{.Author}} &middot; {{printf "%.10s" .CreatedAt}}</span>
                         </div>
                     </label>
-                    <button class="btn btn-sm btn-success flex-shrink-0" hx-post="/prs/merge" hx-vals='{"repo_id":{{.RepoID}},"pr_number":{{.Number}}}' hx-target="#pr-queue-status" hx-swap="innerHTML" hx-indicator="#batch-spinner" hx-confirm="Merge #{{.Number}} ({{.RepoFullName}})?">Merge</button>
+                    <button class="btn btn-sm btn-success flex-shrink-0" hx-post="/prs/merge" hx-vals='{"repo_id":{{.RepoID}},"pr_number":{{.Number}}}' hx-target="#main-content" hx-swap="innerHTML" hx-indicator="#batch-spinner" hx-disabled-elt="this" hx-confirm="Merge #{{.Number}} ({{.RepoFullName}})?">Merge</button>
                 </div>
             </div>
         </div>
@@ -67,13 +67,13 @@
                 <span class="text-secondary small">{{printf "%.10s" .CreatedAt}}</span>
             </span>
             <span style="width:80px;flex-shrink:0;text-align:right">
-                <button class="btn btn-sm btn-success" hx-post="/prs/merge" hx-vals='{"repo_id":{{.RepoID}},"pr_number":{{.Number}}}' hx-target="#pr-queue-status" hx-swap="innerHTML" hx-indicator="#batch-spinner" hx-confirm="Merge #{{.Number}} ({{.RepoFullName}})?">Merge</button>
+                <button class="btn btn-sm btn-success" hx-post="/prs/merge" hx-vals='{"repo_id":{{.RepoID}},"pr_number":{{.Number}}}' hx-target="#main-content" hx-swap="innerHTML" hx-indicator="#batch-spinner" hx-disabled-elt="this" hx-confirm="Merge #{{.Number}} ({{.RepoFullName}})?">Merge</button>
             </span>
         </div>
         {{end}}
     </div>
     <div class="mt-3">
-        <button type="submit" class="btn btn-sm btn-success" onclick="return document.querySelectorAll('.pr-queue-checkbox:checked').length > 0 || (alert('Select at least one PR to merge'), false)">
+        <button type="submit" class="btn btn-sm btn-success" hx-disabled-elt="this" onclick="return document.querySelectorAll('.pr-queue-checkbox:checked').length > 0 || (alert('Select at least one PR to merge'), false)">
             Merge Selected
         </button>
     </div>
