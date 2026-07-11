@@ -2,8 +2,10 @@ package otel
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -12,6 +14,7 @@ import (
 	"gitlens/ent/enttest"
 
 	_ "github.com/mattn/go-sqlite3"
+	"go.opentelemetry.io/otel/attribute"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
 
@@ -19,6 +22,11 @@ func newTestManager(t *testing.T) (*Manager, *ent.Client) {
 	t.Helper()
 	client := enttest.Open(t, "sqlite3", "file:"+t.TempDir()+"/test.db?_fk=1")
 	return NewManager(client), client
+}
+
+func setHTTPProtocol(t *testing.T) {
+	t.Helper()
+	t.Setenv("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf")
 }
 
 func TestNewManager_NoConfig(t *testing.T) {
@@ -117,6 +125,7 @@ func startOTLPEndpoint(t *testing.T) string {
 }
 
 func TestReload_WithTracesAndMetrics(t *testing.T) {
+	setHTTPProtocol(t)
 	m, client := newTestManager(t)
 	defer m.Shutdown(context.Background())
 
@@ -158,6 +167,7 @@ func TestReload_WithTracesAndMetrics(t *testing.T) {
 }
 
 func TestReload_ClearsProvidersOnEmptyConfig(t *testing.T) {
+	setHTTPProtocol(t)
 	m, client := newTestManager(t)
 	defer m.Shutdown(context.Background())
 
@@ -209,6 +219,7 @@ func TestReload_ClearsProvidersOnEmptyConfig(t *testing.T) {
 }
 
 func TestReload_MultipleReloads(t *testing.T) {
+	setHTTPProtocol(t)
 	m, client := newTestManager(t)
 	defer m.Shutdown(context.Background())
 
@@ -255,6 +266,7 @@ func TestShutdown_Idempotent(t *testing.T) {
 }
 
 func TestConcurrentAccess(t *testing.T) {
+	setHTTPProtocol(t)
 	m, client := newTestManager(t)
 	defer m.Shutdown(context.Background())
 
@@ -310,6 +322,7 @@ func TestLoadConfig_HandlesMissingRow(t *testing.T) {
 }
 
 func TestReload_OnlyTraces(t *testing.T) {
+	setHTTPProtocol(t)
 	m, client := newTestManager(t)
 	defer m.Shutdown(context.Background())
 
@@ -341,6 +354,7 @@ func TestReload_OnlyTraces(t *testing.T) {
 }
 
 func TestReload_OnlyMetrics(t *testing.T) {
+	setHTTPProtocol(t)
 	m, client := newTestManager(t)
 	defer m.Shutdown(context.Background())
 
@@ -427,5 +441,168 @@ func TestBuildMeterProvider_BadEndpoint(t *testing.T) {
 	}
 	if mp != nil {
 		mp.Shutdown(ctx)
+	}
+}
+
+// ---- New tests for extended functionality ----
+
+func TestOTLPProtocol_DefaultIsGRPC(t *testing.T) {
+	// When OTEL_EXPORTER_OTLP_PROTOCOL is unset, should default to "grpc"
+	os.Unsetenv("OTEL_EXPORTER_OTLP_PROTOCOL")
+	protocol := otlpProtocol()
+	if protocol != "grpc" {
+		t.Fatalf("expected default protocol 'grpc', got: %s", protocol)
+	}
+}
+
+func TestOTLPProtocol_HTTPProtobuf(t *testing.T) {
+	t.Setenv("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf")
+	if p := otlpProtocol(); p != "http/protobuf" {
+		t.Fatalf("expected 'http/protobuf', got: %s", p)
+	}
+}
+
+func TestOTLPProtocol_GRPCExplicit(t *testing.T) {
+	t.Setenv("OTEL_EXPORTER_OTLP_PROTOCOL", "grpc")
+	if p := otlpProtocol(); p != "grpc" {
+		t.Fatalf("expected 'grpc', got: %s", p)
+	}
+}
+
+func TestSamplerFromEnv_Default(t *testing.T) {
+	os.Unsetenv("OTEL_TRACES_SAMPLER")
+	os.Unsetenv("OTEL_TRACES_SAMPLER_ARG")
+	s := samplerFromEnv()
+	if s == nil {
+		t.Fatal("expected non-nil sampler")
+	}
+}
+
+func TestSamplerFromEnv_AlwaysOn(t *testing.T) {
+	t.Setenv("OTEL_TRACES_SAMPLER", "always_on")
+	s := samplerFromEnv()
+	if s == nil {
+		t.Fatal("expected non-nil sampler")
+	}
+}
+
+func TestSamplerFromEnv_AlwaysOff(t *testing.T) {
+	t.Setenv("OTEL_TRACES_SAMPLER", "always_off")
+	s := samplerFromEnv()
+	if s == nil {
+		t.Fatal("expected non-nil sampler")
+	}
+}
+
+func TestSamplerFromEnv_TraceIDRatio(t *testing.T) {
+	t.Setenv("OTEL_TRACES_SAMPLER", "traceidratio")
+	t.Setenv("OTEL_TRACES_SAMPLER_ARG", "0.5")
+	s := samplerFromEnv()
+	if s == nil {
+		t.Fatal("expected non-nil sampler")
+	}
+}
+
+func TestSamplerFromEnv_ParentBasedAlwaysOn(t *testing.T) {
+	t.Setenv("OTEL_TRACES_SAMPLER", "parentbased_always_on")
+	s := samplerFromEnv()
+	if s == nil {
+		t.Fatal("expected non-nil sampler")
+	}
+}
+
+func TestBuildResource_DefaultServiceName(t *testing.T) {
+	os.Unsetenv("OTEL_SERVICE_NAME")
+	os.Unsetenv("OTEL_RESOURCE_ATTRIBUTES")
+	m, _ := newTestManager(t)
+	defer m.Shutdown(context.Background())
+
+	r := m.buildResource()
+	if r == nil {
+		t.Fatal("expected non-nil resource")
+	}
+}
+
+func TestBuildResource_WithEnvServiceName(t *testing.T) {
+	t.Setenv("OTEL_SERVICE_NAME", "test-service")
+	t.Setenv("OTEL_RESOURCE_ATTRIBUTES", "deployment.environment=testing")
+	m, _ := newTestManager(t)
+	defer m.Shutdown(context.Background())
+
+	r := m.buildResource()
+	if r == nil {
+		t.Fatal("expected non-nil resource")
+	}
+
+	// Verify resource has attributes from env
+	var found bool
+	for _, attr := range r.Attributes() {
+		if attr.Key == attribute.Key("deployment.environment") && attr.Value.AsString() == "testing" {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("expected resource to contain deployment.environment=testing from OTEL_RESOURCE_ATTRIBUTES")
+	}
+}
+
+func TestShutdownWithTimeout(t *testing.T) {
+	m, _ := newTestManager(t)
+
+	// Should not panic or error
+	if err := m.ShutdownWithTimeout(5 * time.Second); err != nil {
+		t.Fatalf("ShutdownWithTimeout: %v", err)
+	}
+}
+
+func TestBuildTracerProvider_GRPCBadEndpoint(t *testing.T) {
+	t.Setenv("OTEL_EXPORTER_OTLP_PROTOCOL", "grpc")
+	m, _ := newTestManager(t)
+	defer m.Shutdown(context.Background())
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	tp, err := m.buildTracerProvider(ctx, Config{
+		Endpoint:      "invalid-endpoint:9999",
+		TracesEnabled: true,
+	})
+	if err != nil {
+		if tp != nil {
+			t.Fatal("expected nil TracerProvider on error")
+		}
+		return
+	}
+	if tp != nil {
+		tp.Shutdown(ctx)
+	}
+}
+
+// TestTraceDBQuery_Success verifies the helper runs the function and returns
+// its result.
+func TestTraceDBQuery_Success(t *testing.T) {
+	ctx := context.Background()
+	result, err := TraceDBQuery(ctx, "test_query", func(ctx context.Context) (string, error) {
+		return "hello", nil
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result != "hello" {
+		t.Fatalf("expected 'hello', got: %s", result)
+	}
+}
+
+// TestTraceDBQuery_Error verifies the helper propagates errors.
+func TestTraceDBQuery_Error(t *testing.T) {
+	ctx := context.Background()
+	_, err := TraceDBQuery(ctx, "test_query_err", func(ctx context.Context) (string, error) {
+		return "", fmt.Errorf("db error")
+	})
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if err.Error() != "db error" {
+		t.Fatalf("expected 'db error', got: %v", err)
 	}
 }

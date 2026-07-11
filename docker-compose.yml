@@ -8,6 +8,12 @@ services:
       - "6270:6270"
     env_file:
       - .env
+    environment:
+      # OpenTelemetry configuration (all optional; OTel SDK env vars)
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      - OTEL_EXPORTER_OTLP_PROTOCOL=${OTEL_EXPORTER_OTLP_PROTOCOL:-grpc}
+      - OTEL_SERVICE_NAME=${OTEL_SERVICE_NAME:-gitlens}
+      - OTEL_RESOURCE_ATTRIBUTES=${OTEL_RESOURCE_ATTRIBUTES:-}
     volumes:
       - gitlens-data:/app
       - gitlens-db:/db

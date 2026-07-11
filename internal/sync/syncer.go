@@ -14,6 +14,7 @@ import (
 	"gitlens/ent/repository"
 	"gitlens/ent/user"
 	"gitlens/internal/github"
+	"gitlens/internal/otel"
 	"gitlens/internal/provider"
 	"gitlens/internal/ws"
 )
@@ -306,9 +307,12 @@ func (s *Syncer) SyncOneByGithubID(ctx context.Context, githubID int64) {
 }
 
 func (s *Syncer) recordEvents(ctx context.Context, u *ent.User, repo *ent.Repository, beforeReleaseTag, beforeWorkflowStatus, beforeReleaseConclusion string) {
-	s.recordReleaseEvent(ctx, repo, beforeReleaseTag, beforeReleaseConclusion)
-	s.recordWorkflowFailureEvent(ctx, repo, beforeWorkflowStatus)
-	s.recordPRMergeEvents(ctx, u, repo)
+	otel.TraceDBQuery(ctx, "event_record", func(ctx context.Context) (struct{}, error) {
+		s.recordReleaseEvent(ctx, repo, beforeReleaseTag, beforeReleaseConclusion)
+		s.recordWorkflowFailureEvent(ctx, repo, beforeWorkflowStatus)
+		s.recordPRMergeEvents(ctx, u, repo)
+		return struct{}{}, nil
+	})
 }
 
 func (s *Syncer) recordReleaseEvent(ctx context.Context, repo *ent.Repository, beforeTag, beforeConclusion string) {
@@ -402,21 +406,23 @@ func (s *Syncer) recordPRMergeEvents(ctx context.Context, u *ent.User, repo *ent
 }
 
 func (s *Syncer) recordSnapshot(ctx context.Context, repo *ent.Repository) {
-	_, err := s.client.MetricSnapshot.Create().
-		SetRepoID(repo.ID).
-		SetTimestamp(time.Now()).
-		SetFeatCount(repo.FeatCount).
-		SetFixCount(repo.FixCount).
-		SetDocsCount(repo.DocsCount).
-		SetChoreCount(repo.ChoreCount).
-		SetOtherCommitCount(repo.OtherCommitCount).
-		SetTotalCommitsFetched(repo.TotalCommitsFetched).
-		SetReleaseCount(repo.ReleaseCount).
-		SetAvgLeadTimeHours(repo.AvgLeadTimeHours).
-		SetWorkflowSuccessCount(repo.WorkflowSuccessCount).
-		SetWorkflowFailureCount(repo.WorkflowFailureCount).
-		SetWorkflowStatus(repo.WorkflowStatus).
-		Save(ctx)
+	_, err := otel.TraceDBQuery(ctx, "snapshot_record", func(ctx context.Context) (*ent.MetricSnapshot, error) {
+		return s.client.MetricSnapshot.Create().
+			SetRepoID(repo.ID).
+			SetTimestamp(time.Now()).
+			SetFeatCount(repo.FeatCount).
+			SetFixCount(repo.FixCount).
+			SetDocsCount(repo.DocsCount).
+			SetChoreCount(repo.ChoreCount).
+			SetOtherCommitCount(repo.OtherCommitCount).
+			SetTotalCommitsFetched(repo.TotalCommitsFetched).
+			SetReleaseCount(repo.ReleaseCount).
+			SetAvgLeadTimeHours(repo.AvgLeadTimeHours).
+			SetWorkflowSuccessCount(repo.WorkflowSuccessCount).
+			SetWorkflowFailureCount(repo.WorkflowFailureCount).
+			SetWorkflowStatus(repo.WorkflowStatus).
+			Save(ctx)
+	})
 	if err != nil {
 		log.Printf("Error recording metric snapshot for %s: %v", repo.FullName, err)
 	}
