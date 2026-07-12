@@ -12,9 +12,9 @@ import (
 )
 
 var (
-	httpRequestsTotal  metric.Int64Counter
-	httpRequestDur     metric.Float64Histogram
-	metricsOnce        sync.Once
+	httpRequestsTotal metric.Int64Counter
+	httpRequestDur    metric.Float64Histogram
+	metricsOnce       sync.Once
 )
 
 // initMetrics instruments creates the OTel metric instruments for HTTP
