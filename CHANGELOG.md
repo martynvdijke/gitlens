@@ -1,3 +1,15 @@
+# [1.18.0](https://github.com/martynvdijke/gitlens/compare/v1.17.13...v1.18.0) (2026-07-12)
+
+
+### Bug Fixes
+
+* gofmt formatting in internal/otel/metrics.go ([2ddc227](https://github.com/martynvdijke/gitlens/commit/2ddc227511a69f60956cffced5952d873730cbbf))
+
+
+### Features
+
+* add OpenTelemetry support with gRPC/HTTP exporters, Gin tracing, and DB query tracing ([11f0f19](https://github.com/martynvdijke/gitlens/commit/11f0f19a12b3f7e4f62ad3c4e55be103ce0ba2a5))
+
 ## [1.17.13](https://github.com/martynvdijke/gitlens/compare/v1.17.12...v1.17.13) (2026-07-09)
 
 
