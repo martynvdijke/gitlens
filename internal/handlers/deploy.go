@@ -10,13 +10,13 @@ import (
 
 // deployDashboardData is passed to the deploy_tab template.
 type deployDashboardData struct {
-	ActiveTab    string
-	Enabled      bool
-	Backend      string
-	GotifyOn     bool
-	Total        int
-	Targets      []deployTargetRow
-	DockerErr    string // non-empty if Docker discovery failed
+	ActiveTab string
+	Enabled   bool
+	Backend   string
+	GotifyOn  bool
+	Total     int
+	Targets   []deployTargetRow
+	DockerErr string // non-empty if Docker discovery failed
 }
 
 type deployTargetRow struct {
