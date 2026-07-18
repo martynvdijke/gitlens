@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"gitlens/ent/adminconfig"
+	"gitlens/ent/commitactivity"
 	"gitlens/ent/event"
 	"gitlens/ent/metricsnapshot"
 	"gitlens/ent/predicate"
@@ -29,6 +30,7 @@ const (
 
 	// Node types.
 	TypeAdminConfig    = "AdminConfig"
+	TypeCommitActivity = "CommitActivity"
 	TypeEvent          = "Event"
 	TypeMetricSnapshot = "MetricSnapshot"
 	TypeRepository     = "Repository"
@@ -657,6 +659,509 @@ func (m *AdminConfigMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *AdminConfigMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown AdminConfig edge %s", name)
+}
+
+// CommitActivityMutation represents an operation that mutates the CommitActivity nodes in the graph.
+type CommitActivityMutation struct {
+	config
+	op              Op
+	typ             string
+	id              *int
+	repo_id         *int
+	addrepo_id      *int
+	date            *time.Time
+	commit_count    *int
+	addcommit_count *int
+	clearedFields   map[string]struct{}
+	done            bool
+	oldValue        func(context.Context) (*CommitActivity, error)
+	predicates      []predicate.CommitActivity
+}
+
+var _ ent.Mutation = (*CommitActivityMutation)(nil)
+
+// commitactivityOption allows management of the mutation configuration using functional options.
+type commitactivityOption func(*CommitActivityMutation)
+
+// newCommitActivityMutation creates new mutation for the CommitActivity entity.
+func newCommitActivityMutation(c config, op Op, opts ...commitactivityOption) *CommitActivityMutation {
+	m := &CommitActivityMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeCommitActivity,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withCommitActivityID sets the ID field of the mutation.
+func withCommitActivityID(id int) commitactivityOption {
+	return func(m *CommitActivityMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *CommitActivity
+		)
+		m.oldValue = func(ctx context.Context) (*CommitActivity, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().CommitActivity.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withCommitActivity sets the old CommitActivity of the mutation.
+func withCommitActivity(node *CommitActivity) commitactivityOption {
+	return func(m *CommitActivityMutation) {
+		m.oldValue = func(context.Context) (*CommitActivity, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m CommitActivityMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m CommitActivityMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *CommitActivityMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *CommitActivityMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().CommitActivity.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetRepoID sets the "repo_id" field.
+func (m *CommitActivityMutation) SetRepoID(i int) {
+	m.repo_id = &i
+	m.addrepo_id = nil
+}
+
+// RepoID returns the value of the "repo_id" field in the mutation.
+func (m *CommitActivityMutation) RepoID() (r int, exists bool) {
+	v := m.repo_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRepoID returns the old "repo_id" field's value of the CommitActivity entity.
+// If the CommitActivity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommitActivityMutation) OldRepoID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRepoID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRepoID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRepoID: %w", err)
+	}
+	return oldValue.RepoID, nil
+}
+
+// AddRepoID adds i to the "repo_id" field.
+func (m *CommitActivityMutation) AddRepoID(i int) {
+	if m.addrepo_id != nil {
+		*m.addrepo_id += i
+	} else {
+		m.addrepo_id = &i
+	}
+}
+
+// AddedRepoID returns the value that was added to the "repo_id" field in this mutation.
+func (m *CommitActivityMutation) AddedRepoID() (r int, exists bool) {
+	v := m.addrepo_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetRepoID resets all changes to the "repo_id" field.
+func (m *CommitActivityMutation) ResetRepoID() {
+	m.repo_id = nil
+	m.addrepo_id = nil
+}
+
+// SetDate sets the "date" field.
+func (m *CommitActivityMutation) SetDate(t time.Time) {
+	m.date = &t
+}
+
+// Date returns the value of the "date" field in the mutation.
+func (m *CommitActivityMutation) Date() (r time.Time, exists bool) {
+	v := m.date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDate returns the old "date" field's value of the CommitActivity entity.
+// If the CommitActivity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommitActivityMutation) OldDate(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDate: %w", err)
+	}
+	return oldValue.Date, nil
+}
+
+// ResetDate resets all changes to the "date" field.
+func (m *CommitActivityMutation) ResetDate() {
+	m.date = nil
+}
+
+// SetCommitCount sets the "commit_count" field.
+func (m *CommitActivityMutation) SetCommitCount(i int) {
+	m.commit_count = &i
+	m.addcommit_count = nil
+}
+
+// CommitCount returns the value of the "commit_count" field in the mutation.
+func (m *CommitActivityMutation) CommitCount() (r int, exists bool) {
+	v := m.commit_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCommitCount returns the old "commit_count" field's value of the CommitActivity entity.
+// If the CommitActivity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CommitActivityMutation) OldCommitCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCommitCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCommitCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCommitCount: %w", err)
+	}
+	return oldValue.CommitCount, nil
+}
+
+// AddCommitCount adds i to the "commit_count" field.
+func (m *CommitActivityMutation) AddCommitCount(i int) {
+	if m.addcommit_count != nil {
+		*m.addcommit_count += i
+	} else {
+		m.addcommit_count = &i
+	}
+}
+
+// AddedCommitCount returns the value that was added to the "commit_count" field in this mutation.
+func (m *CommitActivityMutation) AddedCommitCount() (r int, exists bool) {
+	v := m.addcommit_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCommitCount resets all changes to the "commit_count" field.
+func (m *CommitActivityMutation) ResetCommitCount() {
+	m.commit_count = nil
+	m.addcommit_count = nil
+}
+
+// Where appends a list predicates to the CommitActivityMutation builder.
+func (m *CommitActivityMutation) Where(ps ...predicate.CommitActivity) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the CommitActivityMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *CommitActivityMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.CommitActivity, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *CommitActivityMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *CommitActivityMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (CommitActivity).
+func (m *CommitActivityMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *CommitActivityMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.repo_id != nil {
+		fields = append(fields, commitactivity.FieldRepoID)
+	}
+	if m.date != nil {
+		fields = append(fields, commitactivity.FieldDate)
+	}
+	if m.commit_count != nil {
+		fields = append(fields, commitactivity.FieldCommitCount)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *CommitActivityMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case commitactivity.FieldRepoID:
+		return m.RepoID()
+	case commitactivity.FieldDate:
+		return m.Date()
+	case commitactivity.FieldCommitCount:
+		return m.CommitCount()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *CommitActivityMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case commitactivity.FieldRepoID:
+		return m.OldRepoID(ctx)
+	case commitactivity.FieldDate:
+		return m.OldDate(ctx)
+	case commitactivity.FieldCommitCount:
+		return m.OldCommitCount(ctx)
+	}
+	return nil, fmt.Errorf("unknown CommitActivity field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CommitActivityMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case commitactivity.FieldRepoID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRepoID(v)
+		return nil
+	case commitactivity.FieldDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDate(v)
+		return nil
+	case commitactivity.FieldCommitCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCommitCount(v)
+		return nil
+	}
+	return fmt.Errorf("unknown CommitActivity field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *CommitActivityMutation) AddedFields() []string {
+	var fields []string
+	if m.addrepo_id != nil {
+		fields = append(fields, commitactivity.FieldRepoID)
+	}
+	if m.addcommit_count != nil {
+		fields = append(fields, commitactivity.FieldCommitCount)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *CommitActivityMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case commitactivity.FieldRepoID:
+		return m.AddedRepoID()
+	case commitactivity.FieldCommitCount:
+		return m.AddedCommitCount()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CommitActivityMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case commitactivity.FieldRepoID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddRepoID(v)
+		return nil
+	case commitactivity.FieldCommitCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCommitCount(v)
+		return nil
+	}
+	return fmt.Errorf("unknown CommitActivity numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *CommitActivityMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *CommitActivityMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *CommitActivityMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown CommitActivity nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *CommitActivityMutation) ResetField(name string) error {
+	switch name {
+	case commitactivity.FieldRepoID:
+		m.ResetRepoID()
+		return nil
+	case commitactivity.FieldDate:
+		m.ResetDate()
+		return nil
+	case commitactivity.FieldCommitCount:
+		m.ResetCommitCount()
+		return nil
+	}
+	return fmt.Errorf("unknown CommitActivity field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *CommitActivityMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *CommitActivityMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *CommitActivityMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *CommitActivityMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *CommitActivityMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *CommitActivityMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *CommitActivityMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown CommitActivity unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *CommitActivityMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown CommitActivity edge %s", name)
 }
 
 // EventMutation represents an operation that mutates the Event nodes in the graph.

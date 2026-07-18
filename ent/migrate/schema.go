@@ -24,6 +24,31 @@ var (
 		Columns:    AdminConfigsColumns,
 		PrimaryKey: []*schema.Column{AdminConfigsColumns[0]},
 	}
+	// CommitActivitiesColumns holds the columns for the "commit_activities" table.
+	CommitActivitiesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "repo_id", Type: field.TypeInt},
+		{Name: "date", Type: field.TypeTime},
+		{Name: "commit_count", Type: field.TypeInt},
+	}
+	// CommitActivitiesTable holds the schema information for the "commit_activities" table.
+	CommitActivitiesTable = &schema.Table{
+		Name:       "commit_activities",
+		Columns:    CommitActivitiesColumns,
+		PrimaryKey: []*schema.Column{CommitActivitiesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "commitactivity_repo_id_date",
+				Unique:  true,
+				Columns: []*schema.Column{CommitActivitiesColumns[1], CommitActivitiesColumns[2]},
+			},
+			{
+				Name:    "commitactivity_date",
+				Unique:  false,
+				Columns: []*schema.Column{CommitActivitiesColumns[2]},
+			},
+		},
+	}
 	// EventsColumns holds the columns for the "events" table.
 	EventsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -202,6 +227,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AdminConfigsTable,
+		CommitActivitiesTable,
 		EventsTable,
 		MetricSnapshotsTable,
 		RepositoriesTable,

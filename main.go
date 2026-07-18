@@ -20,8 +20,10 @@ import (
 	"gitlens/ent/migrate"
 	"gitlens/ent/repository"
 	"gitlens/ent/user"
+	"gitlens/internal/deploy"
 	"gitlens/internal/forgejo"
 	"gitlens/internal/github"
+	"gitlens/internal/gotify"
 	"gitlens/internal/handlers"
 	"gitlens/internal/middleware"
 	"gitlens/internal/otel"
@@ -236,8 +238,19 @@ func main() {
 	badgeHandler := handlers.NewBadgeHandler(client)
 	gitHubAppHandler := handlers.NewGitHubAppHandler(client)
 	webhookHandler := handlers.NewWebhookHandler(client, syncer, os.Getenv("GITHUB_WEBHOOK_SECRET"))
+	// Deploy subsystem: release webhook → Docker pull/restart + Gotify notification.
+	// Safe default: no deploy targets → deployer is nil, release events no-op.
+	if targets, err := deploy.LoadAllTargets(); err != nil {
+		log.Printf("Deploy: error loading targets: %v (deploy disabled)", err)
+	} else if len(targets) > 0 {
+		d := deploy.NewDeployer()
+		g := gotify.New()
+		webhookHandler.SetDeployer(targets, d, g)
+		log.Printf("Deploy: %d target(s) configured, backend=%s, gotify=%v", len(targets), deploy.DeployBackend(), g != nil)
+	}
 	feedHandler := handlers.NewFeedHandler(client)
 	trendsHandler := handlers.NewTrendsHandler(client)
+	yearOverviewHandler := handlers.NewYearOverviewHandler(client)
 	adminHandler := handlers.NewAdminHandler(client, otelManager)
 
 	r := gin.New()
@@ -295,6 +308,8 @@ func main() {
 
 		authed.GET("/metrics/history", trendsHandler.MetricsHistory)
 		authed.GET("/trends", middleware.HTMXOnly(), trendsHandler.TrendsPage)
+		authed.GET("/year-overview", middleware.HTMXOnly(), yearOverviewHandler.YearOverview)
+		authed.GET("/year-overview/stats", yearOverviewHandler.Stats)
 		authed.GET("/charts/data", chartHandler.Data)
 		authed.GET("/feed", feedHandler.Feed)
 		authed.POST("/feed/filter", feedHandler.FeedFilter)

@@ -12,6 +12,7 @@ import (
 	"gitlens/ent/migrate"
 
 	"gitlens/ent/adminconfig"
+	"gitlens/ent/commitactivity"
 	"gitlens/ent/event"
 	"gitlens/ent/metricsnapshot"
 	"gitlens/ent/repository"
@@ -30,6 +31,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// AdminConfig is the client for interacting with the AdminConfig builders.
 	AdminConfig *AdminConfigClient
+	// CommitActivity is the client for interacting with the CommitActivity builders.
+	CommitActivity *CommitActivityClient
 	// Event is the client for interacting with the Event builders.
 	Event *EventClient
 	// MetricSnapshot is the client for interacting with the MetricSnapshot builders.
@@ -50,6 +53,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.AdminConfig = NewAdminConfigClient(c.config)
+	c.CommitActivity = NewCommitActivityClient(c.config)
 	c.Event = NewEventClient(c.config)
 	c.MetricSnapshot = NewMetricSnapshotClient(c.config)
 	c.Repository = NewRepositoryClient(c.config)
@@ -147,6 +151,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:            ctx,
 		config:         cfg,
 		AdminConfig:    NewAdminConfigClient(cfg),
+		CommitActivity: NewCommitActivityClient(cfg),
 		Event:          NewEventClient(cfg),
 		MetricSnapshot: NewMetricSnapshotClient(cfg),
 		Repository:     NewRepositoryClient(cfg),
@@ -171,6 +176,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:            ctx,
 		config:         cfg,
 		AdminConfig:    NewAdminConfigClient(cfg),
+		CommitActivity: NewCommitActivityClient(cfg),
 		Event:          NewEventClient(cfg),
 		MetricSnapshot: NewMetricSnapshotClient(cfg),
 		Repository:     NewRepositoryClient(cfg),
@@ -203,21 +209,23 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.AdminConfig.Use(hooks...)
-	c.Event.Use(hooks...)
-	c.MetricSnapshot.Use(hooks...)
-	c.Repository.Use(hooks...)
-	c.User.Use(hooks...)
+	for _, n := range []interface{ Use(...Hook) }{
+		c.AdminConfig, c.CommitActivity, c.Event, c.MetricSnapshot, c.Repository,
+		c.User,
+	} {
+		n.Use(hooks...)
+	}
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
-	c.AdminConfig.Intercept(interceptors...)
-	c.Event.Intercept(interceptors...)
-	c.MetricSnapshot.Intercept(interceptors...)
-	c.Repository.Intercept(interceptors...)
-	c.User.Intercept(interceptors...)
+	for _, n := range []interface{ Intercept(...Interceptor) }{
+		c.AdminConfig, c.CommitActivity, c.Event, c.MetricSnapshot, c.Repository,
+		c.User,
+	} {
+		n.Intercept(interceptors...)
+	}
 }
 
 // Mutate implements the ent.Mutator interface.
@@ -225,6 +233,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *AdminConfigMutation:
 		return c.AdminConfig.mutate(ctx, m)
+	case *CommitActivityMutation:
+		return c.CommitActivity.mutate(ctx, m)
 	case *EventMutation:
 		return c.Event.mutate(ctx, m)
 	case *MetricSnapshotMutation:
@@ -368,6 +378,139 @@ func (c *AdminConfigClient) mutate(ctx context.Context, m *AdminConfigMutation) 
 		return (&AdminConfigDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown AdminConfig mutation op: %q", m.Op())
+	}
+}
+
+// CommitActivityClient is a client for the CommitActivity schema.
+type CommitActivityClient struct {
+	config
+}
+
+// NewCommitActivityClient returns a client for the CommitActivity from the given config.
+func NewCommitActivityClient(c config) *CommitActivityClient {
+	return &CommitActivityClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `commitactivity.Hooks(f(g(h())))`.
+func (c *CommitActivityClient) Use(hooks ...Hook) {
+	c.hooks.CommitActivity = append(c.hooks.CommitActivity, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `commitactivity.Intercept(f(g(h())))`.
+func (c *CommitActivityClient) Intercept(interceptors ...Interceptor) {
+	c.inters.CommitActivity = append(c.inters.CommitActivity, interceptors...)
+}
+
+// Create returns a builder for creating a CommitActivity entity.
+func (c *CommitActivityClient) Create() *CommitActivityCreate {
+	mutation := newCommitActivityMutation(c.config, OpCreate)
+	return &CommitActivityCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of CommitActivity entities.
+func (c *CommitActivityClient) CreateBulk(builders ...*CommitActivityCreate) *CommitActivityCreateBulk {
+	return &CommitActivityCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *CommitActivityClient) MapCreateBulk(slice any, setFunc func(*CommitActivityCreate, int)) *CommitActivityCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &CommitActivityCreateBulk{err: fmt.Errorf("calling to CommitActivityClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*CommitActivityCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &CommitActivityCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for CommitActivity.
+func (c *CommitActivityClient) Update() *CommitActivityUpdate {
+	mutation := newCommitActivityMutation(c.config, OpUpdate)
+	return &CommitActivityUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *CommitActivityClient) UpdateOne(_m *CommitActivity) *CommitActivityUpdateOne {
+	mutation := newCommitActivityMutation(c.config, OpUpdateOne, withCommitActivity(_m))
+	return &CommitActivityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *CommitActivityClient) UpdateOneID(id int) *CommitActivityUpdateOne {
+	mutation := newCommitActivityMutation(c.config, OpUpdateOne, withCommitActivityID(id))
+	return &CommitActivityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for CommitActivity.
+func (c *CommitActivityClient) Delete() *CommitActivityDelete {
+	mutation := newCommitActivityMutation(c.config, OpDelete)
+	return &CommitActivityDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *CommitActivityClient) DeleteOne(_m *CommitActivity) *CommitActivityDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *CommitActivityClient) DeleteOneID(id int) *CommitActivityDeleteOne {
+	builder := c.Delete().Where(commitactivity.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &CommitActivityDeleteOne{builder}
+}
+
+// Query returns a query builder for CommitActivity.
+func (c *CommitActivityClient) Query() *CommitActivityQuery {
+	return &CommitActivityQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeCommitActivity},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a CommitActivity entity by its id.
+func (c *CommitActivityClient) Get(ctx context.Context, id int) (*CommitActivity, error) {
+	return c.Query().Where(commitactivity.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *CommitActivityClient) GetX(ctx context.Context, id int) *CommitActivity {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *CommitActivityClient) Hooks() []Hook {
+	return c.hooks.CommitActivity
+}
+
+// Interceptors returns the client interceptors.
+func (c *CommitActivityClient) Interceptors() []Interceptor {
+	return c.inters.CommitActivity
+}
+
+func (c *CommitActivityClient) mutate(ctx context.Context, m *CommitActivityMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&CommitActivityCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&CommitActivityUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&CommitActivityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&CommitActivityDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown CommitActivity mutation op: %q", m.Op())
 	}
 }
 
@@ -938,9 +1081,10 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		AdminConfig, Event, MetricSnapshot, Repository, User []ent.Hook
+		AdminConfig, CommitActivity, Event, MetricSnapshot, Repository, User []ent.Hook
 	}
 	inters struct {
-		AdminConfig, Event, MetricSnapshot, Repository, User []ent.Interceptor
+		AdminConfig, CommitActivity, Event, MetricSnapshot, Repository,
+		User []ent.Interceptor
 	}
 )

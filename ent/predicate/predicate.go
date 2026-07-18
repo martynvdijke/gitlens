@@ -9,6 +9,9 @@ import (
 // AdminConfig is the predicate function for adminconfig builders.
 type AdminConfig func(*sql.Selector)
 
+// CommitActivity is the predicate function for commitactivity builders.
+type CommitActivity func(*sql.Selector)
+
 // Event is the predicate function for event builders.
 type Event func(*sql.Selector)
 

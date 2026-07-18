@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"gitlens/ent"
+	"gitlens/ent/commitactivity"
 	"gitlens/ent/event"
 	"gitlens/ent/repository"
 	"gitlens/ent/user"
@@ -197,6 +198,60 @@ func (s *Syncer) syncCommits(ctx context.Context, p provider.Provider, token str
 		updated.SetDocsCount(repo.DocsCount + docs)
 		updated.SetChoreCount(repo.ChoreCount + chore)
 		updated.SetOtherCommitCount(repo.OtherCommitCount + other)
+	}
+
+	// Bucket commits by day and upsert activity rows (non-fatal on error)
+	dayCounts := bucketCommitsByDay(commits)
+	if len(dayCounts) > 0 {
+		s.upsertCommitActivity(ctx, repo.ID, dayCounts)
+	}
+}
+
+// bucketCommitsByDay groups commits by UTC calendar day and returns a map of date string -> count.
+func bucketCommitsByDay(commits []*github.Commit) map[string]int {
+	dayCounts := make(map[string]int, len(commits))
+	for _, c := range commits {
+		day := c.Date.UTC().Format("2006-01-02")
+		dayCounts[day]++
+	}
+	return dayCounts
+}
+
+// upsertCommitActivity upserts CommitActivity rows for the given repo and day counts.
+// Existing rows are incremented; new rows are created. Errors are logged but non-fatal.
+func (s *Syncer) upsertCommitActivity(ctx context.Context, repoID int, dayCounts map[string]int) {
+	for dayStr, count := range dayCounts {
+		day, err := time.Parse("2006-01-02", dayStr)
+		if err != nil {
+			log.Printf("Error parsing date %q: %v", dayStr, err)
+			continue
+		}
+
+		existing, err := s.client.CommitActivity.Query().
+			Where(commitactivity.RepoID(repoID), commitactivity.Date(day)).
+			Only(ctx)
+		if err != nil {
+			if !ent.IsNotFound(err) {
+				log.Printf("Error querying commit activity for repo %d, date %s: %v", repoID, dayStr, err)
+				continue
+			}
+			// Create new row
+			_, err = s.client.CommitActivity.Create().
+				SetRepoID(repoID).
+				SetDate(day).
+				SetCommitCount(count).
+				Save(ctx)
+			if err != nil {
+				log.Printf("Error creating commit activity for repo %d, date %s: %v", repoID, dayStr, err)
+			}
+			continue
+		}
+
+		// Update existing row
+		_, err = existing.Update().AddCommitCount(count).Save(ctx)
+		if err != nil {
+			log.Printf("Error updating commit activity for repo %d, date %s: %v", repoID, dayStr, err)
+		}
 	}
 }
 

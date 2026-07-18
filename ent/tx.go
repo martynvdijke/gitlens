@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// AdminConfig is the client for interacting with the AdminConfig builders.
 	AdminConfig *AdminConfigClient
+	// CommitActivity is the client for interacting with the CommitActivity builders.
+	CommitActivity *CommitActivityClient
 	// Event is the client for interacting with the Event builders.
 	Event *EventClient
 	// MetricSnapshot is the client for interacting with the MetricSnapshot builders.
@@ -154,6 +156,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.AdminConfig = NewAdminConfigClient(tx.config)
+	tx.CommitActivity = NewCommitActivityClient(tx.config)
 	tx.Event = NewEventClient(tx.config)
 	tx.MetricSnapshot = NewMetricSnapshotClient(tx.config)
 	tx.Repository = NewRepositoryClient(tx.config)

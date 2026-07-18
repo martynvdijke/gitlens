@@ -6,11 +6,14 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"gitlens/ent/enttest"
+	"gitlens/internal/deploy"
 	"gitlens/internal/github"
 	"gitlens/internal/provider"
 	"gitlens/internal/sync"
@@ -29,6 +32,14 @@ func newTestWebhookHandler(t *testing.T, secret string) *WebhookHandler {
 	syncer := sync.NewSyncer(client, ghClient, map[string]provider.Provider{"github": provider.NewGitHubAdapter(ghClient)}, hub)
 	return NewWebhookHandler(client, syncer, secret)
 }
+
+func signPayload(secret, payload string) string {
+	mac := hmac.New(sha256.New, []byte(secret))
+	mac.Write([]byte(payload))
+	return "sha256=" + hex.EncodeToString(mac.Sum(nil))
+}
+
+// ---- Push event tests ----
 
 func TestHandlePush_NonPushEvent(t *testing.T) {
 	handler := newTestWebhookHandler(t, "")
@@ -102,9 +113,7 @@ func TestHandlePush_WithSecret_ValidSignature(t *testing.T) {
 		SetDefaultBranch("main").SetUserID(u.ID).
 		Save(context.Background())
 
-	mac := hmac.New(sha256.New, []byte(secret))
-	mac.Write([]byte(payload))
-	sig := "sha256=" + hex.EncodeToString(mac.Sum(nil))
+	sig := signPayload(secret, payload)
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -173,5 +182,239 @@ func TestHandlePush_NoSecret(t *testing.T) {
 
 	if w.Code != http.StatusOK {
 		t.Fatalf("expected 200, got %d", w.Code)
+	}
+}
+
+// ---- Release event tests ----
+
+// fakeDeployer captures deploy calls for testing.
+// done is closed after the first PullAndUpdate call completes.
+type fakeDeployer struct {
+	calls []struct {
+		Target deploy.Target
+		Tag    string
+	}
+	done chan struct{}
+}
+
+func newFakeDeployer() *fakeDeployer {
+	return &fakeDeployer{done: make(chan struct{})}
+}
+
+func (f *fakeDeployer) PullAndUpdate(_ context.Context, target deploy.Target, tag string) error {
+	defer func() { close(f.done) }()
+	f.calls = append(f.calls, struct {
+		Target deploy.Target
+		Tag    string
+	}{target, tag})
+	return nil
+}
+
+func (f *fakeDeployer) waitForCall() {
+	<-f.done
+}
+
+func makeReleasePayload(action, tag, repo string, prerelease bool) string {
+	p, _ := json.Marshal(map[string]interface{}{
+		"action": action,
+		"release": map[string]interface{}{
+			"tag_name":    tag,
+			"prerelease":  prerelease,
+		},
+		"repository": map[string]interface{}{
+			"full_name": repo,
+		},
+	})
+	return string(p)
+}
+
+func TestHandleRelease_Published_MatchingTarget(t *testing.T) {
+	handler := newTestWebhookHandler(t, "")
+	target := deploy.Target{
+		Repository:  "test/repo",
+		Image:       "ghcr.io/test/repo",
+		Container:   "test-app",
+		TagStrategy: deploy.TagStrategyReleaseTag,
+	}
+	fake := newFakeDeployer()
+	handler.SetDeployer([]deploy.Target{target}, fake, nil)
+
+	payload := makeReleasePayload("published", "v1.2.3", "test/repo", false)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest("POST", "/webhook/github", bytes.NewReader([]byte(payload)))
+	c.Request.Header.Set("X-GitHub-Event", "release")
+	handler.HandlePush(c)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+
+	fake.waitForCall()
+	if len(fake.calls) != 1 {
+		t.Fatalf("expected 1 deploy call, got %d", len(fake.calls))
+	}
+	if fake.calls[0].Tag != "1.2.3" {
+		t.Fatalf("expected tag 1.2.3, got %s", fake.calls[0].Tag)
+	}
+}
+
+func TestHandleRelease_WithSecret_ValidSignature(t *testing.T) {
+	secret := "deploy-secret"
+	handler := newTestWebhookHandler(t, secret)
+	target := deploy.Target{
+		Repository:  "test/repo",
+		Image:       "img",
+		Container:   "c",
+		TagStrategy: deploy.TagStrategyLatest,
+	}
+	fake := newFakeDeployer()
+	handler.SetDeployer([]deploy.Target{target}, fake, nil)
+
+	payload := makeReleasePayload("published", "v2.0.0", "test/repo", false)
+
+	sig := signPayload(secret, payload)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest("POST", "/webhook/github", bytes.NewReader([]byte(payload)))
+	c.Request.Header.Set("X-GitHub-Event", "release")
+	c.Request.Header.Set("X-Hub-Signature-256", sig)
+	handler.HandlePush(c)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+
+	fake.waitForCall()
+	if len(fake.calls) != 1 {
+		t.Fatalf("expected 1 deploy call, got %d", len(fake.calls))
+	}
+	if fake.calls[0].Tag != "latest" {
+		t.Fatalf("expected tag latest, got %s", fake.calls[0].Tag)
+	}
+}
+
+func TestHandleRelease_NoTargets(t *testing.T) {
+	handler := newTestWebhookHandler(t, "")
+	// No SetDeployer called — deployer is nil, targets empty
+
+	payload := makeReleasePayload("published", "v1.0.0", "any/repo", false)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest("POST", "/webhook/github", bytes.NewReader([]byte(payload)))
+	c.Request.Header.Set("X-GitHub-Event", "release")
+	handler.HandlePush(c)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+}
+
+func TestHandleRelease_UnmatchedRepo(t *testing.T) {
+	handler := newTestWebhookHandler(t, "")
+	target := deploy.Target{
+		Repository:  "org/alpha",
+		Image:       "img",
+		Container:   "c",
+		TagStrategy: deploy.TagStrategyReleaseTag,
+	}
+	fake := newFakeDeployer()
+	handler.SetDeployer([]deploy.Target{target}, fake, nil)
+
+	payload := makeReleasePayload("published", "v1.0.0", "org/gamma", false)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest("POST", "/webhook/github", bytes.NewReader([]byte(payload)))
+	c.Request.Header.Set("X-GitHub-Event", "release")
+	handler.HandlePush(c)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	if len(fake.calls) != 0 {
+		t.Fatalf("expected 0 deploy calls, got %d", len(fake.calls))
+	}
+}
+
+func TestHandleRelease_NonPublishedAction(t *testing.T) {
+	handler := newTestWebhookHandler(t, "")
+	target := deploy.Target{
+		Repository:  "test/repo",
+		Image:       "img",
+		Container:   "c",
+		TagStrategy: deploy.TagStrategyReleaseTag,
+	}
+	fake := &fakeDeployer{}
+	handler.SetDeployer([]deploy.Target{target}, fake, nil)
+
+	payload := makeReleasePayload("created", "v1.0.0", "test/repo", false)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest("POST", "/webhook/github", bytes.NewReader([]byte(payload)))
+	c.Request.Header.Set("X-GitHub-Event", "release")
+	handler.HandlePush(c)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	if len(fake.calls) != 0 {
+		t.Fatalf("expected 0 deploy calls for non-published action, got %d", len(fake.calls))
+	}
+}
+
+func TestHandleRelease_PrereleaseSkipped(t *testing.T) {
+	os.Unsetenv("DEPLOY_ALLOW_PRERELEASE")
+
+	handler := newTestWebhookHandler(t, "")
+	target := deploy.Target{
+		Repository:  "test/repo",
+		Image:       "img",
+		Container:   "c",
+		TagStrategy: deploy.TagStrategyReleaseTag,
+	}
+	fake := &fakeDeployer{}
+	handler.SetDeployer([]deploy.Target{target}, fake, nil)
+
+	payload := makeReleasePayload("published", "v1.0.0-rc.1", "test/repo", true)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest("POST", "/webhook/github", bytes.NewReader([]byte(payload)))
+	c.Request.Header.Set("X-GitHub-Event", "release")
+	handler.HandlePush(c)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	if len(fake.calls) != 0 {
+		t.Fatalf("expected 0 deploy calls for prerelease, got %d", len(fake.calls))
+	}
+}
+
+func TestHandleRelease_BadSignature(t *testing.T) {
+	handler := newTestWebhookHandler(t, "secret")
+	fake := &fakeDeployer{}
+	handler.SetDeployer([]deploy.Target{{Repository: "test/repo", Image: "img", Container: "c"}}, fake, nil)
+
+	payload := makeReleasePayload("published", "v1.0.0", "test/repo", false)
+
+	w := httptest.NewRecorder()
+	engine := gin.New()
+	engine.POST("/webhook/github", handler.HandlePush)
+	req := httptest.NewRequest("POST", "/webhook/github", bytes.NewReader([]byte(payload)))
+	req.Header.Set("X-GitHub-Event", "release")
+	req.Header.Set("X-Hub-Signature-256", "sha256=badsig")
+	engine.ServeHTTP(w, req)
+
+	if w.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401, got %d", w.Code)
+	}
+	if len(fake.calls) != 0 {
+		t.Fatalf("expected 0 deploy calls after bad sig, got %d", len(fake.calls))
 	}
 }

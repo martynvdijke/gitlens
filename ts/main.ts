@@ -1,6 +1,7 @@
 import { toggleTheme, initTheme } from './theme.js';
 import { loadChartData } from './charts.js';
 import { loadTrendsData } from './trends.js';
+import { loadYearOverviewData } from './year-overview.js';
 import { forgejoLogin } from './forgejo.js';
 import { copyToClipboard } from './clipboard.js';
 
@@ -10,6 +11,7 @@ import { copyToClipboard } from './clipboard.js';
 (window as any).copyToClipboard = copyToClipboard;
 (window as any).loadChartData = loadChartData;
 (window as any).loadTrendsData = loadTrendsData;
+(window as any).loadYearOverviewData = loadYearOverviewData;
 
 // Initialize theme and tooltips on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
@@ -33,6 +35,9 @@ document.addEventListener('htmx:afterSwap', (e: Event) => {
     if (target && target.querySelector('[data-trends-init]')) {
         loadTrendsData();
     }
+    if (target && target.querySelector('[data-year-overview-init]')) {
+        loadYearOverviewData();
+    }
 });
 
 // Auto-init trends when dropdowns change (delegated event listener)
@@ -40,6 +45,9 @@ document.addEventListener('change', (e: Event) => {
     const el = e.target as HTMLElement;
     if (el.id === 'trends-range' || el.id === 'trends-repo') {
         loadTrendsData();
+    }
+    if (el.id === 'year-select' || el.id === 'year-repo') {
+        loadYearOverviewData();
     }
 });
 

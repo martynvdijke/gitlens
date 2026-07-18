@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"gitlens/ent/adminconfig"
+	"gitlens/ent/commitactivity"
 	"gitlens/ent/event"
 	"gitlens/ent/metricsnapshot"
 	"gitlens/ent/repository"
@@ -78,6 +79,7 @@ func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			adminconfig.Table:    adminconfig.ValidColumn,
+			commitactivity.Table: commitactivity.ValidColumn,
 			event.Table:          event.ValidColumn,
 			metricsnapshot.Table: metricsnapshot.ValidColumn,
 			repository.Table:     repository.ValidColumn,

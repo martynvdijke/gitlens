@@ -708,6 +708,115 @@ func TestSyncOne_UserNotFound(t *testing.T) {
 	}
 }
 
+func TestBucketCommitsByDay_SameDay(t *testing.T) {
+	commits := []*github.Commit{
+		{SHA: "a", Message: "feat: one", Date: time.Date(2025, 6, 1, 10, 0, 0, 0, time.UTC)},
+		{SHA: "b", Message: "feat: two", Date: time.Date(2025, 6, 1, 14, 30, 0, 0, time.UTC)},
+	}
+	days := bucketCommitsByDay(commits)
+	if len(days) != 1 {
+		t.Fatalf("expected 1 day, got %d", len(days))
+	}
+	if days["2025-06-01"] != 2 {
+		t.Errorf("expected 2 commits on 2025-06-01, got %d", days["2025-06-01"])
+	}
+}
+
+func TestBucketCommitsByDay_MultiDay(t *testing.T) {
+	commits := []*github.Commit{
+		{SHA: "a", Message: "day1", Date: time.Date(2025, 6, 1, 23, 59, 59, 0, time.UTC)},
+		{SHA: "b", Message: "day2", Date: time.Date(2025, 6, 2, 0, 0, 1, 0, time.UTC)},
+		{SHA: "c", Message: "day2b", Date: time.Date(2025, 6, 2, 12, 0, 0, 0, time.UTC)},
+	}
+	days := bucketCommitsByDay(commits)
+	if len(days) != 2 {
+		t.Fatalf("expected 2 days, got %d", len(days))
+	}
+	if days["2025-06-01"] != 1 {
+		t.Errorf("expected 1 on 2025-06-01, got %d", days["2025-06-01"])
+	}
+	if days["2025-06-02"] != 2 {
+		t.Errorf("expected 2 on 2025-06-02, got %d", days["2025-06-02"])
+	}
+}
+
+func TestUpsertCommitActivity_Incremental(t *testing.T) {
+	syncer, client := newTestSyncer(t)
+	ctx := context.Background()
+
+	u, err := client.User.Create().
+		SetGithubID(1000).
+		SetLogin("acttest").
+		SetAccessToken("token").
+		Save(ctx)
+	if err != nil {
+		t.Fatalf("create user: %v", err)
+	}
+
+	repo, err := client.Repository.Create().
+		SetGithubID(10).SetOwner("user").SetName("act-repo").
+		SetFullName("user/act-repo").SetHTMLURL("https://github.com/user/act-repo").
+		SetDefaultBranch("main").SetUserID(u.ID).
+		Save(ctx)
+	if err != nil {
+		t.Fatalf("create repo: %v", err)
+	}
+
+	// First sync: 3 commits on day1, 1 on day2
+	dayCounts := map[string]int{"2025-06-01": 3, "2025-06-02": 1}
+	syncer.upsertCommitActivity(ctx, repo.ID, dayCounts)
+
+	activities, err := client.CommitActivity.Query().All(ctx)
+	if err != nil {
+		t.Fatalf("query activities: %v", err)
+	}
+	if len(activities) != 2 {
+		t.Fatalf("expected 2 activity rows, got %d", len(activities))
+	}
+
+	for _, a := range activities {
+		switch a.Date.UTC().Format("2006-01-02") {
+		case "2025-06-01":
+			if a.CommitCount != 3 {
+				t.Errorf("expected 3 commits on day1, got %d", a.CommitCount)
+			}
+		case "2025-06-02":
+			if a.CommitCount != 1 {
+				t.Errorf("expected 1 commit on day2, got %d", a.CommitCount)
+			}
+		}
+	}
+
+	// Second sync (incremental): 2 more commits on day1, 1 new commit on day3
+	dayCounts2 := map[string]int{"2025-06-01": 2, "2025-06-03": 1}
+	syncer.upsertCommitActivity(ctx, repo.ID, dayCounts2)
+
+	activities2, err := client.CommitActivity.Query().All(ctx)
+	if err != nil {
+		t.Fatalf("query activities: %v", err)
+	}
+	if len(activities2) != 3 {
+		t.Fatalf("expected 3 activity rows after incremental, got %d", len(activities2))
+	}
+
+	for _, a := range activities2 {
+		switch a.Date.UTC().Format("2006-01-02") {
+		case "2025-06-01":
+			if a.CommitCount != 5 {
+				t.Errorf("expected 5 total commits on day1 after increment, got %d", a.CommitCount)
+			}
+		case "2025-06-02":
+			if a.CommitCount != 1 {
+				t.Errorf("expected 1 commit on day2 (unchanged), got %d", a.CommitCount)
+			}
+		case "2025-06-03":
+			if a.CommitCount != 1 {
+				t.Errorf("expected 1 commit on day3, got %d", a.CommitCount)
+			}
+		}
+	}
+}
+
 func TestSyncOne_APIErrors(t *testing.T) {
 	syncer, client := newTestSyncer(t)
 	ctx := context.Background()
