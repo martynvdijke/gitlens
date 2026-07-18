@@ -1,3 +1,15 @@
+# [1.19.0](https://github.com/martynvdijke/gitlens/compare/v1.18.3...v1.19.0) (2026-07-18)
+
+
+### Bug Fixes
+
+* gofmt formatting in deploy, webhook, and year_overview files ([bba6e20](https://github.com/martynvdijke/gitlens/commit/bba6e20ae222b2afaaa58c695a509098cf3a815e))
+
+
+### Features
+
+* add release-triggered Docker deploy, container label discovery, and year-overview dashboard ([8165319](https://github.com/martynvdijke/gitlens/commit/8165319773b557358a6b9c3e1d77bbe2f20ba7b1))
+
 ## [1.18.3](https://github.com/martynvdijke/gitlens/compare/v1.18.2...v1.18.3) (2026-07-16)
 
 ## [1.18.2](https://github.com/martynvdijke/gitlens/compare/v1.18.1...v1.18.2) (2026-07-14)
