@@ -1,3 +1,15 @@
+# [1.20.0](https://github.com/martynvdijke/gitlens/compare/v1.19.0...v1.20.0) (2026-07-18)
+
+
+### Bug Fixes
+
+* gofmt deploy.go ([9c1245a](https://github.com/martynvdijke/gitlens/commit/9c1245a7560920392c144acdd492bb775b2d425b))
+
+
+### Features
+
+* add deploy dashboard tab showing Docker container status ([ab47f2f](https://github.com/martynvdijke/gitlens/commit/ab47f2f1faa0dc0376a7835c30f5693d3215508f))
+
 # [1.19.0](https://github.com/martynvdijke/gitlens/compare/v1.18.3...v1.19.0) (2026-07-18)
 
 
