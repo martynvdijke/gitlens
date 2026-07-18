@@ -21,12 +21,12 @@ import (
 )
 
 type WebhookHandler struct {
-	client      *ent.Client
-	syncer      *sync.Syncer
-	secret      string
-	targets     []deploy.Target
-	deployer    deploy.Deployer
-	gotify      *gotify.Client
+	client   *ent.Client
+	syncer   *sync.Syncer
+	secret   string
+	targets  []deploy.Target
+	deployer deploy.Deployer
+	gotify   *gotify.Client
 }
 
 func NewWebhookHandler(client *ent.Client, syncer *sync.Syncer, secret string) *WebhookHandler {
@@ -53,7 +53,7 @@ type pushPayload struct {
 }
 
 type releasePayload struct {
-	Action string `json:"action"`
+	Action  string `json:"action"`
 	Release struct {
 		TagName    string `json:"tag_name"`
 		Prerelease bool   `json:"prerelease"`

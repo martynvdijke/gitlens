@@ -25,24 +25,24 @@ func NewYearOverviewHandler(client *ent.Client) *YearOverviewHandler {
 
 // YearStatsResponse is the JSON payload returned by /year-overview/stats.
 type YearStatsResponse struct {
-	Year           int               `json:"year"`
-	TotalCommits   int               `json:"total_commits"`
-	ActiveDays     int               `json:"active_days"`
-	MostActiveDay  *DayStat          `json:"most_active_day"`
-	LongestStreak  int               `json:"longest_streak"`
-	CurrentStreak  int               `json:"current_streak"`
-	BusiestWeekday string            `json:"busiest_weekday"`
-	MonthlyTotals  []int             `json:"monthly_totals"`
-	DailyCounts    map[string]int    `json:"daily_counts"`
-	TopRepos       []RepoStat        `json:"top_repos"`
-	RepoID         int               `json:"repo_id,omitempty"`
-	RepoName       string            `json:"repo_name,omitempty"`
+	Year           int            `json:"year"`
+	TotalCommits   int            `json:"total_commits"`
+	ActiveDays     int            `json:"active_days"`
+	MostActiveDay  *DayStat       `json:"most_active_day"`
+	LongestStreak  int            `json:"longest_streak"`
+	CurrentStreak  int            `json:"current_streak"`
+	BusiestWeekday string         `json:"busiest_weekday"`
+	MonthlyTotals  []int          `json:"monthly_totals"`
+	DailyCounts    map[string]int `json:"daily_counts"`
+	TopRepos       []RepoStat     `json:"top_repos"`
+	RepoID         int            `json:"repo_id,omitempty"`
+	RepoName       string         `json:"repo_name,omitempty"`
 }
 
 // DayStat represents a single day's commit count.
 type DayStat struct {
-	Date   string `json:"date"`
-	Count  int    `json:"count"`
+	Date  string `json:"date"`
+	Count int    `json:"count"`
 }
 
 // RepoStat represents a repo's total commits for the year.
@@ -76,11 +76,11 @@ func (h *YearOverviewHandler) YearOverview(c *gin.Context) {
 		All(c.Request.Context())
 
 	c.HTML(http.StatusOK, "year_overview_tab", gin.H{
-		"User":         u,
-		"Repos":        repos,
-		"Years":        years,
-		"DefaultYear":  currentYear,
-		"ActiveTab":    "year",
+		"User":        u,
+		"Repos":       repos,
+		"Years":       years,
+		"DefaultYear": currentYear,
+		"ActiveTab":   "year",
 	})
 }
 
@@ -169,8 +169,8 @@ func computeYearStats(activities []*ent.CommitActivity, repoNameByID map[int]str
 	// Aggregate
 	repoCommits := make(map[int]int) // repo_id -> total
 	var totalCommits int
-	dayMap := make(map[string]int)    // "2006-01-02" -> count
-	weekdaySums := make([]int, 7)     // Sunday=0, Monday=1, ...
+	dayMap := make(map[string]int) // "2006-01-02" -> count
+	weekdaySums := make([]int, 7)  // Sunday=0, Monday=1, ...
 
 	var maxDayCount int
 	var maxDayDate string

@@ -218,8 +218,8 @@ func makeReleasePayload(action, tag, repo string, prerelease bool) string {
 	p, _ := json.Marshal(map[string]interface{}{
 		"action": action,
 		"release": map[string]interface{}{
-			"tag_name":    tag,
-			"prerelease":  prerelease,
+			"tag_name":   tag,
+			"prerelease": prerelease,
 		},
 		"repository": map[string]interface{}{
 			"full_name": repo,

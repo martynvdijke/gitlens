@@ -37,8 +37,8 @@ func newContainerLock() *containerLock {
 	return &containerLock{ch: make(chan struct{}, 1)}
 }
 
-func (l *containerLock) Lock()    { l.ch <- struct{}{} }
-func (l *containerLock) Unlock()  { <-l.ch }
+func (l *containerLock) Lock()   { l.ch <- struct{}{} }
+func (l *containerLock) Unlock() { <-l.ch }
 
 type dockerDeployer struct {
 	mu       sync.Mutex
