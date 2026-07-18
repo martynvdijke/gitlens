@@ -248,6 +248,7 @@ func main() {
 		webhookHandler.SetDeployer(targets, d, g)
 		log.Printf("Deploy: %d target(s) configured, backend=%s, gotify=%v", len(targets), deploy.DeployBackend(), g != nil)
 	}
+	deployHandler := handlers.NewDeployHandler(gotify.New() != nil)
 	feedHandler := handlers.NewFeedHandler(client)
 	trendsHandler := handlers.NewTrendsHandler(client)
 	yearOverviewHandler := handlers.NewYearOverviewHandler(client)
@@ -308,6 +309,7 @@ func main() {
 
 		authed.GET("/metrics/history", trendsHandler.MetricsHistory)
 		authed.GET("/trends", middleware.HTMXOnly(), trendsHandler.TrendsPage)
+		authed.GET("/deploy", middleware.HTMXOnly(), deployHandler.Dashboard)
 		authed.GET("/year-overview", middleware.HTMXOnly(), yearOverviewHandler.YearOverview)
 		authed.GET("/year-overview/stats", yearOverviewHandler.Stats)
 		authed.GET("/charts/data", chartHandler.Data)
