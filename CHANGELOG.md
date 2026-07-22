@@ -1,3 +1,11 @@
+## [1.20.2](https://github.com/martynvdijke/gitlens/compare/v1.20.1...v1.20.2) (2026-07-22)
+
+
+### Bug Fixes
+
+* gofmt formatting for release CI ([213e0f6](https://github.com/martynvdijke/gitlens/commit/213e0f6b26a66789e0e4b4ef76a2feec5dc72438))
+* year-in-review backfill + PR merge UX feedback ([2b3a48d](https://github.com/martynvdijke/gitlens/commit/2b3a48dce3dd808d5ad361e7bb42f4000981b5c1))
+
 ## [1.20.1](https://github.com/martynvdijke/gitlens/compare/v1.20.0...v1.20.1) (2026-07-20)
 
 # [1.20.0](https://github.com/martynvdijke/gitlens/compare/v1.19.0...v1.20.0) (2026-07-18)
