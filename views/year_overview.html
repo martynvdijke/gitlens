@@ -18,8 +18,20 @@
         </select>
     </div>
 
-    <div class="small text-secondary mb-3">
-        Based on commits synced for your tracked repos. Totals may be incomplete until repos are fully synced for this year.
+    <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+        <div class="small text-secondary">
+            Based on commits synced for your tracked repos. Totals may be incomplete until repos are fully synced for this year.
+        </div>
+        <button id="year-refresh-btn" class="btn btn-sm btn-outline-secondary" type="button"
+                onclick="refreshYearData()" title="Recount full commit history for the selected scope">
+            Refresh year data
+        </button>
+    </div>
+
+    {{/* Backfill progress banner */}}
+    <div id="year-backfill-banner" class="alert alert-info d-flex align-items-center gap-2 py-2 mb-3" style="display:none" role="status">
+        <div class="spinner-border spinner-border-sm text-info" role="status"><span class="visually-hidden">Backfilling...</span></div>
+        <span id="year-backfill-text" class="small">Backfilling commit history&hellip; this can take a few minutes.</span>
     </div>
 
     {{/* Loading indicator */}}

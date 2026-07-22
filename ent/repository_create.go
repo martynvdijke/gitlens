@@ -519,6 +519,76 @@ func (_c *RepositoryCreate) SetNillableForgejoURL(v *string) *RepositoryCreate {
 	return _c
 }
 
+// SetBackfillStatus sets the "backfill_status" field.
+func (_c *RepositoryCreate) SetBackfillStatus(v string) *RepositoryCreate {
+	_c.mutation.SetBackfillStatus(v)
+	return _c
+}
+
+// SetNillableBackfillStatus sets the "backfill_status" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillableBackfillStatus(v *string) *RepositoryCreate {
+	if v != nil {
+		_c.SetBackfillStatus(*v)
+	}
+	return _c
+}
+
+// SetBackfillCursorPage sets the "backfill_cursor_page" field.
+func (_c *RepositoryCreate) SetBackfillCursorPage(v int) *RepositoryCreate {
+	_c.mutation.SetBackfillCursorPage(v)
+	return _c
+}
+
+// SetNillableBackfillCursorPage sets the "backfill_cursor_page" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillableBackfillCursorPage(v *int) *RepositoryCreate {
+	if v != nil {
+		_c.SetBackfillCursorPage(*v)
+	}
+	return _c
+}
+
+// SetBackfillOldestDate sets the "backfill_oldest_date" field.
+func (_c *RepositoryCreate) SetBackfillOldestDate(v time.Time) *RepositoryCreate {
+	_c.mutation.SetBackfillOldestDate(v)
+	return _c
+}
+
+// SetNillableBackfillOldestDate sets the "backfill_oldest_date" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillableBackfillOldestDate(v *time.Time) *RepositoryCreate {
+	if v != nil {
+		_c.SetBackfillOldestDate(*v)
+	}
+	return _c
+}
+
+// SetBackfillError sets the "backfill_error" field.
+func (_c *RepositoryCreate) SetBackfillError(v string) *RepositoryCreate {
+	_c.mutation.SetBackfillError(v)
+	return _c
+}
+
+// SetNillableBackfillError sets the "backfill_error" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillableBackfillError(v *string) *RepositoryCreate {
+	if v != nil {
+		_c.SetBackfillError(*v)
+	}
+	return _c
+}
+
+// SetBackfillUpdatedAt sets the "backfill_updated_at" field.
+func (_c *RepositoryCreate) SetBackfillUpdatedAt(v time.Time) *RepositoryCreate {
+	_c.mutation.SetBackfillUpdatedAt(v)
+	return _c
+}
+
+// SetNillableBackfillUpdatedAt sets the "backfill_updated_at" field if the given value is not nil.
+func (_c *RepositoryCreate) SetNillableBackfillUpdatedAt(v *time.Time) *RepositoryCreate {
+	if v != nil {
+		_c.SetBackfillUpdatedAt(*v)
+	}
+	return _c
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (_c *RepositoryCreate) SetUserID(id int) *RepositoryCreate {
 	_c.mutation.SetUserID(id)
@@ -584,6 +654,14 @@ func (_c *RepositoryCreate) defaults() {
 	if _, ok := _c.mutation.Provider(); !ok {
 		v := repository.DefaultProvider
 		_c.mutation.SetProvider(v)
+	}
+	if _, ok := _c.mutation.BackfillStatus(); !ok {
+		v := repository.DefaultBackfillStatus
+		_c.mutation.SetBackfillStatus(v)
+	}
+	if _, ok := _c.mutation.BackfillCursorPage(); !ok {
+		v := repository.DefaultBackfillCursorPage
+		_c.mutation.SetBackfillCursorPage(v)
 	}
 }
 
@@ -800,6 +878,26 @@ func (_c *RepositoryCreate) createSpec() (*Repository, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.ForgejoURL(); ok {
 		_spec.SetField(repository.FieldForgejoURL, field.TypeString, value)
 		_node.ForgejoURL = value
+	}
+	if value, ok := _c.mutation.BackfillStatus(); ok {
+		_spec.SetField(repository.FieldBackfillStatus, field.TypeString, value)
+		_node.BackfillStatus = value
+	}
+	if value, ok := _c.mutation.BackfillCursorPage(); ok {
+		_spec.SetField(repository.FieldBackfillCursorPage, field.TypeInt, value)
+		_node.BackfillCursorPage = value
+	}
+	if value, ok := _c.mutation.BackfillOldestDate(); ok {
+		_spec.SetField(repository.FieldBackfillOldestDate, field.TypeTime, value)
+		_node.BackfillOldestDate = value
+	}
+	if value, ok := _c.mutation.BackfillError(); ok {
+		_spec.SetField(repository.FieldBackfillError, field.TypeString, value)
+		_node.BackfillError = value
+	}
+	if value, ok := _c.mutation.BackfillUpdatedAt(); ok {
+		_spec.SetField(repository.FieldBackfillUpdatedAt, field.TypeTime, value)
+		_node.BackfillUpdatedAt = value
 	}
 	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

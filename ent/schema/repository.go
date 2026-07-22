@@ -58,6 +58,16 @@ func (Repository) Fields() []ent.Field {
 		field.String("forgejo_full_name").Optional(),
 		field.String("forgejo_html_url").Optional(),
 		field.String("forgejo_url").Optional(),
+
+		// Commit-activity backfill state machine. Statuses:
+		// "pending" (never backfilled), "running", "done", "error".
+		field.String("backfill_status").Optional().Default("pending"),
+		// 1-indexed commit-list page to resume from; 0 = not started.
+		field.Int("backfill_cursor_page").Optional().Default(0),
+		// Oldest commit date seen so far ("completed-through" marker).
+		field.Time("backfill_oldest_date").Optional(),
+		field.String("backfill_error").Optional(),
+		field.Time("backfill_updated_at").Optional(),
 	}
 }
 

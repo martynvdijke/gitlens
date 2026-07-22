@@ -96,6 +96,16 @@ type Repository struct {
 	ForgejoHTMLURL string `json:"forgejo_html_url,omitempty"`
 	// ForgejoURL holds the value of the "forgejo_url" field.
 	ForgejoURL string `json:"forgejo_url,omitempty"`
+	// BackfillStatus holds the value of the "backfill_status" field.
+	BackfillStatus string `json:"backfill_status,omitempty"`
+	// BackfillCursorPage holds the value of the "backfill_cursor_page" field.
+	BackfillCursorPage int `json:"backfill_cursor_page,omitempty"`
+	// BackfillOldestDate holds the value of the "backfill_oldest_date" field.
+	BackfillOldestDate time.Time `json:"backfill_oldest_date,omitempty"`
+	// BackfillError holds the value of the "backfill_error" field.
+	BackfillError string `json:"backfill_error,omitempty"`
+	// BackfillUpdatedAt holds the value of the "backfill_updated_at" field.
+	BackfillUpdatedAt time.Time `json:"backfill_updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RepositoryQuery when eager-loading is set.
 	Edges             RepositoryEdges `json:"edges"`
@@ -130,11 +140,11 @@ func (*Repository) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case repository.FieldAvgLeadTimeHours:
 			values[i] = new(sql.NullFloat64)
-		case repository.FieldID, repository.FieldGithubID, repository.FieldWorkflowRunID, repository.FieldTotalCommitsFetched, repository.FieldFeatCount, repository.FieldFixCount, repository.FieldDocsCount, repository.FieldChoreCount, repository.FieldOtherCommitCount, repository.FieldReleaseCount, repository.FieldWorkflowSuccessCount, repository.FieldWorkflowFailureCount, repository.FieldOpenPrCount, repository.FieldForgejoID:
+		case repository.FieldID, repository.FieldGithubID, repository.FieldWorkflowRunID, repository.FieldTotalCommitsFetched, repository.FieldFeatCount, repository.FieldFixCount, repository.FieldDocsCount, repository.FieldChoreCount, repository.FieldOtherCommitCount, repository.FieldReleaseCount, repository.FieldWorkflowSuccessCount, repository.FieldWorkflowFailureCount, repository.FieldOpenPrCount, repository.FieldForgejoID, repository.FieldBackfillCursorPage:
 			values[i] = new(sql.NullInt64)
-		case repository.FieldOwner, repository.FieldName, repository.FieldFullName, repository.FieldDescription, repository.FieldHTMLURL, repository.FieldLanguage, repository.FieldDefaultBranch, repository.FieldLatestCommitSha, repository.FieldLatestCommitMessage, repository.FieldLatestReleaseTag, repository.FieldLatestReleaseName, repository.FieldWorkflowStatus, repository.FieldPullRequests, repository.FieldLatestReleaseConclusion, repository.FieldProvider, repository.FieldForgejoOwner, repository.FieldForgejoName, repository.FieldForgejoFullName, repository.FieldForgejoHTMLURL, repository.FieldForgejoURL:
+		case repository.FieldOwner, repository.FieldName, repository.FieldFullName, repository.FieldDescription, repository.FieldHTMLURL, repository.FieldLanguage, repository.FieldDefaultBranch, repository.FieldLatestCommitSha, repository.FieldLatestCommitMessage, repository.FieldLatestReleaseTag, repository.FieldLatestReleaseName, repository.FieldWorkflowStatus, repository.FieldPullRequests, repository.FieldLatestReleaseConclusion, repository.FieldProvider, repository.FieldForgejoOwner, repository.FieldForgejoName, repository.FieldForgejoFullName, repository.FieldForgejoHTMLURL, repository.FieldForgejoURL, repository.FieldBackfillStatus, repository.FieldBackfillError:
 			values[i] = new(sql.NullString)
-		case repository.FieldLatestCommitDate, repository.FieldLatestReleaseDate, repository.FieldSyncedAt, repository.FieldCreatedAt, repository.FieldUpdatedAt:
+		case repository.FieldLatestCommitDate, repository.FieldLatestReleaseDate, repository.FieldSyncedAt, repository.FieldCreatedAt, repository.FieldUpdatedAt, repository.FieldBackfillOldestDate, repository.FieldBackfillUpdatedAt:
 			values[i] = new(sql.NullTime)
 		case repository.ForeignKeys[0]: // user_repositories
 			values[i] = new(sql.NullInt64)
@@ -393,6 +403,36 @@ func (_m *Repository) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.ForgejoURL = value.String
 			}
+		case repository.FieldBackfillStatus:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field backfill_status", values[i])
+			} else if value.Valid {
+				_m.BackfillStatus = value.String
+			}
+		case repository.FieldBackfillCursorPage:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field backfill_cursor_page", values[i])
+			} else if value.Valid {
+				_m.BackfillCursorPage = int(value.Int64)
+			}
+		case repository.FieldBackfillOldestDate:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field backfill_oldest_date", values[i])
+			} else if value.Valid {
+				_m.BackfillOldestDate = value.Time
+			}
+		case repository.FieldBackfillError:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field backfill_error", values[i])
+			} else if value.Valid {
+				_m.BackfillError = value.String
+			}
+		case repository.FieldBackfillUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field backfill_updated_at", values[i])
+			} else if value.Valid {
+				_m.BackfillUpdatedAt = value.Time
+			}
 		case repository.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field user_repositories", value)
@@ -557,6 +597,21 @@ func (_m *Repository) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("forgejo_url=")
 	builder.WriteString(_m.ForgejoURL)
+	builder.WriteString(", ")
+	builder.WriteString("backfill_status=")
+	builder.WriteString(_m.BackfillStatus)
+	builder.WriteString(", ")
+	builder.WriteString("backfill_cursor_page=")
+	builder.WriteString(fmt.Sprintf("%v", _m.BackfillCursorPage))
+	builder.WriteString(", ")
+	builder.WriteString("backfill_oldest_date=")
+	builder.WriteString(_m.BackfillOldestDate.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("backfill_error=")
+	builder.WriteString(_m.BackfillError)
+	builder.WriteString(", ")
+	builder.WriteString("backfill_updated_at=")
+	builder.WriteString(_m.BackfillUpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

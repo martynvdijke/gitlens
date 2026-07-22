@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 )
@@ -420,5 +421,94 @@ func TestWireTypesJSON(t *testing.T) {
 	}
 	if u.ID != 1 || u.Login != "u" || u.FullName != "User" {
 		t.Fatalf("unexpected gjUser: %+v", u)
+	}
+}
+
+func TestListCommitsPage_Pagination(t *testing.T) {
+	var gotQuery string
+	s, baseURL := testServer(func(w http.ResponseWriter, r *http.Request) {
+		gotQuery = r.URL.RawQuery
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`[{"sha":"a","commit":{"message":"m","committer":{"date":"2025-01-02T00:00:00Z"}}}]`))
+	})
+	defer s.Close()
+
+	c := NewClient("", "", baseURL)
+	commits, hasMore, err := c.ListCommitsPage(context.Background(), "token", "user", "repo", "main", 2, 1)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(commits) != 1 {
+		t.Fatalf("expected 1 commit, got %d", len(commits))
+	}
+	if !hasMore {
+		t.Error("expected hasMore=true when page is full")
+	}
+	if !strings.Contains(gotQuery, "page=2") || !strings.Contains(gotQuery, "limit=1") || !strings.Contains(gotQuery, "sha=main") {
+		t.Errorf("unexpected query: %s", gotQuery)
+	}
+}
+
+func TestListCommitsPage_ClampPerPage(t *testing.T) {
+	var gotQuery string
+	s, baseURL := testServer(func(w http.ResponseWriter, r *http.Request) {
+		gotQuery = r.URL.RawQuery
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`[]`))
+	})
+	defer s.Close()
+
+	c := NewClient("", "", baseURL)
+	_, hasMore, err := c.ListCommitsPage(context.Background(), "token", "user", "repo", "main", 1, 500)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if hasMore {
+		t.Error("expected hasMore=false on empty page")
+	}
+	if !strings.Contains(gotQuery, "limit=50") {
+		t.Errorf("expected perPage clamped to 50, query: %s", gotQuery)
+	}
+}
+
+func TestMergePullRequest_Success(t *testing.T) {
+	s, baseURL := testServer(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			t.Errorf("expected POST, got %s", r.Method)
+		}
+		if !strings.HasSuffix(r.URL.Path, "/pulls/7/merge") {
+			t.Errorf("unexpected path: %s", r.URL.Path)
+		}
+		w.WriteHeader(http.StatusOK)
+	})
+	defer s.Close()
+
+	c := NewClient("", "", baseURL)
+	merged, _, err := c.MergePullRequest(context.Background(), "token", "user", "repo", 7)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !merged {
+		t.Error("expected merged=true")
+	}
+}
+
+func TestMergePullRequest_NotMergeable(t *testing.T) {
+	s, baseURL := testServer(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		w.Write([]byte(`{"message":"not mergeable"}`))
+	})
+	defer s.Close()
+
+	c := NewClient("", "", baseURL)
+	merged, msg, err := c.MergePullRequest(context.Background(), "token", "user", "repo", 7)
+	if err != nil {
+		t.Fatalf("expected nil error for refusal, got %v", err)
+	}
+	if merged {
+		t.Error("expected merged=false")
+	}
+	if msg == "" {
+		t.Error("expected provider message")
 	}
 }

@@ -250,6 +250,31 @@ func ForgejoURL(v string) predicate.Repository {
 	return predicate.Repository(sql.FieldEQ(FieldForgejoURL, v))
 }
 
+// BackfillStatus applies equality check predicate on the "backfill_status" field. It's identical to BackfillStatusEQ.
+func BackfillStatus(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldBackfillStatus, v))
+}
+
+// BackfillCursorPage applies equality check predicate on the "backfill_cursor_page" field. It's identical to BackfillCursorPageEQ.
+func BackfillCursorPage(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldBackfillCursorPage, v))
+}
+
+// BackfillOldestDate applies equality check predicate on the "backfill_oldest_date" field. It's identical to BackfillOldestDateEQ.
+func BackfillOldestDate(v time.Time) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldBackfillOldestDate, v))
+}
+
+// BackfillError applies equality check predicate on the "backfill_error" field. It's identical to BackfillErrorEQ.
+func BackfillError(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldBackfillError, v))
+}
+
+// BackfillUpdatedAt applies equality check predicate on the "backfill_updated_at" field. It's identical to BackfillUpdatedAtEQ.
+func BackfillUpdatedAt(v time.Time) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldBackfillUpdatedAt, v))
+}
+
 // GithubIDEQ applies the EQ predicate on the "github_id" field.
 func GithubIDEQ(v int64) predicate.Repository {
 	return predicate.Repository(sql.FieldEQ(FieldGithubID, v))
@@ -2608,6 +2633,306 @@ func ForgejoURLEqualFold(v string) predicate.Repository {
 // ForgejoURLContainsFold applies the ContainsFold predicate on the "forgejo_url" field.
 func ForgejoURLContainsFold(v string) predicate.Repository {
 	return predicate.Repository(sql.FieldContainsFold(FieldForgejoURL, v))
+}
+
+// BackfillStatusEQ applies the EQ predicate on the "backfill_status" field.
+func BackfillStatusEQ(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldBackfillStatus, v))
+}
+
+// BackfillStatusNEQ applies the NEQ predicate on the "backfill_status" field.
+func BackfillStatusNEQ(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldBackfillStatus, v))
+}
+
+// BackfillStatusIn applies the In predicate on the "backfill_status" field.
+func BackfillStatusIn(vs ...string) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldBackfillStatus, vs...))
+}
+
+// BackfillStatusNotIn applies the NotIn predicate on the "backfill_status" field.
+func BackfillStatusNotIn(vs ...string) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldBackfillStatus, vs...))
+}
+
+// BackfillStatusGT applies the GT predicate on the "backfill_status" field.
+func BackfillStatusGT(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldBackfillStatus, v))
+}
+
+// BackfillStatusGTE applies the GTE predicate on the "backfill_status" field.
+func BackfillStatusGTE(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldBackfillStatus, v))
+}
+
+// BackfillStatusLT applies the LT predicate on the "backfill_status" field.
+func BackfillStatusLT(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldBackfillStatus, v))
+}
+
+// BackfillStatusLTE applies the LTE predicate on the "backfill_status" field.
+func BackfillStatusLTE(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldBackfillStatus, v))
+}
+
+// BackfillStatusContains applies the Contains predicate on the "backfill_status" field.
+func BackfillStatusContains(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldContains(FieldBackfillStatus, v))
+}
+
+// BackfillStatusHasPrefix applies the HasPrefix predicate on the "backfill_status" field.
+func BackfillStatusHasPrefix(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldHasPrefix(FieldBackfillStatus, v))
+}
+
+// BackfillStatusHasSuffix applies the HasSuffix predicate on the "backfill_status" field.
+func BackfillStatusHasSuffix(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldHasSuffix(FieldBackfillStatus, v))
+}
+
+// BackfillStatusIsNil applies the IsNil predicate on the "backfill_status" field.
+func BackfillStatusIsNil() predicate.Repository {
+	return predicate.Repository(sql.FieldIsNull(FieldBackfillStatus))
+}
+
+// BackfillStatusNotNil applies the NotNil predicate on the "backfill_status" field.
+func BackfillStatusNotNil() predicate.Repository {
+	return predicate.Repository(sql.FieldNotNull(FieldBackfillStatus))
+}
+
+// BackfillStatusEqualFold applies the EqualFold predicate on the "backfill_status" field.
+func BackfillStatusEqualFold(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEqualFold(FieldBackfillStatus, v))
+}
+
+// BackfillStatusContainsFold applies the ContainsFold predicate on the "backfill_status" field.
+func BackfillStatusContainsFold(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldContainsFold(FieldBackfillStatus, v))
+}
+
+// BackfillCursorPageEQ applies the EQ predicate on the "backfill_cursor_page" field.
+func BackfillCursorPageEQ(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldBackfillCursorPage, v))
+}
+
+// BackfillCursorPageNEQ applies the NEQ predicate on the "backfill_cursor_page" field.
+func BackfillCursorPageNEQ(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldBackfillCursorPage, v))
+}
+
+// BackfillCursorPageIn applies the In predicate on the "backfill_cursor_page" field.
+func BackfillCursorPageIn(vs ...int) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldBackfillCursorPage, vs...))
+}
+
+// BackfillCursorPageNotIn applies the NotIn predicate on the "backfill_cursor_page" field.
+func BackfillCursorPageNotIn(vs ...int) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldBackfillCursorPage, vs...))
+}
+
+// BackfillCursorPageGT applies the GT predicate on the "backfill_cursor_page" field.
+func BackfillCursorPageGT(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldBackfillCursorPage, v))
+}
+
+// BackfillCursorPageGTE applies the GTE predicate on the "backfill_cursor_page" field.
+func BackfillCursorPageGTE(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldBackfillCursorPage, v))
+}
+
+// BackfillCursorPageLT applies the LT predicate on the "backfill_cursor_page" field.
+func BackfillCursorPageLT(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldBackfillCursorPage, v))
+}
+
+// BackfillCursorPageLTE applies the LTE predicate on the "backfill_cursor_page" field.
+func BackfillCursorPageLTE(v int) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldBackfillCursorPage, v))
+}
+
+// BackfillCursorPageIsNil applies the IsNil predicate on the "backfill_cursor_page" field.
+func BackfillCursorPageIsNil() predicate.Repository {
+	return predicate.Repository(sql.FieldIsNull(FieldBackfillCursorPage))
+}
+
+// BackfillCursorPageNotNil applies the NotNil predicate on the "backfill_cursor_page" field.
+func BackfillCursorPageNotNil() predicate.Repository {
+	return predicate.Repository(sql.FieldNotNull(FieldBackfillCursorPage))
+}
+
+// BackfillOldestDateEQ applies the EQ predicate on the "backfill_oldest_date" field.
+func BackfillOldestDateEQ(v time.Time) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldBackfillOldestDate, v))
+}
+
+// BackfillOldestDateNEQ applies the NEQ predicate on the "backfill_oldest_date" field.
+func BackfillOldestDateNEQ(v time.Time) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldBackfillOldestDate, v))
+}
+
+// BackfillOldestDateIn applies the In predicate on the "backfill_oldest_date" field.
+func BackfillOldestDateIn(vs ...time.Time) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldBackfillOldestDate, vs...))
+}
+
+// BackfillOldestDateNotIn applies the NotIn predicate on the "backfill_oldest_date" field.
+func BackfillOldestDateNotIn(vs ...time.Time) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldBackfillOldestDate, vs...))
+}
+
+// BackfillOldestDateGT applies the GT predicate on the "backfill_oldest_date" field.
+func BackfillOldestDateGT(v time.Time) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldBackfillOldestDate, v))
+}
+
+// BackfillOldestDateGTE applies the GTE predicate on the "backfill_oldest_date" field.
+func BackfillOldestDateGTE(v time.Time) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldBackfillOldestDate, v))
+}
+
+// BackfillOldestDateLT applies the LT predicate on the "backfill_oldest_date" field.
+func BackfillOldestDateLT(v time.Time) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldBackfillOldestDate, v))
+}
+
+// BackfillOldestDateLTE applies the LTE predicate on the "backfill_oldest_date" field.
+func BackfillOldestDateLTE(v time.Time) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldBackfillOldestDate, v))
+}
+
+// BackfillOldestDateIsNil applies the IsNil predicate on the "backfill_oldest_date" field.
+func BackfillOldestDateIsNil() predicate.Repository {
+	return predicate.Repository(sql.FieldIsNull(FieldBackfillOldestDate))
+}
+
+// BackfillOldestDateNotNil applies the NotNil predicate on the "backfill_oldest_date" field.
+func BackfillOldestDateNotNil() predicate.Repository {
+	return predicate.Repository(sql.FieldNotNull(FieldBackfillOldestDate))
+}
+
+// BackfillErrorEQ applies the EQ predicate on the "backfill_error" field.
+func BackfillErrorEQ(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldBackfillError, v))
+}
+
+// BackfillErrorNEQ applies the NEQ predicate on the "backfill_error" field.
+func BackfillErrorNEQ(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldBackfillError, v))
+}
+
+// BackfillErrorIn applies the In predicate on the "backfill_error" field.
+func BackfillErrorIn(vs ...string) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldBackfillError, vs...))
+}
+
+// BackfillErrorNotIn applies the NotIn predicate on the "backfill_error" field.
+func BackfillErrorNotIn(vs ...string) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldBackfillError, vs...))
+}
+
+// BackfillErrorGT applies the GT predicate on the "backfill_error" field.
+func BackfillErrorGT(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldBackfillError, v))
+}
+
+// BackfillErrorGTE applies the GTE predicate on the "backfill_error" field.
+func BackfillErrorGTE(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldBackfillError, v))
+}
+
+// BackfillErrorLT applies the LT predicate on the "backfill_error" field.
+func BackfillErrorLT(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldBackfillError, v))
+}
+
+// BackfillErrorLTE applies the LTE predicate on the "backfill_error" field.
+func BackfillErrorLTE(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldBackfillError, v))
+}
+
+// BackfillErrorContains applies the Contains predicate on the "backfill_error" field.
+func BackfillErrorContains(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldContains(FieldBackfillError, v))
+}
+
+// BackfillErrorHasPrefix applies the HasPrefix predicate on the "backfill_error" field.
+func BackfillErrorHasPrefix(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldHasPrefix(FieldBackfillError, v))
+}
+
+// BackfillErrorHasSuffix applies the HasSuffix predicate on the "backfill_error" field.
+func BackfillErrorHasSuffix(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldHasSuffix(FieldBackfillError, v))
+}
+
+// BackfillErrorIsNil applies the IsNil predicate on the "backfill_error" field.
+func BackfillErrorIsNil() predicate.Repository {
+	return predicate.Repository(sql.FieldIsNull(FieldBackfillError))
+}
+
+// BackfillErrorNotNil applies the NotNil predicate on the "backfill_error" field.
+func BackfillErrorNotNil() predicate.Repository {
+	return predicate.Repository(sql.FieldNotNull(FieldBackfillError))
+}
+
+// BackfillErrorEqualFold applies the EqualFold predicate on the "backfill_error" field.
+func BackfillErrorEqualFold(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldEqualFold(FieldBackfillError, v))
+}
+
+// BackfillErrorContainsFold applies the ContainsFold predicate on the "backfill_error" field.
+func BackfillErrorContainsFold(v string) predicate.Repository {
+	return predicate.Repository(sql.FieldContainsFold(FieldBackfillError, v))
+}
+
+// BackfillUpdatedAtEQ applies the EQ predicate on the "backfill_updated_at" field.
+func BackfillUpdatedAtEQ(v time.Time) predicate.Repository {
+	return predicate.Repository(sql.FieldEQ(FieldBackfillUpdatedAt, v))
+}
+
+// BackfillUpdatedAtNEQ applies the NEQ predicate on the "backfill_updated_at" field.
+func BackfillUpdatedAtNEQ(v time.Time) predicate.Repository {
+	return predicate.Repository(sql.FieldNEQ(FieldBackfillUpdatedAt, v))
+}
+
+// BackfillUpdatedAtIn applies the In predicate on the "backfill_updated_at" field.
+func BackfillUpdatedAtIn(vs ...time.Time) predicate.Repository {
+	return predicate.Repository(sql.FieldIn(FieldBackfillUpdatedAt, vs...))
+}
+
+// BackfillUpdatedAtNotIn applies the NotIn predicate on the "backfill_updated_at" field.
+func BackfillUpdatedAtNotIn(vs ...time.Time) predicate.Repository {
+	return predicate.Repository(sql.FieldNotIn(FieldBackfillUpdatedAt, vs...))
+}
+
+// BackfillUpdatedAtGT applies the GT predicate on the "backfill_updated_at" field.
+func BackfillUpdatedAtGT(v time.Time) predicate.Repository {
+	return predicate.Repository(sql.FieldGT(FieldBackfillUpdatedAt, v))
+}
+
+// BackfillUpdatedAtGTE applies the GTE predicate on the "backfill_updated_at" field.
+func BackfillUpdatedAtGTE(v time.Time) predicate.Repository {
+	return predicate.Repository(sql.FieldGTE(FieldBackfillUpdatedAt, v))
+}
+
+// BackfillUpdatedAtLT applies the LT predicate on the "backfill_updated_at" field.
+func BackfillUpdatedAtLT(v time.Time) predicate.Repository {
+	return predicate.Repository(sql.FieldLT(FieldBackfillUpdatedAt, v))
+}
+
+// BackfillUpdatedAtLTE applies the LTE predicate on the "backfill_updated_at" field.
+func BackfillUpdatedAtLTE(v time.Time) predicate.Repository {
+	return predicate.Repository(sql.FieldLTE(FieldBackfillUpdatedAt, v))
+}
+
+// BackfillUpdatedAtIsNil applies the IsNil predicate on the "backfill_updated_at" field.
+func BackfillUpdatedAtIsNil() predicate.Repository {
+	return predicate.Repository(sql.FieldIsNull(FieldBackfillUpdatedAt))
+}
+
+// BackfillUpdatedAtNotNil applies the NotNil predicate on the "backfill_updated_at" field.
+func BackfillUpdatedAtNotNil() predicate.Repository {
+	return predicate.Repository(sql.FieldNotNull(FieldBackfillUpdatedAt))
 }
 
 // HasUser applies the HasEdge predicate on the "user" edge.

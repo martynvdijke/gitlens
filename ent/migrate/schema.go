@@ -155,6 +155,11 @@ var (
 		{Name: "forgejo_full_name", Type: field.TypeString, Nullable: true},
 		{Name: "forgejo_html_url", Type: field.TypeString, Nullable: true},
 		{Name: "forgejo_url", Type: field.TypeString, Nullable: true},
+		{Name: "backfill_status", Type: field.TypeString, Nullable: true, Default: "pending"},
+		{Name: "backfill_cursor_page", Type: field.TypeInt, Nullable: true, Default: 0},
+		{Name: "backfill_oldest_date", Type: field.TypeTime, Nullable: true},
+		{Name: "backfill_error", Type: field.TypeString, Nullable: true},
+		{Name: "backfill_updated_at", Type: field.TypeTime, Nullable: true},
 		{Name: "user_repositories", Type: field.TypeInt},
 	}
 	// RepositoriesTable holds the schema information for the "repositories" table.
@@ -165,7 +170,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "repositories_users_repositories",
-				Columns:    []*schema.Column{RepositoriesColumns[40]},
+				Columns:    []*schema.Column{RepositoriesColumns[45]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -174,12 +179,12 @@ var (
 			{
 				Name:    "repository_github_id_user_repositories",
 				Unique:  true,
-				Columns: []*schema.Column{RepositoriesColumns[1], RepositoriesColumns[40]},
+				Columns: []*schema.Column{RepositoriesColumns[1], RepositoriesColumns[45]},
 			},
 			{
 				Name:    "repository_forgejo_id_user_repositories",
 				Unique:  true,
-				Columns: []*schema.Column{RepositoriesColumns[34], RepositoriesColumns[40]},
+				Columns: []*schema.Column{RepositoriesColumns[34], RepositoriesColumns[45]},
 			},
 			{
 				Name:    "repository_forgejo_full_name",

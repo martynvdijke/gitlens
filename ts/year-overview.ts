@@ -1,3 +1,11 @@
+interface BackfillInfo {
+    status: 'pending' | 'running' | 'done' | 'error';
+    pending: number;
+    running: number;
+    done: number;
+    error: number;
+}
+
 interface YearStatsResponse {
     year: number;
     total_commits: number;
@@ -11,6 +19,7 @@ interface YearStatsResponse {
     top_repos: { repo_id: number; full_name: string; commits: number }[];
     repo_id?: number;
     repo_name?: string;
+    backfill?: BackfillInfo;
 }
 
 // Color scale for heatmap (GitHub-like greens)
@@ -30,6 +39,88 @@ function buildYearUrl(): string {
         params.set('repo_id', repoId);
     }
     return '/year-overview/stats?' + params.toString();
+}
+
+function buildScopeParams(): URLSearchParams {
+    const repoSelect = document.getElementById('year-repo') as HTMLSelectElement | null;
+    const params = new URLSearchParams();
+    const repoId = repoSelect?.value || '';
+    if (repoId) {
+        params.set('repo_id', repoId);
+    }
+    return params;
+}
+
+// --- Backfill progress banner ---
+
+let backfillPollTimer: number | null = null;
+
+function showBackfillBanner(text: string, isError: boolean): void {
+    const banner = document.getElementById('year-backfill-banner');
+    const label = document.getElementById('year-backfill-text');
+    if (!banner || !label) return;
+    label.textContent = text;
+    banner.classList.toggle('alert-info', !isError);
+    banner.classList.toggle('alert-warning', isError);
+    banner.style.display = 'flex';
+}
+
+function hideBackfillBanner(): void {
+    const banner = document.getElementById('year-backfill-banner');
+    if (banner) banner.style.display = 'none';
+}
+
+function stopBackfillPolling(): void {
+    if (backfillPollTimer !== null) {
+        window.clearTimeout(backfillPollTimer);
+        backfillPollTimer = null;
+    }
+}
+
+function describeBackfill(info: BackfillInfo): string {
+    const total = info.pending + info.running + info.done + info.error;
+    if (info.status === 'error') {
+        return 'Backfill failed for ' + info.error + ' repo' + (info.error !== 1 ? 's' : '') +
+            '. Use "Refresh year data" to retry.';
+    }
+    const remaining = info.pending + info.running;
+    return 'Backfilling commit history (' + (total - remaining) + '/' + total + ' repos done)… this can take a few minutes.';
+}
+
+function pollBackfillStatus(): void {
+    stopBackfillPolling();
+    const tick = () => {
+        fetch('/year-overview/backfill-status?' + buildScopeParams().toString())
+            .then(r => r.json())
+            .then((info: BackfillInfo) => {
+                if (info.status === 'done') {
+                    hideBackfillBanner();
+                    // Fresh data is available — reload stats once.
+                    loadYearOverviewData();
+                    return;
+                }
+                showBackfillBanner(describeBackfill(info), info.status === 'error');
+                backfillPollTimer = window.setTimeout(tick, 5000);
+            })
+            .catch(() => {
+                backfillPollTimer = window.setTimeout(tick, 10000);
+            });
+    };
+    tick();
+}
+
+export function refreshYearData(): void {
+    const btn = document.getElementById('year-refresh-btn') as HTMLButtonElement | null;
+    if (btn) btn.disabled = true;
+    fetch('/year-overview/refresh?' + buildScopeParams().toString(), { method: 'POST' })
+        .then(() => {
+            showBackfillBanner('Backfilling commit history… this can take a few minutes.', false);
+            pollBackfillStatus();
+        })
+        .catch((e: Error) => console.error('Failed to refresh year data:', e))
+        .finally(() => {
+            if (btn) btn.disabled = false;
+        });
 }
 
 function getQuartiles(counts: number[]): [number, number, number] {
@@ -222,6 +313,15 @@ export function loadYearOverviewData(): void {
 
             // Render top repos
             renderTopRepos(data.top_repos);
+
+            // Backfill progress: show banner and poll until done.
+            if (data.backfill && data.backfill.status !== 'done') {
+                showBackfillBanner(describeBackfill(data.backfill), data.backfill.status === 'error');
+                pollBackfillStatus();
+            } else {
+                hideBackfillBanner();
+                stopBackfillPolling();
+            }
         })
         .catch((e: Error) => {
             if (loading) loading.style.display = 'none';

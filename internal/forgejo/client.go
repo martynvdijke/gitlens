@@ -372,6 +372,98 @@ func (c *Client) GetCommitsSince(ctx context.Context, token, owner, repo, branch
 	return all, nil
 }
 
+// ListCommitsPage fetches a single page of commits (newest first) from
+// the given branch. perPage is clamped to [1,50] (Gitea's default max
+// page size); page is 1-indexed. hasMore reports whether another page
+// likely exists (page was full).
+func (c *Client) ListCommitsPage(ctx context.Context, token, owner, repo, branch string, page, perPage int) (commits []*ghclient.Commit, hasMore bool, err error) {
+	if page < 1 {
+		page = 1
+	}
+	if perPage < 1 {
+		perPage = 1
+	}
+	if perPage > 50 {
+		perPage = 50
+	}
+
+	u := c.apiURL(c.defaultURL, fmt.Sprintf("/repos/%s/%s/commits?limit=%d&page=%d&sha=%s",
+		owner, repo, perPage, page, url.QueryEscape(branch)))
+	resp, err := c.doRequest(ctx, "GET", u, token, nil)
+	if err != nil {
+		return nil, false, err
+	}
+	defer resp.Body.Close()
+
+	var gjCommits []gjCommit
+	if err := json.NewDecoder(resp.Body).Decode(&gjCommits); err != nil {
+		return nil, false, fmt.Errorf("decoding commits: %w", err)
+	}
+	for _, gc := range gjCommits {
+		t, _ := time.Parse(time.RFC3339, gc.Commit.Committer.Date)
+		commits = append(commits, &ghclient.Commit{
+			SHA:     gc.SHA,
+			Message: strings.Split(gc.Commit.Message, "\n")[0],
+			Date:    t,
+		})
+	}
+	return commits, len(gjCommits) == perPage, nil
+}
+
+// MergePullRequest merges an open PR using the "merge" method
+// (Gitea: POST /repos/{owner}/{repo}/pulls/{index}/merge {"Do":"merge"}).
+// Returns (false, message, nil) when the server refuses the merge
+// (HTTP 405 — e.g. conflicts, failing checks); other HTTP failures are
+// returned as errors.
+func (c *Client) MergePullRequest(ctx context.Context, token, owner, repo string, number int) (bool, string, error) {
+	u := c.apiURL(c.defaultURL, fmt.Sprintf("/repos/%s/%s/pulls/%d/merge", owner, repo, number))
+	payload := struct {
+		Do string `json:"Do"`
+	}{Do: "merge"}
+	var buf strings.Builder
+	if err := json.NewEncoder(&buf).Encode(payload); err != nil {
+		return false, "", fmt.Errorf("encoding merge request: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", u, strings.NewReader(buf.String()))
+	if err != nil {
+		return false, "", fmt.Errorf("creating request: %w", err)
+	}
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+	if token != "" {
+		req.Header.Set("Authorization", "token "+token)
+	}
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return false, "", fmt.Errorf("doing request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusOK {
+		return true, "", nil
+	}
+
+	body, _ := io.ReadAll(resp.Body)
+	var errResp struct {
+		Message string `json:"message"`
+	}
+	_ = json.Unmarshal(body, &errResp)
+	msg := strings.TrimSpace(errResp.Message)
+
+	// 405: merge not allowed right now (conflicts, checks failing, etc.)
+	if resp.StatusCode == http.StatusMethodNotAllowed {
+		if msg == "" {
+			msg = "merge not allowed"
+		}
+		return false, msg, nil
+	}
+	if msg == "" {
+		msg = strings.TrimSpace(string(body))
+	}
+	return false, "", fmt.Errorf("Forgejo API error: %s: %s", resp.Status, msg)
+}
+
 // --- Releases ---
 
 // ListReleases implements provider.Provider.
@@ -423,14 +515,22 @@ func (c *Client) ListPullRequests(ctx context.Context, token, owner, repo string
 	var prs []*ghclient.PullRequest
 	for _, pr := range gjPRs {
 		t, _ := time.Parse(time.RFC3339, pr.CreatedAt)
+		// Gitea reports a boolean mergeable flag; map to GitHub-style states.
+		mergeableState := "unknown"
+		if pr.Mergeable {
+			mergeableState = "clean"
+		} else {
+			mergeableState = "dirty"
+		}
 		prs = append(prs, &ghclient.PullRequest{
-			Number:    pr.Number,
-			Title:     pr.Title,
-			Author:    pr.User.Login,
-			CreatedAt: t,
-			HTMLURL:   pr.HTMLURL,
-			HeadRef:   pr.Head.Ref,
-			BaseRef:   pr.Base.Ref,
+			Number:         pr.Number,
+			Title:          pr.Title,
+			Author:         pr.User.Login,
+			CreatedAt:      t,
+			HTMLURL:        pr.HTMLURL,
+			HeadRef:        pr.Head.Ref,
+			BaseRef:        pr.Base.Ref,
+			MergeableState: mergeableState,
 		})
 	}
 	return prs, nil

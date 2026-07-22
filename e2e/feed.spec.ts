@@ -129,3 +129,38 @@ test.describe('PR Merge - Protected Routes', () => {
     await expect(page.locator('h2:has-text("Track your GitHub repositories")')).toBeVisible();
   });
 });
+
+test.describe('PR Queue Merge UX - Protected Routes', () => {
+  test('single PR queue merge endpoint redirects unauthenticated users', async ({ page }) => {
+    const response = await page.request.post('/prs/merge', {
+      maxRedirects: 0,
+      headers: { 'Content-Type': 'application/json' },
+      data: { repo_id: 1, pr_number: 1 },
+    });
+    expect(response.status()).toBe(302);
+    expect(response.headers()['location']).toBe('/');
+  });
+
+  test('batch merge endpoint redirects unauthenticated users', async ({ page }) => {
+    const response = await page.request.post('/prs/batch-merge', {
+      maxRedirects: 0,
+      form: { pr_ids: '1:1' },
+    });
+    expect(response.status()).toBe(302);
+    expect(response.headers()['location']).toBe('/');
+  });
+});
+
+test.describe('Year Overview Backfill - Protected Routes', () => {
+  test('backfill status endpoint redirects unauthenticated users', async ({ page }) => {
+    const response = await page.request.get('/year-overview/backfill-status', { maxRedirects: 0 });
+    expect(response.status()).toBe(302);
+    expect(response.headers()['location']).toBe('/');
+  });
+
+  test('year refresh endpoint redirects unauthenticated users', async ({ page }) => {
+    const response = await page.request.post('/year-overview/refresh', { maxRedirects: 0 });
+    expect(response.status()).toBe(302);
+    expect(response.headers()['location']).toBe('/');
+  });
+});

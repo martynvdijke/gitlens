@@ -3493,6 +3493,12 @@ type RepositoryMutation struct {
 	forgejo_full_name         *string
 	forgejo_html_url          *string
 	forgejo_url               *string
+	backfill_status           *string
+	backfill_cursor_page      *int
+	addbackfill_cursor_page   *int
+	backfill_oldest_date      *time.Time
+	backfill_error            *string
+	backfill_updated_at       *time.Time
 	clearedFields             map[string]struct{}
 	user                      *int
 	cleareduser               bool
@@ -5686,6 +5692,272 @@ func (m *RepositoryMutation) ResetForgejoURL() {
 	delete(m.clearedFields, repository.FieldForgejoURL)
 }
 
+// SetBackfillStatus sets the "backfill_status" field.
+func (m *RepositoryMutation) SetBackfillStatus(s string) {
+	m.backfill_status = &s
+}
+
+// BackfillStatus returns the value of the "backfill_status" field in the mutation.
+func (m *RepositoryMutation) BackfillStatus() (r string, exists bool) {
+	v := m.backfill_status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBackfillStatus returns the old "backfill_status" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldBackfillStatus(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBackfillStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBackfillStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBackfillStatus: %w", err)
+	}
+	return oldValue.BackfillStatus, nil
+}
+
+// ClearBackfillStatus clears the value of the "backfill_status" field.
+func (m *RepositoryMutation) ClearBackfillStatus() {
+	m.backfill_status = nil
+	m.clearedFields[repository.FieldBackfillStatus] = struct{}{}
+}
+
+// BackfillStatusCleared returns if the "backfill_status" field was cleared in this mutation.
+func (m *RepositoryMutation) BackfillStatusCleared() bool {
+	_, ok := m.clearedFields[repository.FieldBackfillStatus]
+	return ok
+}
+
+// ResetBackfillStatus resets all changes to the "backfill_status" field.
+func (m *RepositoryMutation) ResetBackfillStatus() {
+	m.backfill_status = nil
+	delete(m.clearedFields, repository.FieldBackfillStatus)
+}
+
+// SetBackfillCursorPage sets the "backfill_cursor_page" field.
+func (m *RepositoryMutation) SetBackfillCursorPage(i int) {
+	m.backfill_cursor_page = &i
+	m.addbackfill_cursor_page = nil
+}
+
+// BackfillCursorPage returns the value of the "backfill_cursor_page" field in the mutation.
+func (m *RepositoryMutation) BackfillCursorPage() (r int, exists bool) {
+	v := m.backfill_cursor_page
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBackfillCursorPage returns the old "backfill_cursor_page" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldBackfillCursorPage(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBackfillCursorPage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBackfillCursorPage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBackfillCursorPage: %w", err)
+	}
+	return oldValue.BackfillCursorPage, nil
+}
+
+// AddBackfillCursorPage adds i to the "backfill_cursor_page" field.
+func (m *RepositoryMutation) AddBackfillCursorPage(i int) {
+	if m.addbackfill_cursor_page != nil {
+		*m.addbackfill_cursor_page += i
+	} else {
+		m.addbackfill_cursor_page = &i
+	}
+}
+
+// AddedBackfillCursorPage returns the value that was added to the "backfill_cursor_page" field in this mutation.
+func (m *RepositoryMutation) AddedBackfillCursorPage() (r int, exists bool) {
+	v := m.addbackfill_cursor_page
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearBackfillCursorPage clears the value of the "backfill_cursor_page" field.
+func (m *RepositoryMutation) ClearBackfillCursorPage() {
+	m.backfill_cursor_page = nil
+	m.addbackfill_cursor_page = nil
+	m.clearedFields[repository.FieldBackfillCursorPage] = struct{}{}
+}
+
+// BackfillCursorPageCleared returns if the "backfill_cursor_page" field was cleared in this mutation.
+func (m *RepositoryMutation) BackfillCursorPageCleared() bool {
+	_, ok := m.clearedFields[repository.FieldBackfillCursorPage]
+	return ok
+}
+
+// ResetBackfillCursorPage resets all changes to the "backfill_cursor_page" field.
+func (m *RepositoryMutation) ResetBackfillCursorPage() {
+	m.backfill_cursor_page = nil
+	m.addbackfill_cursor_page = nil
+	delete(m.clearedFields, repository.FieldBackfillCursorPage)
+}
+
+// SetBackfillOldestDate sets the "backfill_oldest_date" field.
+func (m *RepositoryMutation) SetBackfillOldestDate(t time.Time) {
+	m.backfill_oldest_date = &t
+}
+
+// BackfillOldestDate returns the value of the "backfill_oldest_date" field in the mutation.
+func (m *RepositoryMutation) BackfillOldestDate() (r time.Time, exists bool) {
+	v := m.backfill_oldest_date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBackfillOldestDate returns the old "backfill_oldest_date" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldBackfillOldestDate(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBackfillOldestDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBackfillOldestDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBackfillOldestDate: %w", err)
+	}
+	return oldValue.BackfillOldestDate, nil
+}
+
+// ClearBackfillOldestDate clears the value of the "backfill_oldest_date" field.
+func (m *RepositoryMutation) ClearBackfillOldestDate() {
+	m.backfill_oldest_date = nil
+	m.clearedFields[repository.FieldBackfillOldestDate] = struct{}{}
+}
+
+// BackfillOldestDateCleared returns if the "backfill_oldest_date" field was cleared in this mutation.
+func (m *RepositoryMutation) BackfillOldestDateCleared() bool {
+	_, ok := m.clearedFields[repository.FieldBackfillOldestDate]
+	return ok
+}
+
+// ResetBackfillOldestDate resets all changes to the "backfill_oldest_date" field.
+func (m *RepositoryMutation) ResetBackfillOldestDate() {
+	m.backfill_oldest_date = nil
+	delete(m.clearedFields, repository.FieldBackfillOldestDate)
+}
+
+// SetBackfillError sets the "backfill_error" field.
+func (m *RepositoryMutation) SetBackfillError(s string) {
+	m.backfill_error = &s
+}
+
+// BackfillError returns the value of the "backfill_error" field in the mutation.
+func (m *RepositoryMutation) BackfillError() (r string, exists bool) {
+	v := m.backfill_error
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBackfillError returns the old "backfill_error" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldBackfillError(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBackfillError is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBackfillError requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBackfillError: %w", err)
+	}
+	return oldValue.BackfillError, nil
+}
+
+// ClearBackfillError clears the value of the "backfill_error" field.
+func (m *RepositoryMutation) ClearBackfillError() {
+	m.backfill_error = nil
+	m.clearedFields[repository.FieldBackfillError] = struct{}{}
+}
+
+// BackfillErrorCleared returns if the "backfill_error" field was cleared in this mutation.
+func (m *RepositoryMutation) BackfillErrorCleared() bool {
+	_, ok := m.clearedFields[repository.FieldBackfillError]
+	return ok
+}
+
+// ResetBackfillError resets all changes to the "backfill_error" field.
+func (m *RepositoryMutation) ResetBackfillError() {
+	m.backfill_error = nil
+	delete(m.clearedFields, repository.FieldBackfillError)
+}
+
+// SetBackfillUpdatedAt sets the "backfill_updated_at" field.
+func (m *RepositoryMutation) SetBackfillUpdatedAt(t time.Time) {
+	m.backfill_updated_at = &t
+}
+
+// BackfillUpdatedAt returns the value of the "backfill_updated_at" field in the mutation.
+func (m *RepositoryMutation) BackfillUpdatedAt() (r time.Time, exists bool) {
+	v := m.backfill_updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBackfillUpdatedAt returns the old "backfill_updated_at" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldBackfillUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBackfillUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBackfillUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBackfillUpdatedAt: %w", err)
+	}
+	return oldValue.BackfillUpdatedAt, nil
+}
+
+// ClearBackfillUpdatedAt clears the value of the "backfill_updated_at" field.
+func (m *RepositoryMutation) ClearBackfillUpdatedAt() {
+	m.backfill_updated_at = nil
+	m.clearedFields[repository.FieldBackfillUpdatedAt] = struct{}{}
+}
+
+// BackfillUpdatedAtCleared returns if the "backfill_updated_at" field was cleared in this mutation.
+func (m *RepositoryMutation) BackfillUpdatedAtCleared() bool {
+	_, ok := m.clearedFields[repository.FieldBackfillUpdatedAt]
+	return ok
+}
+
+// ResetBackfillUpdatedAt resets all changes to the "backfill_updated_at" field.
+func (m *RepositoryMutation) ResetBackfillUpdatedAt() {
+	m.backfill_updated_at = nil
+	delete(m.clearedFields, repository.FieldBackfillUpdatedAt)
+}
+
 // SetUserID sets the "user" edge to the User entity by id.
 func (m *RepositoryMutation) SetUserID(id int) {
 	m.user = &id
@@ -5759,7 +6031,7 @@ func (m *RepositoryMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RepositoryMutation) Fields() []string {
-	fields := make([]string, 0, 39)
+	fields := make([]string, 0, 44)
 	if m.github_id != nil {
 		fields = append(fields, repository.FieldGithubID)
 	}
@@ -5877,6 +6149,21 @@ func (m *RepositoryMutation) Fields() []string {
 	if m.forgejo_url != nil {
 		fields = append(fields, repository.FieldForgejoURL)
 	}
+	if m.backfill_status != nil {
+		fields = append(fields, repository.FieldBackfillStatus)
+	}
+	if m.backfill_cursor_page != nil {
+		fields = append(fields, repository.FieldBackfillCursorPage)
+	}
+	if m.backfill_oldest_date != nil {
+		fields = append(fields, repository.FieldBackfillOldestDate)
+	}
+	if m.backfill_error != nil {
+		fields = append(fields, repository.FieldBackfillError)
+	}
+	if m.backfill_updated_at != nil {
+		fields = append(fields, repository.FieldBackfillUpdatedAt)
+	}
 	return fields
 }
 
@@ -5963,6 +6250,16 @@ func (m *RepositoryMutation) Field(name string) (ent.Value, bool) {
 		return m.ForgejoHTMLURL()
 	case repository.FieldForgejoURL:
 		return m.ForgejoURL()
+	case repository.FieldBackfillStatus:
+		return m.BackfillStatus()
+	case repository.FieldBackfillCursorPage:
+		return m.BackfillCursorPage()
+	case repository.FieldBackfillOldestDate:
+		return m.BackfillOldestDate()
+	case repository.FieldBackfillError:
+		return m.BackfillError()
+	case repository.FieldBackfillUpdatedAt:
+		return m.BackfillUpdatedAt()
 	}
 	return nil, false
 }
@@ -6050,6 +6347,16 @@ func (m *RepositoryMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldForgejoHTMLURL(ctx)
 	case repository.FieldForgejoURL:
 		return m.OldForgejoURL(ctx)
+	case repository.FieldBackfillStatus:
+		return m.OldBackfillStatus(ctx)
+	case repository.FieldBackfillCursorPage:
+		return m.OldBackfillCursorPage(ctx)
+	case repository.FieldBackfillOldestDate:
+		return m.OldBackfillOldestDate(ctx)
+	case repository.FieldBackfillError:
+		return m.OldBackfillError(ctx)
+	case repository.FieldBackfillUpdatedAt:
+		return m.OldBackfillUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Repository field %s", name)
 }
@@ -6332,6 +6639,41 @@ func (m *RepositoryMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetForgejoURL(v)
 		return nil
+	case repository.FieldBackfillStatus:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBackfillStatus(v)
+		return nil
+	case repository.FieldBackfillCursorPage:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBackfillCursorPage(v)
+		return nil
+	case repository.FieldBackfillOldestDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBackfillOldestDate(v)
+		return nil
+	case repository.FieldBackfillError:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBackfillError(v)
+		return nil
+	case repository.FieldBackfillUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBackfillUpdatedAt(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Repository field %s", name)
 }
@@ -6382,6 +6724,9 @@ func (m *RepositoryMutation) AddedFields() []string {
 	if m.addforgejo_id != nil {
 		fields = append(fields, repository.FieldForgejoID)
 	}
+	if m.addbackfill_cursor_page != nil {
+		fields = append(fields, repository.FieldBackfillCursorPage)
+	}
 	return fields
 }
 
@@ -6418,6 +6763,8 @@ func (m *RepositoryMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedOpenPrCount()
 	case repository.FieldForgejoID:
 		return m.AddedForgejoID()
+	case repository.FieldBackfillCursorPage:
+		return m.AddedBackfillCursorPage()
 	}
 	return nil, false
 }
@@ -6525,6 +6872,13 @@ func (m *RepositoryMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddForgejoID(v)
 		return nil
+	case repository.FieldBackfillCursorPage:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddBackfillCursorPage(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Repository numeric field %s", name)
 }
@@ -6622,6 +6976,21 @@ func (m *RepositoryMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(repository.FieldForgejoURL) {
 		fields = append(fields, repository.FieldForgejoURL)
+	}
+	if m.FieldCleared(repository.FieldBackfillStatus) {
+		fields = append(fields, repository.FieldBackfillStatus)
+	}
+	if m.FieldCleared(repository.FieldBackfillCursorPage) {
+		fields = append(fields, repository.FieldBackfillCursorPage)
+	}
+	if m.FieldCleared(repository.FieldBackfillOldestDate) {
+		fields = append(fields, repository.FieldBackfillOldestDate)
+	}
+	if m.FieldCleared(repository.FieldBackfillError) {
+		fields = append(fields, repository.FieldBackfillError)
+	}
+	if m.FieldCleared(repository.FieldBackfillUpdatedAt) {
+		fields = append(fields, repository.FieldBackfillUpdatedAt)
 	}
 	return fields
 }
@@ -6726,6 +7095,21 @@ func (m *RepositoryMutation) ClearField(name string) error {
 		return nil
 	case repository.FieldForgejoURL:
 		m.ClearForgejoURL()
+		return nil
+	case repository.FieldBackfillStatus:
+		m.ClearBackfillStatus()
+		return nil
+	case repository.FieldBackfillCursorPage:
+		m.ClearBackfillCursorPage()
+		return nil
+	case repository.FieldBackfillOldestDate:
+		m.ClearBackfillOldestDate()
+		return nil
+	case repository.FieldBackfillError:
+		m.ClearBackfillError()
+		return nil
+	case repository.FieldBackfillUpdatedAt:
+		m.ClearBackfillUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Repository nullable field %s", name)
@@ -6851,6 +7235,21 @@ func (m *RepositoryMutation) ResetField(name string) error {
 		return nil
 	case repository.FieldForgejoURL:
 		m.ResetForgejoURL()
+		return nil
+	case repository.FieldBackfillStatus:
+		m.ResetBackfillStatus()
+		return nil
+	case repository.FieldBackfillCursorPage:
+		m.ResetBackfillCursorPage()
+		return nil
+	case repository.FieldBackfillOldestDate:
+		m.ResetBackfillOldestDate()
+		return nil
+	case repository.FieldBackfillError:
+		m.ResetBackfillError()
+		return nil
+	case repository.FieldBackfillUpdatedAt:
+		m.ResetBackfillUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Repository field %s", name)

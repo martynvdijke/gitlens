@@ -345,17 +345,20 @@ type PRQueueItem struct {
 	HTMLURL      string
 	HeadRef      string
 	BaseRef      string
+	// MergeableState is the provider's mergeability hint, if reported.
+	MergeableState string
 }
 
 // prSummary is the JSON-unmarshalled form of a pull request stored on a Repository.
 type prSummary struct {
-	Number    int    `json:"n"`
-	Title     string `json:"t"`
-	Author    string `json:"a"`
-	CreatedAt string `json:"c"`
-	HTMLURL   string `json:"h"`
-	HeadRef   string `json:"hr"`
-	BaseRef   string `json:"br"`
+	Number         int    `json:"n"`
+	Title          string `json:"t"`
+	Author         string `json:"a"`
+	CreatedAt      string `json:"c"`
+	HTMLURL        string `json:"h"`
+	HeadRef        string `json:"hr"`
+	BaseRef        string `json:"br"`
+	MergeableState string `json:"ms,omitempty"`
 }
 
 // sortByBuildStatus orders repos by workflow severity: failures first, then unknown, then success, then no workflows.
@@ -645,9 +648,10 @@ func (h *DashboardHandler) fetchPRTabData(ctx context.Context, userID int, filte
 				Title:        pr.Title,
 				Author:       pr.Author,
 				CreatedAt:    pr.CreatedAt,
-				HTMLURL:      pr.HTMLURL,
-				HeadRef:      pr.HeadRef,
-				BaseRef:      pr.BaseRef,
+				HTMLURL:        pr.HTMLURL,
+				HeadRef:        pr.HeadRef,
+				BaseRef:        pr.BaseRef,
+				MergeableState: pr.MergeableState,
 			})
 		}
 	}
@@ -672,7 +676,28 @@ func (h *DashboardHandler) fetchPRTabData(ctx context.Context, userID int, filte
 		"Repos":      repos,
 		"FilterRepo": filterRepo,
 		"ActiveTab":  "prs",
+		"MergedSet":  map[string]bool{},
 	}, nil
+}
+
+// friendlyMergeError maps provider error text to a short, user-facing
+// explanation.
+func friendlyMergeError(err error) string {
+	msg := err.Error()
+	switch {
+	case strings.Contains(msg, "403"):
+		return "Permission denied — your token may lack merge rights, or a branch protection rule blocked the merge."
+	case strings.Contains(msg, "404"):
+		return "Pull request or repository not found (it may have been deleted or the token lost access)."
+	case strings.Contains(msg, "405"):
+		return "The PR is not mergeable right now (conflicts or failing checks)."
+	case strings.Contains(msg, "409"):
+		return "Merge conflict — the PR head changed; refresh and try again."
+	case strings.Contains(msg, "rate limit"):
+		return "The provider's API rate limit is exhausted; try again later."
+	default:
+		return msg
+	}
 }
 
 // MergeSinglePR merges a single PR from the unified queue.
@@ -703,35 +728,39 @@ func (h *DashboardHandler) MergeSinglePR(c *gin.Context) {
 		return
 	}
 
-	merged, msg, err := h.gh.MergePullRequest(u.AccessToken, r.Owner, r.Name, req.PRNumber)
+	renderQueue := func(toastType, toastMsg, toastDetails string, mergedSet map[string]bool) {
+		data, fetchErr := h.fetchPRTabData(ctx, int(userID), c.Query("repo"))
+		if fetchErr != nil {
+			c.String(http.StatusOK, toastMsg)
+			return
+		}
+		data["ToastType"] = toastType
+		data["ToastMessage"] = toastMsg
+		if toastDetails != "" {
+			data["ToastDetails"] = toastDetails
+		}
+		if mergedSet != nil {
+			data["MergedSet"] = mergedSet
+		}
+		c.HTML(http.StatusOK, "prs_tab_with_toast", data)
+	}
+
+	p, token := h.syncer.ProviderFor(u, r)
+	merged, msg, err := p.MergePullRequest(ctx, token, r.Owner, r.Name, req.PRNumber)
 	if err != nil {
 		log.Printf("Error merging PR #%d for %s: %v", req.PRNumber, r.FullName, err)
-		c.String(http.StatusInternalServerError, "Failed to merge: %v", err)
+		renderQueue("danger", fmt.Sprintf("Failed to merge #%d", req.PRNumber), friendlyMergeError(err), nil)
 		return
 	}
 	if !merged {
-		h.syncer.SyncOne(ctx, r)
-		data, fetchErr := h.fetchPRTabData(ctx, int(userID), c.Query("repo"))
-		if fetchErr != nil {
-			c.String(http.StatusInternalServerError, "Failed to refresh PR queue")
-			return
-		}
-		data["ToastType"] = "warning"
-		data["ToastMessage"] = fmt.Sprintf("Merge failed for #%d", req.PRNumber)
-		data["ToastDetails"] = msg
-		c.HTML(http.StatusOK, "prs_tab_with_toast", data)
+		renderQueue("warning", fmt.Sprintf("Merge failed for #%d", req.PRNumber), msg, nil)
 		return
 	}
 
-	h.syncer.SyncOne(ctx, r)
-	data, err := h.fetchPRTabData(ctx, int(userID), c.Query("repo"))
-	if err != nil {
-		c.String(http.StatusOK, "PR #%d merged successfully", req.PRNumber)
-		return
-	}
-	data["ToastType"] = "success"
-	data["ToastMessage"] = fmt.Sprintf("PR #%d merged successfully", req.PRNumber)
-	c.HTML(http.StatusOK, "prs_tab_with_toast", data)
+	// Respond immediately; refresh repo state in the background.
+	h.syncer.SyncOneBackground(r)
+	renderQueue("success", fmt.Sprintf("PR #%d merged successfully", req.PRNumber), "",
+		map[string]bool{fmt.Sprintf("%d:%d", r.ID, req.PRNumber): true})
 }
 
 // BatchMergePRs merges selected PRs from the unified queue.
@@ -753,6 +782,10 @@ func (h *DashboardHandler) BatchMergePRs(c *gin.Context) {
 
 	var merged []string
 	var failed []string
+	// Optimistic "Merged ✓" marks until the background sync reconciles.
+	mergedSet := make(map[string]bool)
+	// Dedupe background syncs: one per affected repo, fired after the loop.
+	affectedRepos := make(map[int]*ent.Repository)
 
 	for _, id := range prIDs {
 		parts := strings.SplitN(id, ":", 2)
@@ -782,17 +815,24 @@ func (h *DashboardHandler) BatchMergePRs(c *gin.Context) {
 			continue
 		}
 
-		ok, msg, err := h.gh.MergePullRequest(u.AccessToken, r.Owner, r.Name, prNumber)
+		p, token := h.syncer.ProviderFor(u, r)
+		ok, msg, err := p.MergePullRequest(ctx, token, r.Owner, r.Name, prNumber)
 		if err != nil || !ok {
 			reason := msg
 			if err != nil {
-				reason = err.Error()
+				reason = friendlyMergeError(err)
 			}
 			failed = append(failed, fmt.Sprintf("#%d (%s)", prNumber, reason))
 			continue
 		}
 		merged = append(merged, fmt.Sprintf("#%d", prNumber))
-		h.syncer.SyncOne(ctx, r)
+		mergedSet[fmt.Sprintf("%d:%d", r.ID, prNumber)] = true
+		affectedRepos[r.ID] = r
+	}
+
+	// Refresh affected repos in the background (deduped inside the syncer).
+	for _, r := range affectedRepos {
+		h.syncer.SyncOneBackground(r)
 	}
 
 	total := len(merged) + len(failed)
@@ -803,6 +843,7 @@ func (h *DashboardHandler) BatchMergePRs(c *gin.Context) {
 		return
 	}
 
+	data["MergedSet"] = mergedSet
 	if len(failed) == 0 {
 		data["ToastType"] = "success"
 		data["ToastMessage"] = fmt.Sprintf("All %d PR(s) merged successfully!", total)
@@ -863,14 +904,15 @@ func (h *DashboardHandler) MergePR(c *gin.Context) {
 		return
 	}
 
-	merged, msg, err := h.gh.MergePullRequest(u.AccessToken, r.Owner, r.Name, prNumber)
+	p, token := h.syncer.ProviderFor(u, r)
+	merged, msg, err := p.MergePullRequest(ctx, token, r.Owner, r.Name, prNumber)
 	if err != nil {
 		log.Printf("Error merging PR #%d for %s: %v", prNumber, r.FullName, err)
 		c.HTML(http.StatusOK, "repo_card_with_toast", gin.H{
 			"Repo":         r,
 			"ToastType":    "danger",
 			"ToastMessage": fmt.Sprintf("Failed to merge #%d", prNumber),
-			"ToastDetails": err.Error(),
+			"ToastDetails": friendlyMergeError(err),
 		})
 		return
 	}
@@ -884,7 +926,7 @@ func (h *DashboardHandler) MergePR(c *gin.Context) {
 		return
 	}
 
-	r = h.syncer.SyncOne(ctx, r)
+	h.syncer.SyncOneBackground(r)
 	c.HTML(http.StatusOK, "repo_card_with_toast", gin.H{
 		"Repo":         r,
 		"ToastType":    "success",
@@ -918,22 +960,28 @@ func (h *DashboardHandler) MergeAllPRs(c *gin.Context) {
 		return
 	}
 
-	prs, err := h.gh.ListPullRequests(u.AccessToken, r.Owner, r.Name)
+	p, token := h.syncer.ProviderFor(u, r)
+	prs, err := p.ListPullRequests(ctx, token, r.Owner, r.Name)
 	if err != nil {
 		log.Printf("Error listing PRs for merge-all on %s: %v", r.FullName, err)
-		c.String(http.StatusInternalServerError, "Failed to list pull requests")
+		c.HTML(http.StatusOK, "repo_card_with_toast", gin.H{
+			"Repo":         r,
+			"ToastType":    "danger",
+			"ToastMessage": "Failed to list pull requests",
+			"ToastDetails": friendlyMergeError(err),
+		})
 		return
 	}
 
 	var failed []int
 	for _, pr := range prs {
-		merged, _, err := h.gh.MergePullRequest(u.AccessToken, r.Owner, r.Name, pr.Number)
+		merged, _, err := p.MergePullRequest(ctx, token, r.Owner, r.Name, pr.Number)
 		if err != nil || !merged {
 			failed = append(failed, pr.Number)
 		}
 	}
 
-	r = h.syncer.SyncOne(ctx, r)
+	h.syncer.SyncOneBackground(r)
 
 	if len(failed) > 0 {
 		c.HTML(http.StatusOK, "repo_card_with_toast", gin.H{

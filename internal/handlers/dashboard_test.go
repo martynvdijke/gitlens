@@ -1103,8 +1103,10 @@ func TestBatchMergePRs_Success(t *testing.T) {
 	if !strings.Contains(w.Body.String(), "All 2 PR") {
 		t.Errorf("expected all 2 merged, got: %s", w.Body.String())
 	}
-	if callCount != 12 {
-		t.Errorf("expected 12 API calls (2 merges + 5 sync × 2 repos), got %d", callCount)
+	// Post-merge syncs now run in the background (deduped, async), so
+	// only the 2 merge calls are guaranteed synchronously.
+	if callCount < 2 {
+		t.Errorf("expected at least 2 merge API calls, got %d", callCount)
 	}
 }
 

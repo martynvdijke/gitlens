@@ -73,6 +73,14 @@ func init() {
 	repositoryDescProvider := repositoryFields[32].Descriptor()
 	// repository.DefaultProvider holds the default value on creation for the provider field.
 	repository.DefaultProvider = repositoryDescProvider.Default.(string)
+	// repositoryDescBackfillStatus is the schema descriptor for backfill_status field.
+	repositoryDescBackfillStatus := repositoryFields[39].Descriptor()
+	// repository.DefaultBackfillStatus holds the default value on creation for the backfill_status field.
+	repository.DefaultBackfillStatus = repositoryDescBackfillStatus.Default.(string)
+	// repositoryDescBackfillCursorPage is the schema descriptor for backfill_cursor_page field.
+	repositoryDescBackfillCursorPage := repositoryFields[40].Descriptor()
+	// repository.DefaultBackfillCursorPage holds the default value on creation for the backfill_cursor_page field.
+	repository.DefaultBackfillCursorPage = repositoryDescBackfillCursorPage.Default.(int)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescSyncIntervalMinutes is the schema descriptor for sync_interval_minutes field.

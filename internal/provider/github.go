@@ -54,6 +54,10 @@ func (a *GitHubAdapter) GetCommitsSince(ctx context.Context, token, owner, repo,
 	return a.Client.GetCommitsSince(token, owner, repo, branch, since, maxCommits)
 }
 
+func (a *GitHubAdapter) ListCommitsPage(ctx context.Context, token, owner, repo, branch string, page, perPage int) ([]*ghclient.Commit, bool, error) {
+	return a.Client.ListCommitsPage(ctx, token, owner, repo, branch, page, perPage)
+}
+
 func (a *GitHubAdapter) ListReleases(ctx context.Context, token, owner, repo string) ([]*ghclient.Release, error) {
 	_ = ctx
 	return a.Client.ListReleases(token, owner, repo)
@@ -72,6 +76,11 @@ func (a *GitHubAdapter) ListRecentlyMergedPRs(ctx context.Context, token, owner,
 func (a *GitHubAdapter) GetLatestWorkflowRun(ctx context.Context, token, owner, repo, branch string) (*ghclient.WorkflowRun, error) {
 	_ = ctx
 	return a.Client.GetLatestWorkflowRun(token, owner, repo, branch)
+}
+
+func (a *GitHubAdapter) MergePullRequest(ctx context.Context, token, owner, repo string, number int) (bool, string, error) {
+	_ = ctx
+	return a.Client.MergePullRequest(token, owner, repo, number)
 }
 
 // Compile-time interface check.

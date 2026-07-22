@@ -92,6 +92,16 @@ const (
 	FieldForgejoHTMLURL = "forgejo_html_url"
 	// FieldForgejoURL holds the string denoting the forgejo_url field in the database.
 	FieldForgejoURL = "forgejo_url"
+	// FieldBackfillStatus holds the string denoting the backfill_status field in the database.
+	FieldBackfillStatus = "backfill_status"
+	// FieldBackfillCursorPage holds the string denoting the backfill_cursor_page field in the database.
+	FieldBackfillCursorPage = "backfill_cursor_page"
+	// FieldBackfillOldestDate holds the string denoting the backfill_oldest_date field in the database.
+	FieldBackfillOldestDate = "backfill_oldest_date"
+	// FieldBackfillError holds the string denoting the backfill_error field in the database.
+	FieldBackfillError = "backfill_error"
+	// FieldBackfillUpdatedAt holds the string denoting the backfill_updated_at field in the database.
+	FieldBackfillUpdatedAt = "backfill_updated_at"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the repository in the database.
@@ -147,6 +157,11 @@ var Columns = []string{
 	FieldForgejoFullName,
 	FieldForgejoHTMLURL,
 	FieldForgejoURL,
+	FieldBackfillStatus,
+	FieldBackfillCursorPage,
+	FieldBackfillOldestDate,
+	FieldBackfillError,
+	FieldBackfillUpdatedAt,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "repositories"
@@ -183,6 +198,10 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 	// DefaultProvider holds the default value on creation for the "provider" field.
 	DefaultProvider string
+	// DefaultBackfillStatus holds the default value on creation for the "backfill_status" field.
+	DefaultBackfillStatus string
+	// DefaultBackfillCursorPage holds the default value on creation for the "backfill_cursor_page" field.
+	DefaultBackfillCursorPage int
 )
 
 // OrderOption defines the ordering options for the Repository queries.
@@ -386,6 +405,31 @@ func ByForgejoHTMLURL(opts ...sql.OrderTermOption) OrderOption {
 // ByForgejoURL orders the results by the forgejo_url field.
 func ByForgejoURL(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldForgejoURL, opts...).ToFunc()
+}
+
+// ByBackfillStatus orders the results by the backfill_status field.
+func ByBackfillStatus(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBackfillStatus, opts...).ToFunc()
+}
+
+// ByBackfillCursorPage orders the results by the backfill_cursor_page field.
+func ByBackfillCursorPage(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBackfillCursorPage, opts...).ToFunc()
+}
+
+// ByBackfillOldestDate orders the results by the backfill_oldest_date field.
+func ByBackfillOldestDate(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBackfillOldestDate, opts...).ToFunc()
+}
+
+// ByBackfillError orders the results by the backfill_error field.
+func ByBackfillError(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBackfillError, opts...).ToFunc()
+}
+
+// ByBackfillUpdatedAt orders the results by the backfill_updated_at field.
+func ByBackfillUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBackfillUpdatedAt, opts...).ToFunc()
 }
 
 // ByUserField orders the results by user field.

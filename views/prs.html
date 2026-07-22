@@ -16,24 +16,37 @@
 
 {{if .PRs}}
 <form id="pr-queue-form" hx-post="/prs/batch-merge" hx-target="#main-content" hx-swap="innerHTML" hx-indicator="#batch-spinner">
-    <div id="pr-queue-status"></div>
+    <div id="pr-queue-status" class="mb-2"></div>
 
     <!-- Mobile: stacked card layout -->
     <div class="d-md-none d-flex flex-column gap-2 mb-3">
         {{range .PRs}}
-        <div class="card border-secondary">
+        {{$merged := index $.MergedSet (printf "%d:%d" .RepoID .Number)}}
+        <div class="card border-secondary pr-card {{if $merged}}opacity-75{{end}}">
             <div class="card-body py-2 px-3">
                 <div class="d-flex align-items-start justify-content-between gap-2">
                     <label class="d-flex align-items-start gap-2 flex-grow-1 min-w-0">
-                        <input type="checkbox" name="pr_ids" value="{{.RepoID}}:{{.Number}}" class="form-check-input pr-queue-checkbox mt-1 flex-shrink-0">
+                        {{if not $merged}}
+                        <input type="checkbox" name="pr_ids" value="{{.RepoID}}:{{.Number}}" class="form-check-input pr-queue-checkbox mt-1 flex-shrink-0" onchange="updatePRSelection()">
+                        {{end}}
                         <div class="min-w-0">
                             <a href="{{.HTMLURL}}" target="_blank" rel="noopener" class="text-light text-decoration-none small fw-medium text-truncate d-block">#{{.Number}} {{.Title}}</a>
                             <span class="text-info small">{{.RepoFullName}}</span>
                             <span class="text-secondary small d-block">{{.HeadRef}} → {{.BaseRef}}</span>
                             <span class="text-secondary small">{{.Author}} &middot; {{printf "%.10s" .CreatedAt}}</span>
+                            {{if eq .MergeableState "clean"}}<span class="badge bg-success ms-1">mergeable</span>{{else if or (eq .MergeableState "dirty") (eq .MergeableState "blocked")}}<span class="badge bg-danger ms-1">conflicts</span>{{end}}
                         </div>
                     </label>
-                    <button class="btn btn-sm btn-success flex-shrink-0" hx-post="/prs/merge" hx-vals='{"repo_id":{{.RepoID}},"pr_number":{{.Number}}}' hx-target="#main-content" hx-swap="innerHTML" hx-indicator="#batch-spinner" hx-disabled-elt="this" hx-confirm="Merge #{{.Number}} ({{.RepoFullName}})?">Merge</button>
+                    <div class="d-flex flex-column align-items-end gap-1 flex-shrink-0">
+                        {{if $merged}}
+                        <span class="badge bg-success">Merged ✓</span>
+                        {{else if or (eq .MergeableState "dirty") (eq .MergeableState "blocked")}}
+                        <button class="btn btn-sm btn-secondary" disabled title="Not mergeable — resolve conflicts first">Merge</button>
+                        {{else}}
+                        <button class="btn btn-sm btn-success pr-merge-btn" hx-post="/prs/merge" hx-vals='{"repo_id":{{.RepoID}},"pr_number":{{.Number}}}' hx-target="#main-content" hx-swap="innerHTML" hx-indicator="#pr-q-spin-{{.RepoID}}-{{.Number}}" hx-disabled-elt="this" hx-confirm="Merge #{{.Number}} ({{.RepoFullName}})?">Merge</button>
+                        <span id="pr-q-spin-{{.RepoID}}-{{.Number}}" class="htmx-indicator small text-info">Merging…</span>
+                        {{end}}
+                    </div>
                 </div>
             </div>
         </div>
@@ -44,38 +57,51 @@
     <div class="d-none d-md-block card border-secondary pr-queue-scroll">
         <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom border-secondary bg-dark small text-uppercase text-secondary fw-semibold pr-header">
             <label style="width:20px;flex-shrink:0">
-                <input type="checkbox" class="form-check-input" onchange="document.querySelectorAll('.pr-queue-checkbox').forEach(c => c.checked = this.checked)" title="Select all">
+                <input type="checkbox" class="form-check-input" onchange="document.querySelectorAll('.pr-queue-checkbox').forEach(c => c.checked = this.checked); updatePRSelection()" title="Select all">
             </label>
             <span style="width:180px;flex-shrink:0">Repository</span>
             <span class="flex-grow-1">Pull Request</span>
             <span class="d-none d-sm-inline" style="width:140px;flex-shrink:0;text-align:right">Author / Age</span>
-            <span style="width:80px;flex-shrink:0;text-align:right">Action</span>
+            <span style="width:110px;flex-shrink:0;text-align:right">Action</span>
         </div>
         {{range .PRs}}
-        <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom border-secondary bg-dark pr-row">
+        {{$merged := index $.MergedSet (printf "%d:%d" .RepoID .Number)}}
+        <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom border-secondary bg-dark pr-row {{if $merged}}opacity-75{{end}}">
             <label style="width:20px;flex-shrink:0">
-                <input type="checkbox" name="pr_ids" value="{{.RepoID}}:{{.Number}}" class="form-check-input pr-queue-checkbox">
+                {{if not $merged}}
+                <input type="checkbox" name="pr_ids" value="{{.RepoID}}:{{.Number}}" class="form-check-input pr-queue-checkbox" onchange="updatePRSelection()">
+                {{end}}
             </label>
             <span class="text-info small text-truncate d-none d-sm-inline" style="width:180px;flex-shrink:0">{{.RepoFullName}}</span>
             <span class="flex-grow-1 min-w-0 d-flex flex-column">
                 <a href="{{.HTMLURL}}" target="_blank" rel="noopener" class="text-light text-decoration-none small fw-medium text-truncate">#{{.Number}} {{.Title}}</a>
                 <span class="text-secondary small text-truncate d-sm-none">{{.RepoFullName}}</span>
-                <span class="text-secondary small">{{.HeadRef}} → {{.BaseRef}}</span>
+                <span class="text-secondary small">{{.HeadRef}} → {{.BaseRef}}
+                    {{if eq .MergeableState "clean"}}<span class="badge bg-success ms-1">mergeable</span>{{else if or (eq .MergeableState "dirty") (eq .MergeableState "blocked")}}<span class="badge bg-danger ms-1">conflicts</span>{{end}}
+                </span>
             </span>
             <span class="d-none d-sm-flex flex-column" style="width:140px;flex-shrink:0;text-align:right">
                 <span class="text-light small">{{.Author}}</span>
                 <span class="text-secondary small">{{printf "%.10s" .CreatedAt}}</span>
             </span>
-            <span style="width:80px;flex-shrink:0;text-align:right">
-                <button class="btn btn-sm btn-success" hx-post="/prs/merge" hx-vals='{"repo_id":{{.RepoID}},"pr_number":{{.Number}}}' hx-target="#main-content" hx-swap="innerHTML" hx-indicator="#batch-spinner" hx-disabled-elt="this" hx-confirm="Merge #{{.Number}} ({{.RepoFullName}})?">Merge</button>
+            <span class="d-flex flex-column align-items-end gap-1" style="width:110px;flex-shrink:0">
+                {{if $merged}}
+                <span class="badge bg-success">Merged ✓</span>
+                {{else if or (eq .MergeableState "dirty") (eq .MergeableState "blocked")}}
+                <button class="btn btn-sm btn-secondary" disabled title="Not mergeable — resolve conflicts first">Merge</button>
+                {{else}}
+                <button class="btn btn-sm btn-success pr-merge-btn" hx-post="/prs/merge" hx-vals='{"repo_id":{{.RepoID}},"pr_number":{{.Number}}}' hx-target="#main-content" hx-swap="innerHTML" hx-indicator="#pr-q-spin-{{.RepoID}}-{{.Number}}" hx-disabled-elt="this" hx-confirm="Merge #{{.Number}} ({{.RepoFullName}})?">Merge</button>
+                <span id="pr-q-spin-{{.RepoID}}-{{.Number}}" class="htmx-indicator small text-info text-end">Merging…</span>
+                {{end}}
             </span>
         </div>
         {{end}}
     </div>
-    <div class="mt-3">
-        <button type="submit" class="btn btn-sm btn-success" hx-disabled-elt="this" onclick="return document.querySelectorAll('.pr-queue-checkbox:checked').length > 0 || (alert('Select at least one PR to merge'), false)">
+    <div class="mt-3 d-flex align-items-center gap-3">
+        <button type="submit" id="pr-merge-selected-btn" class="btn btn-sm btn-success" hx-disabled-elt="this" onclick="return prQueueSubmitGuard(event)" disabled>
             Merge Selected
         </button>
+        <span id="pr-selected-count" class="text-secondary small">0 selected</span>
     </div>
 </form>
 {{else}}

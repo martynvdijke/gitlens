@@ -1,7 +1,7 @@
 import { toggleTheme, initTheme } from './theme.js';
 import { loadChartData } from './charts.js';
 import { loadTrendsData } from './trends.js';
-import { loadYearOverviewData } from './year-overview.js';
+import { loadYearOverviewData, refreshYearData } from './year-overview.js';
 import { forgejoLogin } from './forgejo.js';
 import { copyToClipboard } from './clipboard.js';
 
@@ -12,6 +12,7 @@ import { copyToClipboard } from './clipboard.js';
 (window as any).loadChartData = loadChartData;
 (window as any).loadTrendsData = loadTrendsData;
 (window as any).loadYearOverviewData = loadYearOverviewData;
+(window as any).refreshYearData = refreshYearData;
 
 // Initialize theme and tooltips on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
@@ -172,3 +173,58 @@ function initChangelogBanner(): void {
         }
     }, { passive: true });
 })();
+
+// ─── PR queue feedback ──────────────────────────────────────────────
+
+// Updates the "N selected" counter and Merge Selected button state.
+function updatePRSelection(): void {
+    const checked = document.querySelectorAll<HTMLInputElement>('.pr-queue-checkbox:checked');
+    const countEl = document.getElementById('pr-selected-count');
+    if (countEl) countEl.textContent = `${checked.length} selected`;
+    const btn = document.getElementById('pr-merge-selected-btn') as HTMLButtonElement | null;
+    if (btn) btn.disabled = checked.length === 0;
+}
+(window as any).updatePRSelection = updatePRSelection;
+
+// Guard for batch merge submit: requires at least one selected PR.
+function prQueueSubmitGuard(ev: Event): boolean {
+    const checked = document.querySelectorAll<HTMLInputElement>('.pr-queue-checkbox:checked');
+    if (checked.length === 0) {
+        const status = document.getElementById('pr-queue-status');
+        if (status) status.innerHTML = '<span class="text-warning small">Select at least one PR to merge.</span>';
+        ev.preventDefault();
+        return false;
+    }
+    return true;
+}
+(window as any).prQueueSubmitGuard = prQueueSubmitGuard;
+
+// In-flight feedback: status line for batch merges and per-row control
+// lockout while a merge request is running. Delegated so it survives
+// HTMX swaps of #main-content.
+document.body.addEventListener('htmx:beforeRequest', (ev: Event) => {
+    const elt = (ev as CustomEvent).detail?.elt as HTMLElement | undefined;
+    if (!elt) return;
+
+    if (elt.id === 'pr-queue-form') {
+        const checked = document.querySelectorAll<HTMLInputElement>('.pr-queue-checkbox:checked');
+        const status = document.getElementById('pr-queue-status');
+        if (status) {
+            status.innerHTML = `<span class="text-info small"><span class="spinner-border spinner-border-sm me-1"></span>Merging ${checked.length} PR(s)…</span>`;
+        }
+        checked.forEach((cb) => {
+            const row = cb.closest('.pr-row, .pr-card');
+            row?.querySelectorAll('input, button').forEach((el) => {
+                (el as HTMLButtonElement).disabled = true;
+            });
+        });
+        return;
+    }
+
+    if (elt.classList?.contains('pr-merge-btn')) {
+        const row = elt.closest('.pr-row, .pr-card');
+        row?.querySelectorAll('input, button').forEach((el) => {
+            (el as HTMLButtonElement).disabled = true;
+        });
+    }
+});

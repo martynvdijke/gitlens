@@ -845,6 +845,113 @@ func (_u *RepositoryUpdate) ClearForgejoURL() *RepositoryUpdate {
 	return _u
 }
 
+// SetBackfillStatus sets the "backfill_status" field.
+func (_u *RepositoryUpdate) SetBackfillStatus(v string) *RepositoryUpdate {
+	_u.mutation.SetBackfillStatus(v)
+	return _u
+}
+
+// SetNillableBackfillStatus sets the "backfill_status" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillableBackfillStatus(v *string) *RepositoryUpdate {
+	if v != nil {
+		_u.SetBackfillStatus(*v)
+	}
+	return _u
+}
+
+// ClearBackfillStatus clears the value of the "backfill_status" field.
+func (_u *RepositoryUpdate) ClearBackfillStatus() *RepositoryUpdate {
+	_u.mutation.ClearBackfillStatus()
+	return _u
+}
+
+// SetBackfillCursorPage sets the "backfill_cursor_page" field.
+func (_u *RepositoryUpdate) SetBackfillCursorPage(v int) *RepositoryUpdate {
+	_u.mutation.ResetBackfillCursorPage()
+	_u.mutation.SetBackfillCursorPage(v)
+	return _u
+}
+
+// SetNillableBackfillCursorPage sets the "backfill_cursor_page" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillableBackfillCursorPage(v *int) *RepositoryUpdate {
+	if v != nil {
+		_u.SetBackfillCursorPage(*v)
+	}
+	return _u
+}
+
+// AddBackfillCursorPage adds value to the "backfill_cursor_page" field.
+func (_u *RepositoryUpdate) AddBackfillCursorPage(v int) *RepositoryUpdate {
+	_u.mutation.AddBackfillCursorPage(v)
+	return _u
+}
+
+// ClearBackfillCursorPage clears the value of the "backfill_cursor_page" field.
+func (_u *RepositoryUpdate) ClearBackfillCursorPage() *RepositoryUpdate {
+	_u.mutation.ClearBackfillCursorPage()
+	return _u
+}
+
+// SetBackfillOldestDate sets the "backfill_oldest_date" field.
+func (_u *RepositoryUpdate) SetBackfillOldestDate(v time.Time) *RepositoryUpdate {
+	_u.mutation.SetBackfillOldestDate(v)
+	return _u
+}
+
+// SetNillableBackfillOldestDate sets the "backfill_oldest_date" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillableBackfillOldestDate(v *time.Time) *RepositoryUpdate {
+	if v != nil {
+		_u.SetBackfillOldestDate(*v)
+	}
+	return _u
+}
+
+// ClearBackfillOldestDate clears the value of the "backfill_oldest_date" field.
+func (_u *RepositoryUpdate) ClearBackfillOldestDate() *RepositoryUpdate {
+	_u.mutation.ClearBackfillOldestDate()
+	return _u
+}
+
+// SetBackfillError sets the "backfill_error" field.
+func (_u *RepositoryUpdate) SetBackfillError(v string) *RepositoryUpdate {
+	_u.mutation.SetBackfillError(v)
+	return _u
+}
+
+// SetNillableBackfillError sets the "backfill_error" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillableBackfillError(v *string) *RepositoryUpdate {
+	if v != nil {
+		_u.SetBackfillError(*v)
+	}
+	return _u
+}
+
+// ClearBackfillError clears the value of the "backfill_error" field.
+func (_u *RepositoryUpdate) ClearBackfillError() *RepositoryUpdate {
+	_u.mutation.ClearBackfillError()
+	return _u
+}
+
+// SetBackfillUpdatedAt sets the "backfill_updated_at" field.
+func (_u *RepositoryUpdate) SetBackfillUpdatedAt(v time.Time) *RepositoryUpdate {
+	_u.mutation.SetBackfillUpdatedAt(v)
+	return _u
+}
+
+// SetNillableBackfillUpdatedAt sets the "backfill_updated_at" field if the given value is not nil.
+func (_u *RepositoryUpdate) SetNillableBackfillUpdatedAt(v *time.Time) *RepositoryUpdate {
+	if v != nil {
+		_u.SetBackfillUpdatedAt(*v)
+	}
+	return _u
+}
+
+// ClearBackfillUpdatedAt clears the value of the "backfill_updated_at" field.
+func (_u *RepositoryUpdate) ClearBackfillUpdatedAt() *RepositoryUpdate {
+	_u.mutation.ClearBackfillUpdatedAt()
+	return _u
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (_u *RepositoryUpdate) SetUserID(id int) *RepositoryUpdate {
 	_u.mutation.SetUserID(id)
@@ -1171,6 +1278,39 @@ func (_u *RepositoryUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 	}
 	if _u.mutation.ForgejoURLCleared() {
 		_spec.ClearField(repository.FieldForgejoURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.BackfillStatus(); ok {
+		_spec.SetField(repository.FieldBackfillStatus, field.TypeString, value)
+	}
+	if _u.mutation.BackfillStatusCleared() {
+		_spec.ClearField(repository.FieldBackfillStatus, field.TypeString)
+	}
+	if value, ok := _u.mutation.BackfillCursorPage(); ok {
+		_spec.SetField(repository.FieldBackfillCursorPage, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedBackfillCursorPage(); ok {
+		_spec.AddField(repository.FieldBackfillCursorPage, field.TypeInt, value)
+	}
+	if _u.mutation.BackfillCursorPageCleared() {
+		_spec.ClearField(repository.FieldBackfillCursorPage, field.TypeInt)
+	}
+	if value, ok := _u.mutation.BackfillOldestDate(); ok {
+		_spec.SetField(repository.FieldBackfillOldestDate, field.TypeTime, value)
+	}
+	if _u.mutation.BackfillOldestDateCleared() {
+		_spec.ClearField(repository.FieldBackfillOldestDate, field.TypeTime)
+	}
+	if value, ok := _u.mutation.BackfillError(); ok {
+		_spec.SetField(repository.FieldBackfillError, field.TypeString, value)
+	}
+	if _u.mutation.BackfillErrorCleared() {
+		_spec.ClearField(repository.FieldBackfillError, field.TypeString)
+	}
+	if value, ok := _u.mutation.BackfillUpdatedAt(); ok {
+		_spec.SetField(repository.FieldBackfillUpdatedAt, field.TypeTime, value)
+	}
+	if _u.mutation.BackfillUpdatedAtCleared() {
+		_spec.ClearField(repository.FieldBackfillUpdatedAt, field.TypeTime)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -2037,6 +2177,113 @@ func (_u *RepositoryUpdateOne) ClearForgejoURL() *RepositoryUpdateOne {
 	return _u
 }
 
+// SetBackfillStatus sets the "backfill_status" field.
+func (_u *RepositoryUpdateOne) SetBackfillStatus(v string) *RepositoryUpdateOne {
+	_u.mutation.SetBackfillStatus(v)
+	return _u
+}
+
+// SetNillableBackfillStatus sets the "backfill_status" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillableBackfillStatus(v *string) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetBackfillStatus(*v)
+	}
+	return _u
+}
+
+// ClearBackfillStatus clears the value of the "backfill_status" field.
+func (_u *RepositoryUpdateOne) ClearBackfillStatus() *RepositoryUpdateOne {
+	_u.mutation.ClearBackfillStatus()
+	return _u
+}
+
+// SetBackfillCursorPage sets the "backfill_cursor_page" field.
+func (_u *RepositoryUpdateOne) SetBackfillCursorPage(v int) *RepositoryUpdateOne {
+	_u.mutation.ResetBackfillCursorPage()
+	_u.mutation.SetBackfillCursorPage(v)
+	return _u
+}
+
+// SetNillableBackfillCursorPage sets the "backfill_cursor_page" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillableBackfillCursorPage(v *int) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetBackfillCursorPage(*v)
+	}
+	return _u
+}
+
+// AddBackfillCursorPage adds value to the "backfill_cursor_page" field.
+func (_u *RepositoryUpdateOne) AddBackfillCursorPage(v int) *RepositoryUpdateOne {
+	_u.mutation.AddBackfillCursorPage(v)
+	return _u
+}
+
+// ClearBackfillCursorPage clears the value of the "backfill_cursor_page" field.
+func (_u *RepositoryUpdateOne) ClearBackfillCursorPage() *RepositoryUpdateOne {
+	_u.mutation.ClearBackfillCursorPage()
+	return _u
+}
+
+// SetBackfillOldestDate sets the "backfill_oldest_date" field.
+func (_u *RepositoryUpdateOne) SetBackfillOldestDate(v time.Time) *RepositoryUpdateOne {
+	_u.mutation.SetBackfillOldestDate(v)
+	return _u
+}
+
+// SetNillableBackfillOldestDate sets the "backfill_oldest_date" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillableBackfillOldestDate(v *time.Time) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetBackfillOldestDate(*v)
+	}
+	return _u
+}
+
+// ClearBackfillOldestDate clears the value of the "backfill_oldest_date" field.
+func (_u *RepositoryUpdateOne) ClearBackfillOldestDate() *RepositoryUpdateOne {
+	_u.mutation.ClearBackfillOldestDate()
+	return _u
+}
+
+// SetBackfillError sets the "backfill_error" field.
+func (_u *RepositoryUpdateOne) SetBackfillError(v string) *RepositoryUpdateOne {
+	_u.mutation.SetBackfillError(v)
+	return _u
+}
+
+// SetNillableBackfillError sets the "backfill_error" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillableBackfillError(v *string) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetBackfillError(*v)
+	}
+	return _u
+}
+
+// ClearBackfillError clears the value of the "backfill_error" field.
+func (_u *RepositoryUpdateOne) ClearBackfillError() *RepositoryUpdateOne {
+	_u.mutation.ClearBackfillError()
+	return _u
+}
+
+// SetBackfillUpdatedAt sets the "backfill_updated_at" field.
+func (_u *RepositoryUpdateOne) SetBackfillUpdatedAt(v time.Time) *RepositoryUpdateOne {
+	_u.mutation.SetBackfillUpdatedAt(v)
+	return _u
+}
+
+// SetNillableBackfillUpdatedAt sets the "backfill_updated_at" field if the given value is not nil.
+func (_u *RepositoryUpdateOne) SetNillableBackfillUpdatedAt(v *time.Time) *RepositoryUpdateOne {
+	if v != nil {
+		_u.SetBackfillUpdatedAt(*v)
+	}
+	return _u
+}
+
+// ClearBackfillUpdatedAt clears the value of the "backfill_updated_at" field.
+func (_u *RepositoryUpdateOne) ClearBackfillUpdatedAt() *RepositoryUpdateOne {
+	_u.mutation.ClearBackfillUpdatedAt()
+	return _u
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (_u *RepositoryUpdateOne) SetUserID(id int) *RepositoryUpdateOne {
 	_u.mutation.SetUserID(id)
@@ -2393,6 +2640,39 @@ func (_u *RepositoryUpdateOne) sqlSave(ctx context.Context) (_node *Repository, 
 	}
 	if _u.mutation.ForgejoURLCleared() {
 		_spec.ClearField(repository.FieldForgejoURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.BackfillStatus(); ok {
+		_spec.SetField(repository.FieldBackfillStatus, field.TypeString, value)
+	}
+	if _u.mutation.BackfillStatusCleared() {
+		_spec.ClearField(repository.FieldBackfillStatus, field.TypeString)
+	}
+	if value, ok := _u.mutation.BackfillCursorPage(); ok {
+		_spec.SetField(repository.FieldBackfillCursorPage, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedBackfillCursorPage(); ok {
+		_spec.AddField(repository.FieldBackfillCursorPage, field.TypeInt, value)
+	}
+	if _u.mutation.BackfillCursorPageCleared() {
+		_spec.ClearField(repository.FieldBackfillCursorPage, field.TypeInt)
+	}
+	if value, ok := _u.mutation.BackfillOldestDate(); ok {
+		_spec.SetField(repository.FieldBackfillOldestDate, field.TypeTime, value)
+	}
+	if _u.mutation.BackfillOldestDateCleared() {
+		_spec.ClearField(repository.FieldBackfillOldestDate, field.TypeTime)
+	}
+	if value, ok := _u.mutation.BackfillError(); ok {
+		_spec.SetField(repository.FieldBackfillError, field.TypeString, value)
+	}
+	if _u.mutation.BackfillErrorCleared() {
+		_spec.ClearField(repository.FieldBackfillError, field.TypeString)
+	}
+	if value, ok := _u.mutation.BackfillUpdatedAt(); ok {
+		_spec.SetField(repository.FieldBackfillUpdatedAt, field.TypeTime, value)
+	}
+	if _u.mutation.BackfillUpdatedAtCleared() {
+		_spec.ClearField(repository.FieldBackfillUpdatedAt, field.TypeTime)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

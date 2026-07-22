@@ -251,7 +251,7 @@ func main() {
 	deployHandler := handlers.NewDeployHandler(gotify.New() != nil)
 	feedHandler := handlers.NewFeedHandler(client)
 	trendsHandler := handlers.NewTrendsHandler(client)
-	yearOverviewHandler := handlers.NewYearOverviewHandler(client)
+	yearOverviewHandler := handlers.NewYearOverviewHandler(client, syncer)
 	adminHandler := handlers.NewAdminHandler(client, otelManager)
 
 	r := gin.New()
@@ -312,6 +312,8 @@ func main() {
 		authed.GET("/deploy", middleware.HTMXOnly(), deployHandler.Dashboard)
 		authed.GET("/year-overview", middleware.HTMXOnly(), yearOverviewHandler.YearOverview)
 		authed.GET("/year-overview/stats", yearOverviewHandler.Stats)
+		authed.GET("/year-overview/backfill-status", yearOverviewHandler.BackfillStatus)
+		authed.POST("/year-overview/refresh", yearOverviewHandler.Refresh)
 		authed.GET("/charts/data", chartHandler.Data)
 		authed.GET("/feed", feedHandler.Feed)
 		authed.POST("/feed/filter", feedHandler.FeedFilter)

@@ -1,6 +1,7 @@
 package github
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -21,6 +22,23 @@ type Client struct {
 
 	RateLimitRemaining int
 	RateLimitReset     int64
+}
+
+// RateLimitError is returned when GitHub reports the rate limit is
+// exhausted (HTTP 403/429 with X-RateLimit-Remaining: 0). Callers can
+// use errors.As to detect it and back off until RetryAfter.
+type RateLimitError struct {
+	// RetryAfter is when the rate limit window resets (may be zero if
+	// the server did not report a reset time).
+	RetryAfter time.Time
+	Status     string
+}
+
+func (e *RateLimitError) Error() string {
+	if !e.RetryAfter.IsZero() {
+		return fmt.Sprintf("github rate limit exhausted, retry after %s", e.RetryAfter.Format(time.RFC3339))
+	}
+	return fmt.Sprintf("github rate limit exhausted (%s)", e.Status)
 }
 
 func NewClient(clientID, clientSecret string) *Client {
@@ -135,6 +153,9 @@ type PullRequest struct {
 	HTMLURL   string
 	HeadRef   string
 	BaseRef   string
+	// MergeableState is the provider's mergeability hint ("clean",
+	// "dirty", "unknown", ...). Empty when the provider doesn't report it.
+	MergeableState string
 }
 
 type ghPullRequest struct {
@@ -193,6 +214,17 @@ func (c *Client) doRequest(method, urlStr, token string, body io.Reader) (*http.
 
 	if resp.StatusCode >= 400 {
 		resp.Body.Close()
+		// Rate limit exhausted: 403/429 with no remaining quota.
+		if (resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusTooManyRequests) &&
+			resp.Header.Get("X-RateLimit-Remaining") == "0" {
+			rlErr := &RateLimitError{Status: resp.Status}
+			if v := resp.Header.Get("X-RateLimit-Reset"); v != "" {
+				if n, err := strconv.ParseInt(v, 10, 64); err == nil {
+					rlErr.RetryAfter = time.Unix(n, 0)
+				}
+			}
+			return nil, rlErr
+		}
 		return nil, fmt.Errorf("GitHub API error: %s", resp.Status)
 	}
 	return resp, nil
@@ -415,6 +447,46 @@ func (c *Client) GetCommitsSince(token, owner, repo, branch string, since time.T
 	return allCommits, nil
 }
 
+// ListCommitsPage fetches a single page of commits (newest first) from
+// the given branch. perPage is clamped to [1,100]; page is 1-indexed.
+// hasMore reports whether another page likely exists (page was full).
+// A *RateLimitError is returned when the API rate limit is exhausted.
+func (c *Client) ListCommitsPage(ctx context.Context, token, owner, repo, branch string, page, perPage int) (commits []*Commit, hasMore bool, err error) {
+	_ = ctx
+	if page < 1 {
+		page = 1
+	}
+	if perPage < 1 {
+		perPage = 1
+	}
+	if perPage > 100 {
+		perPage = 100
+	}
+
+	u := fmt.Sprintf("%s/repos/%s/%s/commits?per_page=%d&page=%d&sha=%s",
+		c.APIURL, owner, repo, perPage, page, url.QueryEscape(branch))
+	resp, err := c.doRequest("GET", u, token, nil)
+	if err != nil {
+		return nil, false, err
+	}
+	defer resp.Body.Close()
+
+	var ghCommits []ghCommit
+	if err := json.NewDecoder(resp.Body).Decode(&ghCommits); err != nil {
+		return nil, false, fmt.Errorf("decoding commits: %w", err)
+	}
+
+	for _, gc := range ghCommits {
+		t, _ := time.Parse(time.RFC3339, gc.Commit.Committer.Date)
+		commits = append(commits, &Commit{
+			SHA:     gc.SHA,
+			Message: strings.Split(gc.Commit.Message, "\n")[0],
+			Date:    t,
+		})
+	}
+	return commits, len(ghCommits) == perPage, nil
+}
+
 func ParseCommitType(msg string) string {
 	// Parse conventional commit prefix like "feat:", "fix:", "feat(scope):", etc.
 	msg = strings.TrimSpace(msg)
@@ -554,9 +626,10 @@ func (c *Client) ListPullRequests(token, owner, repo string) ([]*PullRequest, er
 			Title:     pr.Title,
 			Author:    pr.User.Login,
 			CreatedAt: t,
-			HTMLURL:   pr.HTMLURL,
-			HeadRef:   pr.Head.Ref,
-			BaseRef:   pr.Base.Ref,
+			HTMLURL:        pr.HTMLURL,
+			HeadRef:        pr.Head.Ref,
+			BaseRef:        pr.Base.Ref,
+			MergeableState: pr.MergeableState,
 		})
 	}
 	return prs, nil

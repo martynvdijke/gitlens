@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"sync"
 	"time"
 
 	"gitlens/ent"
@@ -26,6 +27,13 @@ type Syncer struct {
 	providers map[string]provider.Provider
 	hub       *ws.Hub
 	tmpl      *template.Template
+
+	// repoLocks serializes CommitActivity writes (incremental upserts
+	// vs. backfill absolute sets) per repository.
+	repoLocks sync.Map // map[int]*sync.Mutex
+
+	// bgSyncs dedupes background SyncOne runs per repo.
+	bgSyncs sync.Map // map[int]struct{}
 }
 
 func NewSyncer(client *ent.Client, gh *github.Client, providers map[string]provider.Provider, hub *ws.Hub) *Syncer {
@@ -35,6 +43,12 @@ func NewSyncer(client *ent.Client, gh *github.Client, providers map[string]provi
 		providers: providers,
 		hub:       hub,
 	}
+}
+
+// repoLock returns the per-repo mutex guarding CommitActivity writes.
+func (s *Syncer) repoLock(repoID int) *sync.Mutex {
+	v, _ := s.repoLocks.LoadOrStore(repoID, &sync.Mutex{})
+	return v.(*sync.Mutex)
 }
 
 func (s *Syncer) SetTemplate(tmpl *template.Template) {
@@ -79,6 +93,30 @@ func (s *Syncer) syncUserRepos(ctx context.Context, u *ent.User) {
 		s.SyncOne(ctx, r)
 	}
 	_, _ = s.client.User.UpdateOne(u).SetSyncedAt(time.Now()).Save(ctx)
+}
+
+// ProviderFor exposes getProvider for handlers (e.g. merge endpoints)
+// that need provider-aware API calls.
+func (s *Syncer) ProviderFor(u *ent.User, repo *ent.Repository) (provider.Provider, string) {
+	return s.getProvider(u, repo)
+}
+
+// SyncOneBackground runs SyncOne in a goroutine with a background
+// context, deduplicated per repo: a second call while a sync for the
+// same repo is still in flight is a no-op.
+func (s *Syncer) SyncOneBackground(repo *ent.Repository) {
+	if _, loaded := s.bgSyncs.LoadOrStore(repo.ID, struct{}{}); loaded {
+		return
+	}
+	go func() {
+		defer s.bgSyncs.Delete(repo.ID)
+		defer func() {
+			if r := recover(); r != nil {
+				log.Printf("background sync: panic for repo %d: %v", repo.ID, r)
+			}
+		}()
+		s.SyncOne(context.Background(), repo)
+	}()
 }
 
 // getProvider returns the appropriate Provider for the repo, plus the
@@ -140,6 +178,12 @@ func (s *Syncer) SyncOne(ctx context.Context, repo *ent.Repository) *ent.Reposit
 	s.recordEvents(ctx, u, repo, beforeReleaseTag, beforeWorkflowStatus, beforeReleaseConclusion)
 	s.recordSnapshot(ctx, repo)
 
+	// Kick off historical commit-activity backfill if it has never run
+	// (or a previous run went stale). No-op when already running/done.
+	if repo.BackfillStatus != "done" {
+		s.MaybeStartBackfill(repo.ID)
+	}
+
 	if s.hub != nil {
 		s.broadcastUpdate(repo, u)
 	}
@@ -147,14 +191,29 @@ func (s *Syncer) SyncOne(ctx context.Context, repo *ent.Repository) *ent.Reposit
 }
 
 func (s *Syncer) syncCommits(ctx context.Context, p provider.Provider, token string, u *ent.User, repo *ent.Repository, updated *ent.RepositoryUpdateOne) {
+	// Derive the fetch window from the newest previously seen COMMIT
+	// (not the SyncedAt wall clock) with a small overlap buffer, then
+	// trim at the previously seen head SHA so refetched commits are
+	// never counted twice.
 	var since time.Time
-	if !repo.SyncedAt.IsZero() {
-		since = repo.SyncedAt
+	if !repo.LatestCommitDate.IsZero() {
+		since = repo.LatestCommitDate.Add(-2 * time.Minute)
 	}
 	commits, err := p.GetCommitsSince(ctx, token, repo.Owner, repo.Name, repo.DefaultBranch, since, 500)
 	if err != nil {
 		log.Printf("Error fetching commits for %s: %v", repo.FullName, err)
 		return
+	}
+
+	// Commits come back newest-first; everything from the previously
+	// seen head SHA onward has already been counted.
+	if repo.LatestCommitSha != "" {
+		for i, c := range commits {
+			if c.SHA == repo.LatestCommitSha {
+				commits = commits[:i]
+				break
+			}
+		}
 	}
 
 	total := repo.TotalCommitsFetched
@@ -200,10 +259,15 @@ func (s *Syncer) syncCommits(ctx context.Context, p provider.Provider, token str
 		updated.SetOtherCommitCount(repo.OtherCommitCount + other)
 	}
 
-	// Bucket commits by day and upsert activity rows (non-fatal on error)
+	// Bucket commits by day and upsert activity rows (non-fatal on
+	// error). These are strictly-new commits (SHA-trimmed above), so
+	// incrementing is safe. Serialized with backfill writes.
 	dayCounts := bucketCommitsByDay(commits)
 	if len(dayCounts) > 0 {
+		lock := s.repoLock(repo.ID)
+		lock.Lock()
 		s.upsertCommitActivity(ctx, repo.ID, dayCounts)
+		lock.Unlock()
 	}
 }
 
@@ -291,27 +355,29 @@ func (s *Syncer) syncPullRequests(ctx context.Context, p provider.Provider, toke
 	updated.SetOpenPrCount(len(prs))
 
 	if len(prs) > 0 {
-		type prSummary struct {
-			Number    int    `json:"n"`
-			Title     string `json:"t"`
-			Author    string `json:"a"`
-			CreatedAt string `json:"c"`
-			HTMLURL   string `json:"h"`
-			HeadRef   string `json:"hr"`
-			BaseRef   string `json:"br"`
-		}
-		var summaries []prSummary
-		for _, pr := range prs {
-			summaries = append(summaries, prSummary{
-				Number:    pr.Number,
-				Title:     pr.Title,
-				Author:    pr.Author,
-				CreatedAt: pr.CreatedAt.Format(time.RFC3339),
-				HTMLURL:   pr.HTMLURL,
-				HeadRef:   pr.HeadRef,
-				BaseRef:   pr.BaseRef,
-			})
-		}
+	type prSummary struct {
+		Number         int    `json:"n"`
+		Title          string `json:"t"`
+		Author         string `json:"a"`
+		CreatedAt      string `json:"c"`
+		HTMLURL        string `json:"h"`
+		HeadRef        string `json:"hr"`
+		BaseRef        string `json:"br"`
+		MergeableState string `json:"ms,omitempty"`
+	}
+	var summaries []prSummary
+	for _, pr := range prs {
+		summaries = append(summaries, prSummary{
+			Number:         pr.Number,
+			Title:          pr.Title,
+			Author:         pr.Author,
+			CreatedAt:      pr.CreatedAt.Format(time.RFC3339),
+			HTMLURL:        pr.HTMLURL,
+			HeadRef:        pr.HeadRef,
+			BaseRef:        pr.BaseRef,
+			MergeableState: pr.MergeableState,
+		})
+	}
 		data, err := json.Marshal(summaries)
 		if err == nil {
 			updated.SetPullRequests(string(data))

@@ -1,7 +1,9 @@
 package github
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -1078,5 +1080,76 @@ func TestRebaseAllOpenPRs_NoDashboard(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "no Dependency Dashboard issue found") {
 		t.Errorf("unexpected error message: %v", err)
+	}
+}
+
+func TestListCommitsPage_Pagination(t *testing.T) {
+	var gotQuery string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotQuery = r.URL.RawQuery
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`[{"sha":"a","commit":{"message":"m","committer":{"date":"2025-01-02T00:00:00Z"}}}]`))
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	commits, hasMore, err := c.ListCommitsPage(context.Background(), "token", "user", "repo", "main", 3, 1)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(commits) != 1 {
+		t.Fatalf("expected 1 commit, got %d", len(commits))
+	}
+	if !hasMore {
+		t.Error("expected hasMore=true when page is full")
+	}
+	if gotQuery == "" || !strings.Contains(gotQuery, "page=3") || !strings.Contains(gotQuery, "per_page=1") || !strings.Contains(gotQuery, "sha=main") {
+		t.Errorf("unexpected query: %s", gotQuery)
+	}
+}
+
+func TestListCommitsPage_HasMoreFalseOnShortPage(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`[]`))
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	commits, hasMore, err := c.ListCommitsPage(context.Background(), "token", "user", "repo", "main", 1, 100)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(commits) != 0 {
+		t.Fatalf("expected 0 commits, got %d", len(commits))
+	}
+	if hasMore {
+		t.Error("expected hasMore=false on short page")
+	}
+}
+
+func TestListCommitsPage_RateLimitError(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-RateLimit-Remaining", "0")
+		w.Header().Set("X-RateLimit-Reset", "1893456000")
+		w.WriteHeader(http.StatusForbidden)
+		w.Write([]byte(`{"message":"API rate limit exceeded"}`))
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	_, _, err := c.ListCommitsPage(context.Background(), "token", "user", "repo", "main", 1, 100)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	var rlErr *RateLimitError
+	if !errors.As(err, &rlErr) {
+		t.Fatalf("expected *RateLimitError, got %T: %v", err, err)
 	}
 }

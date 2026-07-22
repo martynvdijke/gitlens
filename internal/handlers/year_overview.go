@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	"sort"
 	"strconv"
@@ -10,6 +11,7 @@ import (
 	"gitlens/ent/commitactivity"
 	"gitlens/ent/repository"
 	"gitlens/ent/user"
+	appsync "gitlens/internal/sync"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,10 +19,21 @@ import (
 // YearOverviewHandler serves the Year Overview tab and stats JSON.
 type YearOverviewHandler struct {
 	client *ent.Client
+	syncer *appsync.Syncer
 }
 
-func NewYearOverviewHandler(client *ent.Client) *YearOverviewHandler {
-	return &YearOverviewHandler{client: client}
+func NewYearOverviewHandler(client *ent.Client, syncer *appsync.Syncer) *YearOverviewHandler {
+	return &YearOverviewHandler{client: client, syncer: syncer}
+}
+
+// BackfillInfo summarizes commit-activity backfill progress across a
+// set of repos. Status is the aggregate: running > pending > error > done.
+type BackfillInfo struct {
+	Status  string `json:"status"`
+	Pending int    `json:"pending"`
+	Running int    `json:"running"`
+	Done    int    `json:"done"`
+	Error   int    `json:"error"`
 }
 
 // YearStatsResponse is the JSON payload returned by /year-overview/stats.
@@ -37,6 +50,7 @@ type YearStatsResponse struct {
 	TopRepos       []RepoStat     `json:"top_repos"`
 	RepoID         int            `json:"repo_id,omitempty"`
 	RepoName       string         `json:"repo_name,omitempty"`
+	Backfill       *BackfillInfo  `json:"backfill,omitempty"`
 }
 
 // DayStat represents a single day's commit count.
@@ -99,23 +113,20 @@ func (h *YearOverviewHandler) Stats(c *gin.Context) {
 
 	repoIDStr := c.Query("repo_id")
 
-	// Get user's repo IDs (scoped to authenticated user)
-	repoQuery := h.client.Repository.Query().
-		Where(repository.HasUserWith(user.ID(int(userID))))
-
-	if repoIDStr != "" {
-		repoID, err := strconv.Atoi(repoIDStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid repo_id"})
-			return
-		}
-		repoQuery = repoQuery.Where(repository.ID(repoID))
-	}
-
-	repos, err := repoQuery.All(ctx)
+	repos, err := h.userRepos(ctx, int(userID), repoIDStr)
 	if err != nil || len(repos) == 0 {
 		c.JSON(http.StatusOK, YearStatsResponse{Year: year})
 		return
+	}
+
+	// Kick off (or resume) backfills for repos whose history is not yet
+	// complete. The UI polls /year-overview/backfill-status meanwhile.
+	if h.syncer != nil {
+		for _, r := range repos {
+			if r.BackfillStatus == "pending" || r.BackfillStatus == "running" {
+				h.syncer.MaybeStartBackfill(r.ID)
+			}
+		}
 	}
 
 	repoIDs := make([]int, len(repos))
@@ -151,7 +162,100 @@ func (h *YearOverviewHandler) Stats(c *gin.Context) {
 		stats.RepoName = repos[0].FullName
 	}
 
+	stats.Backfill = aggregateBackfillInfo(repos)
+
 	c.JSON(http.StatusOK, stats)
+}
+
+// userRepos returns the authenticated user's repos, optionally filtered
+// by a repo_id query-string value ("" = all repos).
+func (h *YearOverviewHandler) userRepos(ctx context.Context, userID int, repoIDStr string) ([]*ent.Repository, error) {
+	repoQuery := h.client.Repository.Query().
+		Where(repository.HasUserWith(user.ID(userID)))
+
+	if repoIDStr != "" {
+		repoID, err := strconv.Atoi(repoIDStr)
+		if err != nil {
+			return nil, err
+		}
+		repoQuery = repoQuery.Where(repository.ID(repoID))
+	}
+	return repoQuery.All(ctx)
+}
+
+// aggregateBackfillInfo counts per-repo backfill states and derives an
+// aggregate status (running > pending > error > done).
+func aggregateBackfillInfo(repos []*ent.Repository) *BackfillInfo {
+	info := &BackfillInfo{Status: "done"}
+	for _, r := range repos {
+		switch r.BackfillStatus {
+		case "running":
+			info.Running++
+		case "pending":
+			info.Pending++
+		case "error":
+			info.Error++
+		default:
+			info.Done++
+		}
+	}
+	switch {
+	case info.Running > 0:
+		info.Status = "running"
+	case info.Pending > 0:
+		info.Status = "pending"
+	case info.Error > 0:
+		info.Status = "error"
+	}
+	return info
+}
+
+// BackfillStatus returns aggregate backfill progress as JSON.
+// GET /year-overview/backfill-status?repo_id=optional
+func (h *YearOverviewHandler) BackfillStatus(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	ctx := c.Request.Context()
+
+	repos, err := h.userRepos(ctx, int(userID), c.Query("repo_id"))
+	if err != nil || len(repos) == 0 {
+		c.JSON(http.StatusOK, &BackfillInfo{Status: "done"})
+		return
+	}
+	c.JSON(http.StatusOK, aggregateBackfillInfo(repos))
+}
+
+// Refresh forces a full history recount for the user's repos: status is
+// reset to pending with the cursor cleared, then the backfill restarts
+// in the background.
+// POST /year-overview/refresh?repo_id=optional
+func (h *YearOverviewHandler) Refresh(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	ctx := c.Request.Context()
+
+	repos, err := h.userRepos(ctx, int(userID), c.Query("repo_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid repo_id"})
+		return
+	}
+
+	now := time.Now()
+	refreshed := 0
+	for _, r := range repos {
+		_, err := h.client.Repository.UpdateOneID(r.ID).
+			SetBackfillStatus("pending").
+			SetBackfillCursorPage(0).
+			SetBackfillError("").
+			SetBackfillUpdatedAt(now).
+			Save(ctx)
+		if err != nil {
+			continue
+		}
+		refreshed++
+		if h.syncer != nil {
+			h.syncer.MaybeStartBackfill(r.ID)
+		}
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "pending", "repos": refreshed})
 }
 
 // computeYearStats computes all year-in-review stats from a flat list of CommitActivity rows.

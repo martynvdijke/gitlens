@@ -44,6 +44,12 @@ type Provider interface {
 	// If since is the zero time, returns up to `maxCommits` recent commits.
 	GetCommitsSince(ctx context.Context, token, owner, repo, branch string, since time.Time, maxCommits int) ([]*ghclient.Commit, error)
 
+	// ListCommitsPage fetches a single page of commits (newest first)
+	// from `branch`. page is 1-indexed; perPage is clamped to the
+	// provider's maximum. hasMore reports whether another page likely
+	// exists. Used by the historical backfill walker.
+	ListCommitsPage(ctx context.Context, token, owner, repo, branch string, page, perPage int) (commits []*ghclient.Commit, hasMore bool, err error)
+
 	// ListReleases returns all releases for the repo, newest first.
 	ListReleases(ctx context.Context, token, owner, repo string) ([]*ghclient.Release, error)
 
@@ -53,6 +59,11 @@ type Provider interface {
 	// ListRecentlyMergedPRs returns the most recently merged pull
 	// requests for the repo (closed + merged=true).
 	ListRecentlyMergedPRs(ctx context.Context, token, owner, repo string) ([]*ghclient.PullRequest, error)
+
+	// MergePullRequest merges an open PR using the provider's default
+	// merge method. Returns (false, message, nil) when the server
+	// refuses the merge (conflicts, failing checks, etc.).
+	MergePullRequest(ctx context.Context, token, owner, repo string, number int) (merged bool, message string, err error)
 
 	// GetLatestWorkflowRun returns the most recent completed workflow
 	// run for `branch`. Providers without a workflow concept (e.g.
