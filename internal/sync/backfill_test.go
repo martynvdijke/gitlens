@@ -28,7 +28,7 @@ type fakePage struct {
 	hasMore bool
 }
 
-func (f *fakeProvider) Name() string                    { return "fake" }
+func (f *fakeProvider) Name() string                             { return "fake" }
 func (f *fakeProvider) AuthURL(state, redirectURL string) string { return "" }
 func (f *fakeProvider) ExchangeCode(ctx context.Context, code, redirectURL string) (string, *ghclient.User, error) {
 	return "", nil, fmt.Errorf("not implemented")

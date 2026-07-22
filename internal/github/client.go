@@ -622,10 +622,10 @@ func (c *Client) ListPullRequests(token, owner, repo string) ([]*PullRequest, er
 	for _, pr := range ghPRs {
 		t, _ := time.Parse(time.RFC3339, pr.CreatedAt)
 		prs = append(prs, &PullRequest{
-			Number:    pr.Number,
-			Title:     pr.Title,
-			Author:    pr.User.Login,
-			CreatedAt: t,
+			Number:         pr.Number,
+			Title:          pr.Title,
+			Author:         pr.User.Login,
+			CreatedAt:      t,
 			HTMLURL:        pr.HTMLURL,
 			HeadRef:        pr.Head.Ref,
 			BaseRef:        pr.Base.Ref,

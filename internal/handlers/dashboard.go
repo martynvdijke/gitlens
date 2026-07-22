@@ -642,12 +642,12 @@ func (h *DashboardHandler) fetchPRTabData(ctx context.Context, userID int, filte
 		}
 		for _, pr := range prs {
 			allPRs = append(allPRs, PRQueueItem{
-				RepoID:       r.ID,
-				RepoFullName: r.FullName,
-				Number:       pr.Number,
-				Title:        pr.Title,
-				Author:       pr.Author,
-				CreatedAt:    pr.CreatedAt,
+				RepoID:         r.ID,
+				RepoFullName:   r.FullName,
+				Number:         pr.Number,
+				Title:          pr.Title,
+				Author:         pr.Author,
+				CreatedAt:      pr.CreatedAt,
 				HTMLURL:        pr.HTMLURL,
 				HeadRef:        pr.HeadRef,
 				BaseRef:        pr.BaseRef,

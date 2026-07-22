@@ -355,29 +355,29 @@ func (s *Syncer) syncPullRequests(ctx context.Context, p provider.Provider, toke
 	updated.SetOpenPrCount(len(prs))
 
 	if len(prs) > 0 {
-	type prSummary struct {
-		Number         int    `json:"n"`
-		Title          string `json:"t"`
-		Author         string `json:"a"`
-		CreatedAt      string `json:"c"`
-		HTMLURL        string `json:"h"`
-		HeadRef        string `json:"hr"`
-		BaseRef        string `json:"br"`
-		MergeableState string `json:"ms,omitempty"`
-	}
-	var summaries []prSummary
-	for _, pr := range prs {
-		summaries = append(summaries, prSummary{
-			Number:         pr.Number,
-			Title:          pr.Title,
-			Author:         pr.Author,
-			CreatedAt:      pr.CreatedAt.Format(time.RFC3339),
-			HTMLURL:        pr.HTMLURL,
-			HeadRef:        pr.HeadRef,
-			BaseRef:        pr.BaseRef,
-			MergeableState: pr.MergeableState,
-		})
-	}
+		type prSummary struct {
+			Number         int    `json:"n"`
+			Title          string `json:"t"`
+			Author         string `json:"a"`
+			CreatedAt      string `json:"c"`
+			HTMLURL        string `json:"h"`
+			HeadRef        string `json:"hr"`
+			BaseRef        string `json:"br"`
+			MergeableState string `json:"ms,omitempty"`
+		}
+		var summaries []prSummary
+		for _, pr := range prs {
+			summaries = append(summaries, prSummary{
+				Number:         pr.Number,
+				Title:          pr.Title,
+				Author:         pr.Author,
+				CreatedAt:      pr.CreatedAt.Format(time.RFC3339),
+				HTMLURL:        pr.HTMLURL,
+				HeadRef:        pr.HeadRef,
+				BaseRef:        pr.BaseRef,
+				MergeableState: pr.MergeableState,
+			})
+		}
 		data, err := json.Marshal(summaries)
 		if err == nil {
 			updated.SetPullRequests(string(data))

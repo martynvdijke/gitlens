@@ -25,8 +25,8 @@ import (
 // mergeFakeProvider is a test double for provider.Provider whose merge
 // behavior is scriptable per PR number.
 type mergeFakeProvider struct {
-	name      string
-	mergeFn   func(number int) (bool, string, error)
+	name       string
+	mergeFn    func(number int) (bool, string, error)
 	mergeCalls []int
 }
 
