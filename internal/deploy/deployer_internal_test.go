@@ -188,6 +188,22 @@ func TestContainerCreateArgs_PreservesConfig(t *testing.T) {
 	}
 }
 
+// TestContainerCreateArgs_DropsImplicitHostname guards self-update detection:
+// Docker defaults a container's hostname to its own short ID, so recreating a
+// container must not re-pass it — otherwise the new container keeps the old ID
+// as its hostname and the next deploy stops the container running GitLens.
+func TestContainerCreateArgs_DropsImplicitHostname(t *testing.T) {
+	id := strings.Repeat("a", 12) + strings.Repeat("b", 52)
+	c := deathstarInspect(id)
+	c.Config.Hostname = id[:12] // Docker's implicit hostname == short container ID
+	args := containerCreateArgs(&c)
+	for i, a := range args {
+		if a == "--hostname" {
+			t.Fatalf("implicit hostname must not be preserved: %v", args[i:])
+		}
+	}
+}
+
 func TestContainerCreateArgs_ExclusiveNetwork(t *testing.T) {
 	for _, mode := range []string{"host", "none"} {
 		c := &containerInspect{

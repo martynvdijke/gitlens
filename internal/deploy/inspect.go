@@ -3,6 +3,7 @@ package deploy
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 )
 
 // containerConfig is the Config section of docker inspect.
@@ -102,8 +103,15 @@ func containerCreateArgs(c *containerInspect) []string {
 	if c.Config.User != "" {
 		args = append(args, "--user", c.Config.User)
 	}
-	if c.Config.Hostname != "" {
-		args = append(args, "--hostname", c.Config.Hostname)
+	// Preserve a deliberately custom hostname, but never Docker's implicit one.
+	// Unless overridden, a container's hostname is its own short ID; re-passing
+	// it bakes the *old* ID into the recreated container. isSelfContainer relies
+	// on hostname == container ID to detect the container GitLens runs in, so a
+	// stale hostname makes the next deploy take the in-process path and stop the
+	// container running the deploy — aborting mid-sequence. Letting Docker
+	// reassign the hostname to the new ID keeps that detection correct.
+	if h := c.Config.Hostname; h != "" && !strings.HasPrefix(c.ID, h) {
+		args = append(args, "--hostname", h)
 	}
 	for _, m := range c.Mounts {
 		switch m.Type {
