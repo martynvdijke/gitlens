@@ -1,3 +1,5 @@
+## [1.33.13](https://github.com/martynvdijke/gitlens/compare/v1.33.12...v1.33.13) (2026-09-17)
+
 ## [1.33.12](https://github.com/martynvdijke/gitlens/compare/v1.33.11...v1.33.12) (2026-09-17)
 
 
