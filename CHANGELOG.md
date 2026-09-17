@@ -1,3 +1,10 @@
+## [1.33.12](https://github.com/martynvdijke/gitlens/compare/v1.33.11...v1.33.12) (2026-09-17)
+
+
+### Bug Fixes
+
+* **deploy:** keep implicit hostname off recreated containers ([b690aba](https://github.com/martynvdijke/gitlens/commit/b690aba1b86fa59f17086776b82bc87d028dd52d))
+
 ## [1.33.11](https://github.com/martynvdijke/gitlens/compare/v1.33.10...v1.33.11) (2026-09-16)
 
 ## [1.33.10](https://github.com/martynvdijke/gitlens/compare/v1.33.9...v1.33.10) (2026-09-15)
