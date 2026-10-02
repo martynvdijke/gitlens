@@ -1,3 +1,10 @@
+## [1.33.20](https://github.com/martynvdijke/gitlens/compare/v1.33.19...v1.33.20) (2026-10-02)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#59](https://github.com/martynvdijke/gitlens/issues/59)) ([ff4a3af](https://github.com/martynvdijke/gitlens/commit/ff4a3afff9d5fa63320d5c524d978a31d45ae995))
+
 ## [1.33.19](https://github.com/martynvdijke/gitlens/compare/v1.33.18...v1.33.19) (2026-09-29)
 
 ## [1.33.18](https://github.com/martynvdijke/gitlens/compare/v1.33.17...v1.33.18) (2026-09-25)
