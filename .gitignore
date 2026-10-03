@@ -10,3 +10,6 @@ tmp/
 .env
 openspec/
 .opencode/
+
+# Zensical build output
+site/
