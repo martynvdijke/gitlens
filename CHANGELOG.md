@@ -1,3 +1,10 @@
+# [1.34.0](https://github.com/martynvdijke/gitlens/compare/v1.33.20...v1.34.0) (2026-10-03)
+
+
+### Features
+
+* **auth:** add OIDC login and user schema ([aff377e](https://github.com/martynvdijke/gitlens/commit/aff377ecac8be072365c780ec2dc3a2caa5c2ca4))
+
 ## [1.33.20](https://github.com/martynvdijke/gitlens/compare/v1.33.19...v1.33.20) (2026-10-02)
 
 
