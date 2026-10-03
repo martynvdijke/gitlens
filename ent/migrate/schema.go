@@ -248,6 +248,9 @@ var (
 		{Name: "forgejo_url", Type: field.TypeString, Nullable: true},
 		{Name: "eink_mode", Type: field.TypeBool, Default: false},
 		{Name: "dismissed_forgejo_warning_for", Type: field.TypeString, Nullable: true},
+		{Name: "oidc_sub", Type: field.TypeString, Unique: true, Nullable: true},
+		{Name: "oidc_email", Type: field.TypeString, Nullable: true},
+		{Name: "groups", Type: field.TypeString, Nullable: true},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{

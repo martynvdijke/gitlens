@@ -52,6 +52,12 @@ const (
 	FieldEinkMode = "eink_mode"
 	// FieldDismissedForgejoWarningFor holds the string denoting the dismissed_forgejo_warning_for field in the database.
 	FieldDismissedForgejoWarningFor = "dismissed_forgejo_warning_for"
+	// FieldOidcSub holds the string denoting the oidc_sub field in the database.
+	FieldOidcSub = "oidc_sub"
+	// FieldOidcEmail holds the string denoting the oidc_email field in the database.
+	FieldOidcEmail = "oidc_email"
+	// FieldGroups holds the string denoting the groups field in the database.
+	FieldGroups = "groups"
 	// EdgeRepositories holds the string denoting the repositories edge name in mutations.
 	EdgeRepositories = "repositories"
 	// Table holds the table name of the user in the database.
@@ -87,6 +93,9 @@ var Columns = []string{
 	FieldForgejoURL,
 	FieldEinkMode,
 	FieldDismissedForgejoWarningFor,
+	FieldOidcSub,
+	FieldOidcEmail,
+	FieldGroups,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -211,6 +220,21 @@ func ByEinkMode(opts ...sql.OrderTermOption) OrderOption {
 // ByDismissedForgejoWarningFor orders the results by the dismissed_forgejo_warning_for field.
 func ByDismissedForgejoWarningFor(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDismissedForgejoWarningFor, opts...).ToFunc()
+}
+
+// ByOidcSub orders the results by the oidc_sub field.
+func ByOidcSub(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOidcSub, opts...).ToFunc()
+}
+
+// ByOidcEmail orders the results by the oidc_email field.
+func ByOidcEmail(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOidcEmail, opts...).ToFunc()
+}
+
+// ByGroups orders the results by the groups field.
+func ByGroups(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGroups, opts...).ToFunc()
 }
 
 // ByRepositoriesCount orders the results by repositories count.

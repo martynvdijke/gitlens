@@ -46,6 +46,13 @@ func (User) Fields() []ent.Field {
 		// plain string (SQLite has no native JSON type);
 		// serialization is handled by the handler.
 		field.String("dismissed_forgejo_warning_for").Optional(),
+
+		// OIDC SSO — Authelia. oidc_sub is issuer|sub (unique, optional).
+		field.String("oidc_sub").Optional().Unique(),
+		// OIDC email (normalized) for linking.
+		field.String("oidc_email").Optional(),
+		// OIDC groups claim (JSON array string) for future RBAC.
+		field.String("groups").Optional(),
 	}
 }
 

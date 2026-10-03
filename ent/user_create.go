@@ -263,6 +263,48 @@ func (_c *UserCreate) SetNillableDismissedForgejoWarningFor(v *string) *UserCrea
 	return _c
 }
 
+// SetOidcSub sets the "oidc_sub" field.
+func (_c *UserCreate) SetOidcSub(v string) *UserCreate {
+	_c.mutation.SetOidcSub(v)
+	return _c
+}
+
+// SetNillableOidcSub sets the "oidc_sub" field if the given value is not nil.
+func (_c *UserCreate) SetNillableOidcSub(v *string) *UserCreate {
+	if v != nil {
+		_c.SetOidcSub(*v)
+	}
+	return _c
+}
+
+// SetOidcEmail sets the "oidc_email" field.
+func (_c *UserCreate) SetOidcEmail(v string) *UserCreate {
+	_c.mutation.SetOidcEmail(v)
+	return _c
+}
+
+// SetNillableOidcEmail sets the "oidc_email" field if the given value is not nil.
+func (_c *UserCreate) SetNillableOidcEmail(v *string) *UserCreate {
+	if v != nil {
+		_c.SetOidcEmail(*v)
+	}
+	return _c
+}
+
+// SetGroups sets the "groups" field.
+func (_c *UserCreate) SetGroups(v string) *UserCreate {
+	_c.mutation.SetGroups(v)
+	return _c
+}
+
+// SetNillableGroups sets the "groups" field if the given value is not nil.
+func (_c *UserCreate) SetNillableGroups(v *string) *UserCreate {
+	if v != nil {
+		_c.SetGroups(*v)
+	}
+	return _c
+}
+
 // AddRepositoryIDs adds the "repositories" edge to the Repository entity by IDs.
 func (_c *UserCreate) AddRepositoryIDs(ids ...int) *UserCreate {
 	_c.mutation.AddRepositoryIDs(ids...)
@@ -455,6 +497,18 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.DismissedForgejoWarningFor(); ok {
 		_spec.SetField(user.FieldDismissedForgejoWarningFor, field.TypeString, value)
 		_node.DismissedForgejoWarningFor = value
+	}
+	if value, ok := _c.mutation.OidcSub(); ok {
+		_spec.SetField(user.FieldOidcSub, field.TypeString, value)
+		_node.OidcSub = value
+	}
+	if value, ok := _c.mutation.OidcEmail(); ok {
+		_spec.SetField(user.FieldOidcEmail, field.TypeString, value)
+		_node.OidcEmail = value
+	}
+	if value, ok := _c.mutation.Groups(); ok {
+		_spec.SetField(user.FieldGroups, field.TypeString, value)
+		_node.Groups = value
 	}
 	if nodes := _c.mutation.RepositoriesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

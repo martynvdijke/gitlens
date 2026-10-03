@@ -55,6 +55,12 @@ type User struct {
 	EinkMode bool `json:"eink_mode,omitempty"`
 	// DismissedForgejoWarningFor holds the value of the "dismissed_forgejo_warning_for" field.
 	DismissedForgejoWarningFor string `json:"dismissed_forgejo_warning_for,omitempty"`
+	// OidcSub holds the value of the "oidc_sub" field.
+	OidcSub string `json:"oidc_sub,omitempty"`
+	// OidcEmail holds the value of the "oidc_email" field.
+	OidcEmail string `json:"oidc_email,omitempty"`
+	// Groups holds the value of the "groups" field.
+	Groups string `json:"groups,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"edges"`
@@ -88,7 +94,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case user.FieldID, user.FieldGithubID, user.FieldSyncIntervalMinutes, user.FieldForgejoID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldLogin, user.FieldAvatarURL, user.FieldName, user.FieldAccessToken, user.FieldUmamiURL, user.FieldUmamiSiteID, user.FieldForgejoLogin, user.FieldForgejoAvatarURL, user.FieldForgejoName, user.FieldForgejoAccessToken, user.FieldForgejoURL, user.FieldDismissedForgejoWarningFor:
+		case user.FieldLogin, user.FieldAvatarURL, user.FieldName, user.FieldAccessToken, user.FieldUmamiURL, user.FieldUmamiSiteID, user.FieldForgejoLogin, user.FieldForgejoAvatarURL, user.FieldForgejoName, user.FieldForgejoAccessToken, user.FieldForgejoURL, user.FieldDismissedForgejoWarningFor, user.FieldOidcSub, user.FieldOidcEmail, user.FieldGroups:
 			values[i] = new(sql.NullString)
 		case user.FieldSyncedAt, user.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -227,6 +233,24 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.DismissedForgejoWarningFor = value.String
 			}
+		case user.FieldOidcSub:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field oidc_sub", values[i])
+			} else if value.Valid {
+				_m.OidcSub = value.String
+			}
+		case user.FieldOidcEmail:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field oidc_email", values[i])
+			} else if value.Valid {
+				_m.OidcEmail = value.String
+			}
+		case user.FieldGroups:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field groups", values[i])
+			} else if value.Valid {
+				_m.Groups = value.String
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -324,6 +348,15 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("dismissed_forgejo_warning_for=")
 	builder.WriteString(_m.DismissedForgejoWarningFor)
+	builder.WriteString(", ")
+	builder.WriteString("oidc_sub=")
+	builder.WriteString(_m.OidcSub)
+	builder.WriteString(", ")
+	builder.WriteString("oidc_email=")
+	builder.WriteString(_m.OidcEmail)
+	builder.WriteString(", ")
+	builder.WriteString("groups=")
+	builder.WriteString(_m.Groups)
 	builder.WriteByte(')')
 	return builder.String()
 }

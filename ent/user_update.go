@@ -388,6 +388,66 @@ func (_u *UserUpdate) ClearDismissedForgejoWarningFor() *UserUpdate {
 	return _u
 }
 
+// SetOidcSub sets the "oidc_sub" field.
+func (_u *UserUpdate) SetOidcSub(v string) *UserUpdate {
+	_u.mutation.SetOidcSub(v)
+	return _u
+}
+
+// SetNillableOidcSub sets the "oidc_sub" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableOidcSub(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetOidcSub(*v)
+	}
+	return _u
+}
+
+// ClearOidcSub clears the value of the "oidc_sub" field.
+func (_u *UserUpdate) ClearOidcSub() *UserUpdate {
+	_u.mutation.ClearOidcSub()
+	return _u
+}
+
+// SetOidcEmail sets the "oidc_email" field.
+func (_u *UserUpdate) SetOidcEmail(v string) *UserUpdate {
+	_u.mutation.SetOidcEmail(v)
+	return _u
+}
+
+// SetNillableOidcEmail sets the "oidc_email" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableOidcEmail(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetOidcEmail(*v)
+	}
+	return _u
+}
+
+// ClearOidcEmail clears the value of the "oidc_email" field.
+func (_u *UserUpdate) ClearOidcEmail() *UserUpdate {
+	_u.mutation.ClearOidcEmail()
+	return _u
+}
+
+// SetGroups sets the "groups" field.
+func (_u *UserUpdate) SetGroups(v string) *UserUpdate {
+	_u.mutation.SetGroups(v)
+	return _u
+}
+
+// SetNillableGroups sets the "groups" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableGroups(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetGroups(*v)
+	}
+	return _u
+}
+
+// ClearGroups clears the value of the "groups" field.
+func (_u *UserUpdate) ClearGroups() *UserUpdate {
+	_u.mutation.ClearGroups()
+	return _u
+}
+
 // AddRepositoryIDs adds the "repositories" edge to the Repository entity by IDs.
 func (_u *UserUpdate) AddRepositoryIDs(ids ...int) *UserUpdate {
 	_u.mutation.AddRepositoryIDs(ids...)
@@ -566,6 +626,24 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.DismissedForgejoWarningForCleared() {
 		_spec.ClearField(user.FieldDismissedForgejoWarningFor, field.TypeString)
+	}
+	if value, ok := _u.mutation.OidcSub(); ok {
+		_spec.SetField(user.FieldOidcSub, field.TypeString, value)
+	}
+	if _u.mutation.OidcSubCleared() {
+		_spec.ClearField(user.FieldOidcSub, field.TypeString)
+	}
+	if value, ok := _u.mutation.OidcEmail(); ok {
+		_spec.SetField(user.FieldOidcEmail, field.TypeString, value)
+	}
+	if _u.mutation.OidcEmailCleared() {
+		_spec.ClearField(user.FieldOidcEmail, field.TypeString)
+	}
+	if value, ok := _u.mutation.Groups(); ok {
+		_spec.SetField(user.FieldGroups, field.TypeString, value)
+	}
+	if _u.mutation.GroupsCleared() {
+		_spec.ClearField(user.FieldGroups, field.TypeString)
 	}
 	if _u.mutation.RepositoriesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -991,6 +1069,66 @@ func (_u *UserUpdateOne) ClearDismissedForgejoWarningFor() *UserUpdateOne {
 	return _u
 }
 
+// SetOidcSub sets the "oidc_sub" field.
+func (_u *UserUpdateOne) SetOidcSub(v string) *UserUpdateOne {
+	_u.mutation.SetOidcSub(v)
+	return _u
+}
+
+// SetNillableOidcSub sets the "oidc_sub" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableOidcSub(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetOidcSub(*v)
+	}
+	return _u
+}
+
+// ClearOidcSub clears the value of the "oidc_sub" field.
+func (_u *UserUpdateOne) ClearOidcSub() *UserUpdateOne {
+	_u.mutation.ClearOidcSub()
+	return _u
+}
+
+// SetOidcEmail sets the "oidc_email" field.
+func (_u *UserUpdateOne) SetOidcEmail(v string) *UserUpdateOne {
+	_u.mutation.SetOidcEmail(v)
+	return _u
+}
+
+// SetNillableOidcEmail sets the "oidc_email" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableOidcEmail(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetOidcEmail(*v)
+	}
+	return _u
+}
+
+// ClearOidcEmail clears the value of the "oidc_email" field.
+func (_u *UserUpdateOne) ClearOidcEmail() *UserUpdateOne {
+	_u.mutation.ClearOidcEmail()
+	return _u
+}
+
+// SetGroups sets the "groups" field.
+func (_u *UserUpdateOne) SetGroups(v string) *UserUpdateOne {
+	_u.mutation.SetGroups(v)
+	return _u
+}
+
+// SetNillableGroups sets the "groups" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableGroups(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetGroups(*v)
+	}
+	return _u
+}
+
+// ClearGroups clears the value of the "groups" field.
+func (_u *UserUpdateOne) ClearGroups() *UserUpdateOne {
+	_u.mutation.ClearGroups()
+	return _u
+}
+
 // AddRepositoryIDs adds the "repositories" edge to the Repository entity by IDs.
 func (_u *UserUpdateOne) AddRepositoryIDs(ids ...int) *UserUpdateOne {
 	_u.mutation.AddRepositoryIDs(ids...)
@@ -1199,6 +1337,24 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if _u.mutation.DismissedForgejoWarningForCleared() {
 		_spec.ClearField(user.FieldDismissedForgejoWarningFor, field.TypeString)
+	}
+	if value, ok := _u.mutation.OidcSub(); ok {
+		_spec.SetField(user.FieldOidcSub, field.TypeString, value)
+	}
+	if _u.mutation.OidcSubCleared() {
+		_spec.ClearField(user.FieldOidcSub, field.TypeString)
+	}
+	if value, ok := _u.mutation.OidcEmail(); ok {
+		_spec.SetField(user.FieldOidcEmail, field.TypeString, value)
+	}
+	if _u.mutation.OidcEmailCleared() {
+		_spec.ClearField(user.FieldOidcEmail, field.TypeString)
+	}
+	if value, ok := _u.mutation.Groups(); ok {
+		_spec.SetField(user.FieldGroups, field.TypeString, value)
+	}
+	if _u.mutation.GroupsCleared() {
+		_spec.ClearField(user.FieldGroups, field.TypeString)
 	}
 	if _u.mutation.RepositoriesCleared() {
 		edge := &sqlgraph.EdgeSpec{

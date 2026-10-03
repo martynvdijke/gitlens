@@ -8397,6 +8397,9 @@ type UserMutation struct {
 	forgejo_url                   *string
 	eink_mode                     *bool
 	dismissed_forgejo_warning_for *string
+	oidc_sub                      *string
+	oidc_email                    *string
+	groups                        *string
 	clearedFields                 map[string]struct{}
 	repositories                  map[int]struct{}
 	removedrepositories           map[int]struct{}
@@ -9405,6 +9408,153 @@ func (m *UserMutation) ResetDismissedForgejoWarningFor() {
 	delete(m.clearedFields, user.FieldDismissedForgejoWarningFor)
 }
 
+// SetOidcSub sets the "oidc_sub" field.
+func (m *UserMutation) SetOidcSub(s string) {
+	m.oidc_sub = &s
+}
+
+// OidcSub returns the value of the "oidc_sub" field in the mutation.
+func (m *UserMutation) OidcSub() (r string, exists bool) {
+	v := m.oidc_sub
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOidcSub returns the old "oidc_sub" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldOidcSub(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOidcSub is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOidcSub requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOidcSub: %w", err)
+	}
+	return oldValue.OidcSub, nil
+}
+
+// ClearOidcSub clears the value of the "oidc_sub" field.
+func (m *UserMutation) ClearOidcSub() {
+	m.oidc_sub = nil
+	m.clearedFields[user.FieldOidcSub] = struct{}{}
+}
+
+// OidcSubCleared returns if the "oidc_sub" field was cleared in this mutation.
+func (m *UserMutation) OidcSubCleared() bool {
+	_, ok := m.clearedFields[user.FieldOidcSub]
+	return ok
+}
+
+// ResetOidcSub resets all changes to the "oidc_sub" field.
+func (m *UserMutation) ResetOidcSub() {
+	m.oidc_sub = nil
+	delete(m.clearedFields, user.FieldOidcSub)
+}
+
+// SetOidcEmail sets the "oidc_email" field.
+func (m *UserMutation) SetOidcEmail(s string) {
+	m.oidc_email = &s
+}
+
+// OidcEmail returns the value of the "oidc_email" field in the mutation.
+func (m *UserMutation) OidcEmail() (r string, exists bool) {
+	v := m.oidc_email
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOidcEmail returns the old "oidc_email" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldOidcEmail(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOidcEmail is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOidcEmail requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOidcEmail: %w", err)
+	}
+	return oldValue.OidcEmail, nil
+}
+
+// ClearOidcEmail clears the value of the "oidc_email" field.
+func (m *UserMutation) ClearOidcEmail() {
+	m.oidc_email = nil
+	m.clearedFields[user.FieldOidcEmail] = struct{}{}
+}
+
+// OidcEmailCleared returns if the "oidc_email" field was cleared in this mutation.
+func (m *UserMutation) OidcEmailCleared() bool {
+	_, ok := m.clearedFields[user.FieldOidcEmail]
+	return ok
+}
+
+// ResetOidcEmail resets all changes to the "oidc_email" field.
+func (m *UserMutation) ResetOidcEmail() {
+	m.oidc_email = nil
+	delete(m.clearedFields, user.FieldOidcEmail)
+}
+
+// SetGroups sets the "groups" field.
+func (m *UserMutation) SetGroups(s string) {
+	m.groups = &s
+}
+
+// Groups returns the value of the "groups" field in the mutation.
+func (m *UserMutation) Groups() (r string, exists bool) {
+	v := m.groups
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGroups returns the old "groups" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldGroups(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGroups is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGroups requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGroups: %w", err)
+	}
+	return oldValue.Groups, nil
+}
+
+// ClearGroups clears the value of the "groups" field.
+func (m *UserMutation) ClearGroups() {
+	m.groups = nil
+	m.clearedFields[user.FieldGroups] = struct{}{}
+}
+
+// GroupsCleared returns if the "groups" field was cleared in this mutation.
+func (m *UserMutation) GroupsCleared() bool {
+	_, ok := m.clearedFields[user.FieldGroups]
+	return ok
+}
+
+// ResetGroups resets all changes to the "groups" field.
+func (m *UserMutation) ResetGroups() {
+	m.groups = nil
+	delete(m.clearedFields, user.FieldGroups)
+}
+
 // AddRepositoryIDs adds the "repositories" edge to the Repository entity by ids.
 func (m *UserMutation) AddRepositoryIDs(ids ...int) {
 	if m.repositories == nil {
@@ -9493,7 +9643,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 19)
+	fields := make([]string, 0, 22)
 	if m.github_id != nil {
 		fields = append(fields, user.FieldGithubID)
 	}
@@ -9551,6 +9701,15 @@ func (m *UserMutation) Fields() []string {
 	if m.dismissed_forgejo_warning_for != nil {
 		fields = append(fields, user.FieldDismissedForgejoWarningFor)
 	}
+	if m.oidc_sub != nil {
+		fields = append(fields, user.FieldOidcSub)
+	}
+	if m.oidc_email != nil {
+		fields = append(fields, user.FieldOidcEmail)
+	}
+	if m.groups != nil {
+		fields = append(fields, user.FieldGroups)
+	}
 	return fields
 }
 
@@ -9597,6 +9756,12 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.EinkMode()
 	case user.FieldDismissedForgejoWarningFor:
 		return m.DismissedForgejoWarningFor()
+	case user.FieldOidcSub:
+		return m.OidcSub()
+	case user.FieldOidcEmail:
+		return m.OidcEmail()
+	case user.FieldGroups:
+		return m.Groups()
 	}
 	return nil, false
 }
@@ -9644,6 +9809,12 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldEinkMode(ctx)
 	case user.FieldDismissedForgejoWarningFor:
 		return m.OldDismissedForgejoWarningFor(ctx)
+	case user.FieldOidcSub:
+		return m.OldOidcSub(ctx)
+	case user.FieldOidcEmail:
+		return m.OldOidcEmail(ctx)
+	case user.FieldGroups:
+		return m.OldGroups(ctx)
 	}
 	return nil, fmt.Errorf("unknown User field %s", name)
 }
@@ -9786,6 +9957,27 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDismissedForgejoWarningFor(v)
 		return nil
+	case user.FieldOidcSub:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOidcSub(v)
+		return nil
+	case user.FieldOidcEmail:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOidcEmail(v)
+		return nil
+	case user.FieldGroups:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGroups(v)
+		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
 }
@@ -9891,6 +10083,15 @@ func (m *UserMutation) ClearedFields() []string {
 	if m.FieldCleared(user.FieldDismissedForgejoWarningFor) {
 		fields = append(fields, user.FieldDismissedForgejoWarningFor)
 	}
+	if m.FieldCleared(user.FieldOidcSub) {
+		fields = append(fields, user.FieldOidcSub)
+	}
+	if m.FieldCleared(user.FieldOidcEmail) {
+		fields = append(fields, user.FieldOidcEmail)
+	}
+	if m.FieldCleared(user.FieldGroups) {
+		fields = append(fields, user.FieldGroups)
+	}
 	return fields
 }
 
@@ -9940,6 +10141,15 @@ func (m *UserMutation) ClearField(name string) error {
 		return nil
 	case user.FieldDismissedForgejoWarningFor:
 		m.ClearDismissedForgejoWarningFor()
+		return nil
+	case user.FieldOidcSub:
+		m.ClearOidcSub()
+		return nil
+	case user.FieldOidcEmail:
+		m.ClearOidcEmail()
+		return nil
+	case user.FieldGroups:
+		m.ClearGroups()
 		return nil
 	}
 	return fmt.Errorf("unknown User nullable field %s", name)
@@ -10005,6 +10215,15 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldDismissedForgejoWarningFor:
 		m.ResetDismissedForgejoWarningFor()
+		return nil
+	case user.FieldOidcSub:
+		m.ResetOidcSub()
+		return nil
+	case user.FieldOidcEmail:
+		m.ResetOidcEmail()
+		return nil
+	case user.FieldGroups:
+		m.ResetGroups()
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)

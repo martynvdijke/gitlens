@@ -20,6 +20,7 @@ import (
 	"gitlens/ent/migrate"
 	"gitlens/ent/repository"
 	"gitlens/ent/user"
+	"gitlens/internal/auth"
 	"gitlens/internal/deploy"
 	"gitlens/internal/forgejo"
 	"gitlens/internal/github"
@@ -79,6 +80,10 @@ func main() {
 	}
 
 	sessionStore := middleware.NewSessionStore(db)
+
+	if cfg := auth.LoadConfig(); cfg.Enabled && cfg.IssuerURL != "" && cfg.SessionSecret == "" {
+		log.Printf("ERROR: OIDC enabled but SESSION_SECRET is empty — OIDC sessions will fail-closed (set SESSION_SECRET)")
+	}
 
 	otelManager := otel.NewManager(client)
 
@@ -358,6 +363,54 @@ func main() {
 
 	r.SetHTMLTemplate(tmpl)
 	r.Static("/static", "./static")
+
+	// OIDC SSO (Authelia) — first auth layer
+	r.GET("/api/auth/oidc/status", auth.StatusHandler)
+	r.GET("/api/auth/oidc/login", auth.LoginHandler(client))
+	r.GET("/api/auth/oidc/callback", auth.CallbackHandler(client))
+	r.GET("/api/auth/oidc/logout", auth.LogoutHandler)
+	r.GET("/auth/login", auth.LoginHandler(client))
+
+	// Protect all /api mutations (POST/PUT/PATCH/DELETE) with OIDC session, legacy session, or Bearer token.
+	// GET stays public. Exempt OIDC routes + health/metrics.
+	r.Use(func(c *gin.Context) {
+		p := c.Request.URL.Path
+		if !strings.HasPrefix(p, "/api") {
+			c.Next()
+			return
+		}
+		if c.Request.Method == http.MethodGet || c.Request.Method == http.MethodHead || c.Request.Method == http.MethodOptions {
+			c.Next()
+			return
+		}
+		if strings.HasPrefix(p, "/api/auth/oidc/") {
+			c.Next()
+			return
+		}
+		if authHeader := c.GetHeader("Authorization"); strings.HasPrefix(authHeader, "Bearer ") {
+			raw := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
+			if raw != "" {
+				if _, userID, err := middleware.VerifyToken(c.Request.Context(), client, raw); err == nil {
+					c.Set("user_id", userID)
+					c.Next()
+					return
+				}
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+				return
+			}
+		}
+		if _, ok := auth.GetUserIDFromSession(c); ok {
+			c.Next()
+			return
+		}
+		if cookie, err := c.Cookie("gitlens_session"); err == nil {
+			if _, ok := sessionStore.Get(cookie); ok {
+				c.Next()
+				return
+			}
+		}
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+	})
 
 	r.GET("/auth/github", authHandler.Login)
 	r.GET("/auth/github/callback", authHandler.Callback)
