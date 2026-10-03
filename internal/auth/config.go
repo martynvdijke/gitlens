@@ -7,13 +7,13 @@ import (
 
 // Config holds OIDC RP configuration.
 type Config struct {
-	Enabled     bool
-	IssuerURL   string
-	ClientID    string
-	ClientSecret string
-	RedirectURL string
-	Scopes      []string
-	LogoutURL   string
+	Enabled       bool
+	IssuerURL     string
+	ClientID      string
+	ClientSecret  string
+	RedirectURL   string
+	Scopes        []string
+	LogoutURL     string
 	SessionSecret string
 }
 
