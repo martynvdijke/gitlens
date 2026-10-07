@@ -61,6 +61,7 @@ type containerNetworkSettings struct {
 // used for label-based target discovery.
 type containerInspect struct {
 	ID              string
+	Image           string
 	Name            string
 	Config          containerConfig
 	HostConfig      containerHostConfig

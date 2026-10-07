@@ -45,6 +45,61 @@ var execCmd = func(ctx context.Context, name string, args ...string) ([]byte, er
 	return out, nil
 }
 
+// inspectImageID returns the image ID currently backing container, or "" when
+// the container does not exist or cannot be inspected.
+func inspectImageID(ctx context.Context, container string) string {
+	out, err := execCmd(ctx, "docker", "inspect", "--format", "{{.Image}}", container)
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(out))
+}
+
+// imagePruneShell returns a POSIX sh snippet that, best-effort, removes the
+// superseded image oldImageID (when non-empty and no longer the image backing
+// the container printed by containerExpr) and then prunes dangling images.
+// Every command is guarded so pruning can never fail a deploy.
+func imagePruneShell(containerExpr, oldImageID string) string {
+	var b strings.Builder
+	b.WriteString("new_image=$(docker inspect --format '{{.Image}}' ")
+	b.WriteString(containerExpr)
+	b.WriteString(" 2>/dev/null || true)")
+	if oldImageID != "" {
+		b.WriteString("; if [ -n \"$new_image\" ] && [ \"$new_image\" != ")
+		b.WriteString(shQuote(oldImageID))
+		b.WriteString(" ]; then docker rmi ")
+		b.WriteString(shQuote(oldImageID))
+		b.WriteString(" >/dev/null 2>&1 || true; fi")
+	}
+	b.WriteString("; docker image prune -f >/dev/null 2>&1 || true")
+	return b.String()
+}
+
+// pruneAfterUpdate best-effort removes the superseded image oldImageID (when it
+// is no longer the image backing container) and prunes dangling images. It
+// returns step descriptions for successful actions. Prune failures are logged,
+// never returned.
+func pruneAfterUpdate(ctx context.Context, container, oldImageID string) []string {
+	var steps []string
+	if oldImageID != "" {
+		if newID := inspectImageID(ctx, container); newID != "" && newID != oldImageID {
+			if _, err := execCmd(ctx, "docker", "rmi", oldImageID); err != nil {
+				log.Printf("Deploy: removing old image %s failed (best-effort): %v", oldImageID, err)
+			} else {
+				log.Printf("Deploy: removed old image %s", oldImageID)
+				steps = append(steps, "removed old image "+oldImageID)
+			}
+		}
+	}
+	if _, err := execCmd(ctx, "docker", "image", "prune", "-f"); err != nil {
+		log.Printf("Deploy: image prune failed (best-effort): %v", err)
+	} else {
+		log.Printf("Deploy: pruned dangling images")
+		steps = append(steps, "pruned dangling images")
+	}
+	return steps
+}
+
 // NewDeployer creates a Deployer based on DEPLOY_BACKEND env var.
 //   - "api" (default): docker pull + recreate, preserving the target's runtime
 //     configuration (volumes, networks, labels, restart policy, env, ...).
@@ -137,6 +192,7 @@ func (d *dockerDeployer) createNew(ctx context.Context, container, imageRef stri
 	}
 	result.add("started container " + container)
 	log.Printf("Deploy: container %s created with %s", container, imageRef)
+	result.Steps = append(result.Steps, pruneAfterUpdate(ctx, container, "")...)
 	return result, nil
 }
 
@@ -171,6 +227,7 @@ func (d *dockerDeployer) updateDirect(ctx context.Context, container, imageRef s
 	result.add("started container " + container)
 
 	log.Printf("Deploy: container %s updated to %s", container, imageRef)
+	result.Steps = append(result.Steps, pruneAfterUpdate(ctx, container, cfg.Image)...)
 	return result, nil
 }
 
@@ -194,6 +251,8 @@ func (d *dockerDeployer) updateSelf(ctx context.Context, container, imageRef str
 	b.WriteString(shQuote(imageRef))
 	b.WriteString(" && docker start ")
 	b.WriteString(shQuote(container))
+	b.WriteString(" && ")
+	b.WriteString(imagePruneShell(shQuote(container), cfg.Image))
 	if err := runHelper(ctx, b.String(), nil); err != nil {
 		return result, fmt.Errorf("self-update failed: %w", err)
 	}
@@ -202,6 +261,10 @@ func (d *dockerDeployer) updateSelf(ctx context.Context, container, imageRef str
 	result.add("removed container " + container)
 	result.add("created container " + container + " from " + imageRef)
 	result.add("started container " + container)
+	if cfg.Image != "" {
+		result.add("removed old image " + cfg.Image)
+	}
+	result.add("pruned dangling images")
 	return result, nil
 }
 
@@ -221,10 +284,11 @@ func (d *composeDeployer) PullAndUpdate(ctx context.Context, target Target, tag 
 		return d.runFromCwd(ctx, target.Container, result)
 	}
 
+	oldID := inspectImageID(ctx, target.Container)
 	// Run pull + up inside a detached helper that mounts the Docker socket and
 	// the compose project directory, so it works regardless of this process's
 	// working directory and survives the service being recreated.
-	script := composeCommand(proj, "pull") + " && " + composeCommand(proj, "up")
+	script := composeCommand(proj, "pull") + " && " + composeCommand(proj, "up") + " && " + imagePruneShell("$("+composePsCommand(proj)+")", oldID)
 	mount := proj.WorkingDir + ":" + proj.WorkingDir
 	log.Printf("Deploy (compose): project=%s dir=%s service=%s", proj.Project, proj.WorkingDir, proj.Service)
 	if err := runHelper(ctx, script, []string{mount}); err != nil {
@@ -232,10 +296,15 @@ func (d *composeDeployer) PullAndUpdate(ctx context.Context, target Target, tag 
 	}
 	result.add("pulled service " + proj.Service + " (docker compose)")
 	result.add("recreated service " + proj.Service + " (docker compose)")
+	if oldID != "" {
+		result.add("removed old image " + oldID)
+	}
+	result.add("pruned dangling images")
 	return result, nil
 }
 
 func (d *composeDeployer) runFromCwd(ctx context.Context, service string, result *DeployResult) (*DeployResult, error) {
+	oldID := inspectImageID(ctx, service)
 	log.Printf("Deploy (compose): pulling service %s", service)
 	if err := execStep(ctx, "docker", "compose", "pull", service); err != nil {
 		return result, fmt.Errorf("compose pull failed: %w", err)
@@ -247,6 +316,7 @@ func (d *composeDeployer) runFromCwd(ctx context.Context, service string, result
 	}
 	result.add("recreated service " + service)
 	log.Printf("Deploy (compose): service %s updated", service)
+	result.Steps = append(result.Steps, pruneAfterUpdate(ctx, service, oldID)...)
 	return result, nil
 }
 
@@ -284,13 +354,8 @@ func composeProjectFor(ctx context.Context, container string) (*composeProject, 
 	return p, nil
 }
 
-// composeCommand renders a `docker compose` invocation with all arguments
-// shell-quoted, e.g.
-//
-//	docker compose -p 'deathstar' --project-directory '/root/homelab/deathstar' pull 'gitlens'
-func composeCommand(p *composeProject, verb string) string {
+func composeProjectFlags(p *composeProject) string {
 	var b strings.Builder
-	b.WriteString("docker compose")
 	if p.Project != "" {
 		b.WriteString(" -p ")
 		b.WriteString(shQuote(p.Project))
@@ -299,6 +364,21 @@ func composeCommand(p *composeProject, verb string) string {
 		b.WriteString(" --project-directory ")
 		b.WriteString(shQuote(p.WorkingDir))
 	}
+	return b.String()
+}
+
+func composePsCommand(p *composeProject) string {
+	return "docker compose" + composeProjectFlags(p) + " ps -q " + shQuote(p.Service)
+}
+
+// composeCommand renders a `docker compose` invocation with all arguments
+// shell-quoted, e.g.
+//
+//	docker compose -p 'deathstar' --project-directory '/root/homelab/deathstar' pull 'gitlens'
+func composeCommand(p *composeProject, verb string) string {
+	var b strings.Builder
+	b.WriteString("docker compose")
+	b.WriteString(composeProjectFlags(p))
 	if verb == "pull" {
 		b.WriteString(" pull ")
 	} else {

@@ -69,8 +69,9 @@ func inspectJSONFor(t *testing.T, c containerInspect) []byte {
 // network with aliases, restart policy, labels, exposed port).
 func deathstarInspect(id string) containerInspect {
 	return containerInspect{
-		ID:   id,
-		Name: "/datey",
+		ID:    id,
+		Image: "sha256:old-image-id-aaa",
+		Name:  "/datey",
 		Config: containerConfig{
 			Image:      "ghcr.io/martynvdijke/datey:latest",
 			Hostname:   "datey",
@@ -281,12 +282,22 @@ func TestComposeProjectFor_NotComposeManaged(t *testing.T) {
 // ---- dockerDeployer command sequences ----
 
 func TestPullAndUpdate_ExistingContainer_PreservesConfig(t *testing.T) {
+	oldID := "sha256:old-image-id-aaa"
+	newID := "sha256:new-image-id-bbb"
 	rec := &runRecorder{respond: func(full []string) ([]byte, error) {
 		switch {
 		case full[1] == "pull":
 			return nil, nil
 		case full[1] == "inspect" && len(full) == 3:
-			return inspectJSONFor(t, deathstarInspect(strings.Repeat("a", 64))), nil
+			c := deathstarInspect(strings.Repeat("a", 64))
+			c.Image = oldID
+			return inspectJSONFor(t, c), nil
+		case full[1] == "inspect" && len(full) > 2 && full[2] == "--format":
+			return []byte(newID), nil
+		case full[1] == "rmi":
+			return nil, nil
+		case full[1] == "image":
+			return nil, nil
 		}
 		return nil, nil
 	}}
@@ -302,7 +313,7 @@ func TestPullAndUpdate_ExistingContainer_PreservesConfig(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if got, want := strings.Join(rec.verbOrder(), ","), "pull,inspect,stop,rm,create,start"; got != want {
+	if got, want := strings.Join(rec.verbOrder(), ","), "pull,inspect,stop,rm,create,start,inspect,rmi,image"; got != want {
 		t.Fatalf("command order = %s, want %s", got, want)
 	}
 
@@ -312,6 +323,8 @@ func TestPullAndUpdate_ExistingContainer_PreservesConfig(t *testing.T) {
 		"removed container datey",
 		"created container datey from ghcr.io/martynvdijke/datey:1.2.3",
 		"started container datey",
+		"removed old image " + oldID,
+		"pruned dangling images",
 	}
 	if got, want := strings.Join(result.Steps, "|"), strings.Join(wantSteps, "|"); got != want {
 		t.Fatalf("steps = %s, want %s", got, want)
@@ -348,7 +361,7 @@ func TestPullAndUpdate_ExistingContainer_PreservesConfig(t *testing.T) {
 
 func TestPullAndUpdate_ContainerMissing_CreatesBare(t *testing.T) {
 	rec := &runRecorder{respond: func(full []string) ([]byte, error) {
-		if full[1] == "inspect" {
+		if full[1] == "inspect" && len(full) == 3 {
 			return nil, errors.New("No such object: missing")
 		}
 		return nil, nil
@@ -361,7 +374,7 @@ func TestPullAndUpdate_ContainerMissing_CreatesBare(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if got, want := strings.Join(rec.verbOrder(), ","), "pull,inspect,create,start"; got != want {
+	if got, want := strings.Join(rec.verbOrder(), ","), "pull,inspect,create,start,image"; got != want {
 		t.Fatalf("command order = %s, want %s", got, want)
 	}
 
@@ -369,6 +382,7 @@ func TestPullAndUpdate_ContainerMissing_CreatesBare(t *testing.T) {
 		"pulled image img:1.0.0",
 		"created container missing from img:1.0.0",
 		"started container missing",
+		"pruned dangling images",
 	}
 	if got, want := strings.Join(result.Steps, "|"), strings.Join(wantSteps, "|"); got != want {
 		t.Fatalf("steps = %s, want %s", got, want)
@@ -409,7 +423,9 @@ func TestPullAndUpdate_SelfUpdate_UsesHelper(t *testing.T) {
 	rec := &runRecorder{respond: func(full []string) ([]byte, error) {
 		switch {
 		case full[1] == "inspect" && len(full) == 3:
-			return inspectJSONFor(t, deathstarInspect(selfID)), nil
+			c := deathstarInspect(selfID)
+			c.Image = "sha256:old-self-image"
+			return inspectJSONFor(t, c), nil
 		case full[1] == "wait":
 			return []byte("0"), nil
 		}
@@ -418,7 +434,7 @@ func TestPullAndUpdate_SelfUpdate_UsesHelper(t *testing.T) {
 	installRecorder(t, rec)
 
 	d := &dockerDeployer{inflight: make(map[string]*containerLock)}
-	_, err = d.PullAndUpdate(context.Background(), Target{
+	result, err := d.PullAndUpdate(context.Background(), Target{
 		Image:     "ghcr.io/martynvdijke/gitlens",
 		Container: "gitlens",
 	}, "latest")
@@ -454,6 +470,9 @@ func TestPullAndUpdate_SelfUpdate_UsesHelper(t *testing.T) {
 		"'--network' 'deathstar_default'",
 		"'-v' '/config/datey:/config'",
 		"docker start 'gitlens'",
+		"docker rmi",
+		"sha256:old-self-image",
+		"docker image prune -f",
 	} {
 		if !strings.Contains(script, want) {
 			t.Errorf("helper script missing %q: %s", want, script)
@@ -464,6 +483,18 @@ func TestPullAndUpdate_SelfUpdate_UsesHelper(t *testing.T) {
 		if !hasVerb(rec.allCmds(), want) {
 			t.Errorf("expected docker %s after launching the helper", want)
 		}
+	}
+	wantSteps := []string{
+		"pulled image ghcr.io/martynvdijke/gitlens:latest",
+		"stopped container gitlens",
+		"removed container gitlens",
+		"created container gitlens from ghcr.io/martynvdijke/gitlens:latest",
+		"started container gitlens",
+		"removed old image sha256:old-self-image",
+		"pruned dangling images",
+	}
+	if got, want := strings.Join(result.Steps, "|"), strings.Join(wantSteps, "|"); got != want {
+		t.Fatalf("steps = %s, want %s", got, want)
 	}
 }
 
@@ -481,8 +512,11 @@ func hasVerb(cmds [][]string, verb string) bool {
 func TestComposeDeployer_UsesHelper(t *testing.T) {
 	t.Setenv("DEPLOY_HELPER_IMAGE", "test/helper:1")
 
+	oldID := "sha256:compose-old-id"
 	rec := &runRecorder{respond: func(full []string) ([]byte, error) {
 		switch {
+		case full[1] == "inspect" && len(full) > 2 && full[2] == "--format" && strings.Contains(strings.Join(full, " "), "{{.Image}}"):
+			return []byte(oldID), nil
 		case full[1] == "inspect":
 			return []byte("deathstar|/root/homelab/deathstar|gitlens"), nil
 		case full[1] == "wait":
@@ -493,7 +527,7 @@ func TestComposeDeployer_UsesHelper(t *testing.T) {
 	installRecorder(t, rec)
 
 	d := &composeDeployer{}
-	_, err := d.PullAndUpdate(context.Background(), Target{Container: "gitlens"}, "latest")
+	result, err := d.PullAndUpdate(context.Background(), Target{Container: "gitlens"}, "latest")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -521,17 +555,35 @@ func TestComposeDeployer_UsesHelper(t *testing.T) {
 	for _, want := range []string{
 		"docker compose -p 'deathstar' --project-directory '/root/homelab/deathstar' pull 'gitlens'",
 		"docker compose -p 'deathstar' --project-directory '/root/homelab/deathstar' up -d --no-deps 'gitlens'",
+		"docker compose -p 'deathstar' --project-directory '/root/homelab/deathstar' ps -q 'gitlens'",
+		"docker image prune -f",
+		oldID,
 	} {
 		if !strings.Contains(script, want) {
 			t.Errorf("helper script missing %q: %s", want, script)
 		}
 	}
+	wantSteps := []string{
+		"pulled service gitlens (docker compose)",
+		"recreated service gitlens (docker compose)",
+		"removed old image " + oldID,
+		"pruned dangling images",
+	}
+	if got, want := strings.Join(result.Steps, "|"), strings.Join(wantSteps, "|"); got != want {
+		t.Fatalf("steps = %s, want %s", got, want)
+	}
 }
 
 func TestComposeDeployer_FallsBackToCwd(t *testing.T) {
-	rec := &runRecorder{respond: func(full []string) ([]byte, error) {
-		if full[1] == "inspect" {
-			return []byte("||"), nil // not compose-managed
+	oldID := "sha256:old-cwd-id"
+	var rec *runRecorder
+	rec = &runRecorder{respond: func(full []string) ([]byte, error) {
+		joined := strings.Join(full, " ")
+		if full[1] == "inspect" && strings.Contains(joined, "com.docker.compose") {
+			return []byte("||"), nil
+		}
+		if full[1] == "inspect" && strings.Contains(joined, "{{.Image}}") {
+			return []byte(oldID), nil
 		}
 		return nil, nil
 	}}
@@ -543,23 +595,78 @@ func TestComposeDeployer_FallsBackToCwd(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if got, want := strings.Join(rec.verbOrder(), ","), "inspect,compose,compose"; got != want {
+	if got, want := strings.Join(rec.verbOrder(), ","), "inspect,inspect,compose,compose,inspect,image"; got != want {
 		t.Fatalf("command order = %s, want %s", got, want)
 	}
 	cmds := rec.allCmds()
-	if !strings.Contains(strings.Join(cmds[1], " "), "compose pull standalone") {
-		t.Errorf("expected legacy compose pull, got %v", cmds[1])
+	// Find compose commands
+	var composeCmds [][]string
+	for _, c := range cmds {
+		if len(c) > 2 && c[1] == "compose" {
+			composeCmds = append(composeCmds, c)
+		}
 	}
-	if !strings.Contains(strings.Join(cmds[2], " "), "compose up -d --no-deps standalone") {
-		t.Errorf("expected legacy compose up, got %v", cmds[2])
+	if len(composeCmds) != 2 {
+		t.Fatalf("expected 2 compose commands, got %v", cmds)
+	}
+	if !strings.Contains(strings.Join(composeCmds[0], " "), "compose pull standalone") {
+		t.Errorf("expected legacy compose pull, got %v", composeCmds[0])
+	}
+	if !strings.Contains(strings.Join(composeCmds[1], " "), "compose up -d --no-deps standalone") {
+		t.Errorf("expected legacy compose up, got %v", composeCmds[1])
 	}
 
 	wantSteps := []string{
 		"pulled service standalone",
 		"recreated service standalone",
+		"pruned dangling images",
 	}
 	if got, want := strings.Join(result.Steps, "|"), strings.Join(wantSteps, "|"); got != want {
 		t.Fatalf("steps = %s, want %s", got, want)
+	}
+}
+
+func TestPruneFailure_DoesNotFailDeploy(t *testing.T) {
+	oldID := "sha256:old-prune-fail"
+	newID := "sha256:new-prune-fail"
+	rec := &runRecorder{respond: func(full []string) ([]byte, error) {
+		switch {
+		case full[1] == "pull":
+			return nil, nil
+		case full[1] == "inspect" && len(full) == 3:
+			c := deathstarInspect(strings.Repeat("a", 64))
+			c.Image = oldID
+			return inspectJSONFor(t, c), nil
+		case full[1] == "inspect" && len(full) > 2 && full[2] == "--format":
+			return []byte(newID), nil
+		case full[1] == "rmi":
+			return nil, errors.New("rmi failed")
+		case full[1] == "image":
+			return nil, errors.New("prune failed")
+		}
+		return nil, nil
+	}}
+	installRecorder(t, rec)
+
+	d := &dockerDeployer{inflight: make(map[string]*containerLock)}
+	result, err := d.PullAndUpdate(context.Background(), Target{
+		Image:     "img",
+		Container: "c",
+	}, "1.0.0")
+	if err != nil {
+		t.Fatalf("prune failure should not cause deploy error, got %v", err)
+	}
+	// No prune step should be recorded since both failed, but deploy succeeds
+	for _, s := range result.Steps {
+		if strings.Contains(s, "removed old image") {
+			t.Errorf("should not have removed old image step when rmi failed, got %v", result.Steps)
+		}
+		if strings.Contains(s, "pruned dangling images") {
+			t.Errorf("should not have pruned step when prune failed, got %v", result.Steps)
+		}
+	}
+	if len(result.Steps) == 0 || result.Steps[0] != "pulled image img:1.0.0" {
+		t.Fatalf("unexpected steps %v", result.Steps)
 	}
 }
 

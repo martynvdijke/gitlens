@@ -222,6 +222,8 @@ Notes:
 > socket, runs the fixed command sequence, and exits — so the deploy survives the
 > target being stopped and removed.
 
+> After each successful deploy GitLens removes the superseded image and prunes dangling images (best-effort; failure never fails the deploy).
+
 ### Deploying the GitLens container itself (self-update)
 
 GitLens can update **its own container**. Because `docker stop gitlens` would kill
