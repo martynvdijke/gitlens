@@ -1,3 +1,10 @@
+# [1.35.0](https://github.com/martynvdijke/gitlens/compare/v1.34.4...v1.35.0) (2026-10-07)
+
+
+### Features
+
+* **deploy:** prune superseded image after redeploy ([d029596](https://github.com/martynvdijke/gitlens/commit/d02959605f02de333113d4c4f020a693df844488))
+
 ## [1.34.4](https://github.com/martynvdijke/gitlens/compare/v1.34.3...v1.34.4) (2026-10-05)
 
 ## [1.34.3](https://github.com/martynvdijke/gitlens/compare/v1.34.2...v1.34.3) (2026-10-04)
