@@ -1,3 +1,10 @@
+## [1.35.3](https://github.com/martynvdijke/gitlens/compare/v1.35.2...v1.35.3) (2026-10-10)
+
+
+### Bug Fixes
+
+* **trmnl:** move title_bar outside layout and drop invalid value--medium class ([#70](https://github.com/martynvdijke/gitlens/issues/70)) ([1f39459](https://github.com/martynvdijke/gitlens/commit/1f39459b487b8a9798671228450767359f0b8863))
+
 ## [1.35.2](https://github.com/martynvdijke/gitlens/compare/v1.35.1...v1.35.2) (2026-10-08)
 
 ## [1.35.1](https://github.com/martynvdijke/gitlens/compare/v1.35.0...v1.35.1) (2026-10-07)
