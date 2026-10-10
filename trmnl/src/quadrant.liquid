@@ -1,9 +1,4 @@
 <div class="layout layout--col layout--stretch gap--xsmall">
-  <div class="title_bar">
-    <img class="image" width="32" src="{{ trml.plugin_settings.custom_fields_values.url | default: 'https://gitlens.vandijke.xyz' }}/static/logo.svg" />
-    <span class="title">GitLens</span>
-  </div>
-
   <div class="item">
     <span class="value value--large">{{ workflow_pass_rate | default: 0 }}%</span>
     <span class="label label--small">workflow pass rate</span>
@@ -32,4 +27,9 @@
       {% endif %}
     </div>
   </div>
+</div>
+
+<div class="title_bar">
+  <img class="image" width="32" src="{{ trml.plugin_settings.custom_fields_values.url | default: 'https://gitlens.vandijke.xyz' }}/static/logo.svg" />
+  <span class="title">GitLens</span>
 </div>

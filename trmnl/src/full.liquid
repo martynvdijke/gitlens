@@ -1,9 +1,4 @@
 <div class="layout layout--col layout--stretch gap--small">
-  <div class="title_bar">
-    <img class="image" width="40" src="{{ trml.plugin_settings.custom_fields_values.url | default: 'https://gitlens.vandijke.xyz' }}/static/logo.svg" />
-    <span class="title">GitLens{% if generated_at %} · {{ generated_at | date: "%b %d" }}{% endif %}</span>
-  </div>
-
   <div class="grid grid--cols-2">
     <div class="col col--start">
       <div class="item">
@@ -57,4 +52,9 @@
       {% endif %}
     </div>
   </div>
+</div>
+
+<div class="title_bar">
+  <img class="image" width="40" src="{{ trml.plugin_settings.custom_fields_values.url | default: 'https://gitlens.vandijke.xyz' }}/static/logo.svg" />
+  <span class="title">GitLens{% if generated_at %} · {{ generated_at | date: "%b %d" }}{% endif %}</span>
 </div>

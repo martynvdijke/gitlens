@@ -1,27 +1,22 @@
 <div class="layout layout--col layout--stretch gap--xsmall">
-  <div class="title_bar">
-    <img class="image" width="32" src="{{ trml.plugin_settings.custom_fields_values.url | default: 'https://gitlens.vandijke.xyz' }}/static/logo.svg" />
-    <span class="title">GitLens</span>
-  </div>
-
   <div class="grid grid--cols-2">
     <div class="col col--start">
       <div class="item">
-        <span class="value value--medium">{{ total_releases | default: 0 }}</span>
+        <span class="value">{{ total_releases | default: 0 }}</span>
         <span class="label label--small">releases</span>
       </div>
       <div class="item">
-        <span class="value value--medium">{{ workflow_pass_rate | default: 0 }}%</span>
+        <span class="value">{{ workflow_pass_rate | default: 0 }}%</span>
         <span class="label label--small">pass rate</span>
       </div>
     </div>
     <div class="col col--start">
       <div class="item">
-        <span class="value value--medium">{{ failing_repos | default: 0 }}</span>
+        <span class="value">{{ failing_repos | default: 0 }}</span>
         <span class="label label--small">failing</span>
       </div>
       <div class="item">
-        <span class="value value--medium">{{ total_repos | default: 0 }}</span>
+        <span class="value">{{ total_repos | default: 0 }}</span>
         <span class="label label--small">repos</span>
       </div>
     </div>
@@ -37,4 +32,9 @@
   {% else %}
     <span class="value value--xsmall">All clear</span>
   {% endif %}
+</div>
+
+<div class="title_bar">
+  <img class="image" width="32" src="{{ trml.plugin_settings.custom_fields_values.url | default: 'https://gitlens.vandijke.xyz' }}/static/logo.svg" />
+  <span class="title">GitLens</span>
 </div>
