@@ -1,3 +1,10 @@
+# [1.36.0](https://github.com/martynvdijke/gitlens/compare/v1.35.4...v1.36.0) (2026-10-20)
+
+
+### Features
+
+* **workflows:** dispatch workflows across monitored repositories ([bb43a2b](https://github.com/martynvdijke/gitlens/commit/bb43a2b08fe02676b9d3806ad3049f43a1fddf03))
+
 ## [1.35.4](https://github.com/martynvdijke/gitlens/compare/v1.35.3...v1.35.4) (2026-10-12)
 
 ## [1.35.3](https://github.com/martynvdijke/gitlens/compare/v1.35.2...v1.35.3) (2026-10-10)
