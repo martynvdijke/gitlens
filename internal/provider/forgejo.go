@@ -34,6 +34,19 @@ func (a *ForgejoAdapter) RerunFailedWorkflowRuns(ctx context.Context, token, own
 	return 0, ErrUnsupported
 }
 
+// DispatchWorkflow implements provider.Provider. GitLens does not surface
+// Forgejo Actions workflow dispatch, so the operation is unsupported.
+func (a *ForgejoAdapter) DispatchWorkflow(ctx context.Context, token, owner, repo, workflowFile, ref string, inputs map[string]any) error {
+	_ = ctx
+	_ = token
+	_ = owner
+	_ = repo
+	_ = workflowFile
+	_ = ref
+	_ = inputs
+	return ErrUnsupported
+}
+
 // All other methods are inherited from *forgejo.Client and already
 // match the Provider interface. The compile-time check below
 // confirms it.

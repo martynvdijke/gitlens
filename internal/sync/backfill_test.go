@@ -74,6 +74,9 @@ func (f *fakeProvider) GetLatestWorkflowRun(ctx context.Context, token, owner, r
 func (f *fakeProvider) RerunFailedWorkflowRuns(ctx context.Context, token, owner, repo string, prNumber int) (int, error) {
 	return 0, fmt.Errorf("not implemented")
 }
+func (f *fakeProvider) DispatchWorkflow(ctx context.Context, token, owner, repo, workflowFile, ref string, inputs map[string]any) error {
+	return fmt.Errorf("not implemented")
+}
 
 func newFakeSyncer(t *testing.T, fake provider.Provider) (*Syncer, *ent.Client) {
 	t.Helper()

@@ -1,6 +1,7 @@
 package github
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -20,8 +22,21 @@ type Client struct {
 	TokenURL     string
 	APIURL       string
 
+	rateLimitMu        sync.Mutex
 	RateLimitRemaining int
 	RateLimitReset     int64
+}
+
+// APIError is returned when GitHub responds with an HTTP error status.
+// StatusCode lets callers distinguish missing workflows (404), missing
+// permissions (403), and invalid refs or inputs (422).
+type APIError struct {
+	StatusCode int
+	Status     string
+}
+
+func (e *APIError) Error() string {
+	return fmt.Sprintf("GitHub API error: %s", e.Status)
 }
 
 // RateLimitError is returned when GitHub reports the rate limit is
@@ -221,12 +236,16 @@ func (c *Client) doRequest(method, urlStr, token string, body io.Reader) (*http.
 
 	if v := resp.Header.Get("X-RateLimit-Remaining"); v != "" {
 		if n, err := strconv.Atoi(v); err == nil {
+			c.rateLimitMu.Lock()
 			c.RateLimitRemaining = n
+			c.rateLimitMu.Unlock()
 		}
 	}
 	if v := resp.Header.Get("X-RateLimit-Reset"); v != "" {
 		if n, err := strconv.ParseInt(v, 10, 64); err == nil {
+			c.rateLimitMu.Lock()
 			c.RateLimitReset = n
+			c.rateLimitMu.Unlock()
 		}
 	}
 
@@ -243,7 +262,7 @@ func (c *Client) doRequest(method, urlStr, token string, body io.Reader) (*http.
 			}
 			return nil, rlErr
 		}
-		return nil, fmt.Errorf("GitHub API error: %s", resp.Status)
+		return nil, &APIError{StatusCode: resp.StatusCode, Status: resp.Status}
 	}
 	return resp, nil
 }
@@ -410,11 +429,14 @@ func (c *Client) GetCommitsSince(token, owner, repo, branch string, since time.T
 	page := 1
 
 	for len(allCommits) < maxCommits {
-		if c.RateLimitRemaining < 10 {
-			if c.RateLimitReset > 0 {
-				wait := time.Until(time.Unix(c.RateLimitReset, 0))
+		c.rateLimitMu.Lock()
+		rlRemaining, rlReset := c.RateLimitRemaining, c.RateLimitReset
+		c.rateLimitMu.Unlock()
+		if rlRemaining < 10 {
+			if rlReset > 0 {
+				wait := time.Until(time.Unix(rlReset, 0))
 				if wait > 0 && wait < 60*time.Second {
-					log.Printf("Rate limit low (%d remaining), waiting %v before next request...", c.RateLimitRemaining, wait)
+					log.Printf("Rate limit low (%d remaining), waiting %v before next request...", rlRemaining, wait)
 					time.Sleep(wait)
 				}
 			}
@@ -655,6 +677,40 @@ func (c *Client) RerunFailedJobs(token, owner, repo string, runID int64) error {
 	// An empty JSON body keeps doRequest's Content-Type header honest;
 	// GitHub returns 204 No Content on success.
 	resp, err := c.doRequest("POST", url, token, strings.NewReader("{}"))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return nil
+}
+
+// DispatchWorkflow triggers a workflow_dispatch run for workflowFile (a
+// file name such as "renovate.yml" or a numeric workflow ID) on ref.
+// inputs may be nil. GitHub returns 204 No Content on success. A
+// *APIError is returned for HTTP failures so callers can explain the
+// cause (missing workflow, missing permission, invalid ref or inputs),
+// and a *RateLimitError is returned when the quota is exhausted.
+func (c *Client) DispatchWorkflow(token, owner, repo, workflowFile, ref string, inputs map[string]any) error {
+	workflowFile = strings.TrimSpace(workflowFile)
+	if workflowFile == "" {
+		return fmt.Errorf("workflow file is required")
+	}
+	if strings.TrimSpace(ref) == "" {
+		return fmt.Errorf("ref is required")
+	}
+
+	payload := struct {
+		Ref    string         `json:"ref"`
+		Inputs map[string]any `json:"inputs,omitempty"`
+	}{Ref: ref, Inputs: inputs}
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return fmt.Errorf("encoding workflow dispatch: %w", err)
+	}
+
+	u := fmt.Sprintf("%s/repos/%s/%s/actions/workflows/%s/dispatches",
+		c.APIURL, owner, repo, url.PathEscape(workflowFile))
+	resp, err := c.doRequest("POST", u, token, bytes.NewReader(body))
 	if err != nil {
 		return err
 	}

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	stdsync "sync"
 	"testing"
 	"time"
 
@@ -33,6 +34,10 @@ type mergeFakeProvider struct {
 	rerunFn    func(number int) (int, error)
 	rerunCalls []int
 	listPRs    []*ghclient.PullRequest
+
+	dispatchFn    func(owner, repo, workflow, ref string, inputs map[string]any) error
+	dispatchCalls []string
+	dispatchMu    stdsync.Mutex
 }
 
 func (f *mergeFakeProvider) Name() string { return f.name }
@@ -83,6 +88,16 @@ func (f *mergeFakeProvider) RerunFailedWorkflowRuns(ctx context.Context, token, 
 		return 0, nil
 	}
 	return f.rerunFn(number)
+}
+
+func (f *mergeFakeProvider) DispatchWorkflow(ctx context.Context, token, owner, repo, workflowFile, ref string, inputs map[string]any) error {
+	f.dispatchMu.Lock()
+	f.dispatchCalls = append(f.dispatchCalls, owner+"/"+repo+"@"+workflowFile+":"+ref)
+	f.dispatchMu.Unlock()
+	if f.dispatchFn == nil {
+		return nil
+	}
+	return f.dispatchFn(owner, repo, workflowFile, ref, inputs)
 }
 
 // newMergeTestHandler builds a DashboardHandler wired to the given

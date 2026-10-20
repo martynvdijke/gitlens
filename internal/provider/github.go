@@ -140,5 +140,12 @@ func (a *GitHubAdapter) RerunFailedWorkflowRuns(ctx context.Context, token, owne
 	return rerunCount, nil
 }
 
+// DispatchWorkflow triggers a workflow_dispatch run through the GitHub
+// Actions API.
+func (a *GitHubAdapter) DispatchWorkflow(ctx context.Context, token, owner, repo, workflowFile, ref string, inputs map[string]any) error {
+	_ = ctx
+	return a.Client.DispatchWorkflow(token, owner, repo, workflowFile, ref, inputs)
+}
+
 // Compile-time interface check.
 var _ Provider = (*GitHubAdapter)(nil)

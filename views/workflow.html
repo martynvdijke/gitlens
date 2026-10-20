@@ -1,0 +1,118 @@
+{{define "workflow_dispatch_modal"}}
+<div class="modal fade" id="workflow-dispatch-modal" tabindex="-1" aria-labelledby="workflow-dispatch-title" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content bg-dark text-light border-secondary">
+            <form id="workflow-dispatch-form" hx-post="/workflows/dispatch" hx-target="#workflow-dispatch-results" hx-swap="innerHTML" hx-indicator="#workflow-dispatch-spinner">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title" id="workflow-dispatch-title">Run workflow</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {{if .Error}}
+                    <div class="alert alert-danger border-danger" role="alert">{{.Error}}</div>
+                    {{end}}
+                    <div class="mb-3">
+                        <label for="workflow-dispatch-file" class="form-label small fw-semibold">Workflow file</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-transparent text-light border-secondary" id="workflow-dispatch-file" name="workflow" value="{{.Workflow}}" placeholder="renovate.yml" required autocomplete="off">
+                            <button type="button" class="btn btn-outline-info" onclick="document.getElementById('workflow-dispatch-file').value='renovate.yml'">Renovate</button>
+                        </div>
+                        <div class="form-text">Workflow file name (for example <code>renovate.yml</code>) or numeric workflow ID. The workflow must define <code>workflow_dispatch</code>.</div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="workflow-dispatch-ref" class="form-label small fw-semibold">Ref <span class="text-secondary fw-normal">(optional)</span></label>
+                            <input type="text" class="form-control bg-transparent text-light border-secondary" id="workflow-dispatch-ref" name="ref" placeholder="Each repository's default branch" autocomplete="off">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="workflow-dispatch-inputs" class="form-label small fw-semibold">Inputs <span class="text-secondary fw-normal">(JSON, optional)</span></label>
+                            <textarea class="form-control bg-transparent text-light border-secondary font-monospace" id="workflow-dispatch-inputs" name="inputs" rows="1" placeholder='{"key":"value"}'></textarea>
+                        </div>
+                    </div>
+
+                    <hr class="border-secondary">
+
+                    <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="small fw-semibold">Repositories</span>
+                            <span id="workflow-dispatch-count" class="badge bg-secondary">0 selected</span>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.querySelectorAll('#workflow-dispatch-repos input[name=repo_ids]:not(:disabled)').forEach(function(c){c.checked=true});window.updateWorkflowRepoCount()">Select all</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.querySelectorAll('#workflow-dispatch-repos input[name=repo_ids]').forEach(function(c){c.checked=false});window.updateWorkflowRepoCount()">Clear</button>
+                        </div>
+                    </div>
+
+                    <input type="search" class="form-control form-control-sm bg-transparent text-light border-secondary mb-2" placeholder="Filter repositories..." oninput="window.filterWorkflowRepos(this.value)" autocomplete="off">
+
+                    <div id="workflow-dispatch-repos" class="border border-secondary rounded p-1" style="max-height:260px;overflow-y:auto">
+                        {{range .Repos}}
+                        <label class="d-flex align-items-center gap-2 px-2 py-1 rounded repo-picker-row" data-repo="{{.FullName}}">
+                            <input class="form-check-input mt-0" type="checkbox" name="repo_ids" value="{{.ID}}" {{if ne .Provider "github"}}disabled{{end}} onchange="window.updateWorkflowRepoCount()">
+                            <span class="small flex-grow-1 text-truncate">{{.FullName}}</span>
+                            {{if ne .Provider "github"}}<span class="badge bg-secondary" style="font-size:0.6rem">unsupported</span>{{end}}
+                        </label>
+                        {{else}}
+                        <div class="text-secondary small p-2">No tracked repositories. Import repositories first.</div>
+                        {{end}}
+                    </div>
+                    <div class="form-text">Forgejo repositories are listed but cannot be dispatched.</div>
+
+                    <div id="workflow-dispatch-results" class="mt-3"></div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <span id="workflow-dispatch-spinner" class="htmx-indicator small text-info me-auto">Dispatching...</span>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-info" hx-disabled-elt="this">Run workflow</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+(function () {
+    window.filterWorkflowRepos = function (query) {
+        query = (query || '').toLowerCase();
+        document.querySelectorAll('#workflow-dispatch-repos [data-repo]').forEach(function (row) {
+            var name = (row.getAttribute('data-repo') || '').toLowerCase();
+            row.style.display = name.indexOf(query) >= 0 ? '' : 'none';
+        });
+    };
+    window.updateWorkflowRepoCount = function () {
+        var count = document.querySelectorAll('#workflow-dispatch-repos input[name="repo_ids"]:checked').length;
+        var badge = document.getElementById('workflow-dispatch-count');
+        if (badge) { badge.textContent = count + ' selected'; }
+    };
+    var modalEl = document.getElementById('workflow-dispatch-modal');
+    if (!modalEl || !window.bootstrap) { return; }
+    modalEl.addEventListener('hidden.bs.modal', function () { modalEl.remove(); });
+    window.bootstrap.Modal.getOrCreateInstance(modalEl).show();
+})();
+</script>
+{{end}}
+
+{{define "workflow_dispatch_results"}}
+{{if .Error}}
+<div class="alert alert-danger border-danger mb-0" role="alert">{{.Error}}</div>
+{{else}}
+<div class="alert {{if .Failed}}alert-warning border-warning{{else}}alert-success border-success{{end}} mb-2" role="alert">
+    <span class="fw-semibold">Dispatched to {{.Succeeded}} of {{.Total}} repositories.</span>
+    {{if .Failed}}<span class="ms-1">{{.Failed}} failed.</span>{{end}}
+    {{if .Skipped}}<span class="ms-1">{{.Skipped}} skipped.</span>{{end}}
+</div>
+<div class="list-group">
+    {{range .Results}}
+    <div class="list-group-item bg-dark border-secondary d-flex align-items-start gap-2 flex-wrap">
+        <div class="min-w-0 flex-grow-1">
+            <div class="small fw-medium text-truncate">{{.FullName}}</div>
+            <div class="text-secondary small">{{if .Ref}}ref: <code>{{.Ref}}</code> · {{end}}{{.Message}}</div>
+        </div>
+        {{if eq .Status "success"}}<span class="badge bg-success">started</span>
+        {{else if eq .Status "skipped"}}<span class="badge bg-secondary">skipped</span>
+        {{else}}<span class="badge bg-danger">failed</span>{{end}}
+    </div>
+    {{end}}
+</div>
+{{end}}
+{{end}}

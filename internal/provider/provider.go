@@ -87,4 +87,11 @@ type Provider interface {
 	// Providers that cannot re-run builds (e.g. Forgejo Actions is
 	// disabled) return ErrUnsupported; check with errors.Is.
 	RerunFailedWorkflowRuns(ctx context.Context, token, owner, repo string, prNumber int) (rerunCount int, err error)
+
+	// DispatchWorkflow manually triggers a workflow_dispatch run for
+	// workflowFile (a file name such as "renovate.yml" or a numeric
+	// workflow ID) on ref. inputs may be nil. Providers that do not
+	// support workflow dispatch return ErrUnsupported; check with
+	// errors.Is.
+	DispatchWorkflow(ctx context.Context, token, owner, repo, workflowFile, ref string, inputs map[string]any) error
 }

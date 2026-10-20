@@ -5,6 +5,7 @@ A Go-based web application for monitoring and visualizing GitHub repository acti
 ## Features
 
 - **Multi-repo dashboard** — View commits, releases, CI status, and pull requests for all your GitHub repos in one place
+- **Multi-repo workflow dispatch** — Trigger a GitHub Actions workflow (for example Renovate) across selected repositories with optional ref and inputs
 - **Pull request management** — View open PRs, merge individually or merge all with one click
 - **Release status tracking** — See whether the latest release's CI passed or failed
 - **Automated syncing** — Per-user configurable sync intervals (1 min to 24 hours)

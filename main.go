@@ -452,6 +452,8 @@ func main() {
 		authed.POST("/repos/:id/prs/merge-passing", dashHandler.MergePassingPRs)
 		authed.POST("/repos/:id/prs/close-all", dashHandler.CloseAllPRs)
 		authed.POST("/repos/:id/renovate/rebase-all", dashHandler.RenovateRebaseAll)
+		authed.GET("/workflows/dispatch", middleware.HTMXOnly(), dashHandler.WorkflowDispatchModal)
+		authed.POST("/workflows/dispatch", dashHandler.RunWorkflow)
 
 		authed.GET("/settings", middleware.HTMXOnly(), settingsHandler.Index)
 		authed.POST("/settings/interval", settingsHandler.UpdateInterval)

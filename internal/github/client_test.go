@@ -1332,3 +1332,98 @@ func TestListCommitsPage_RateLimitError(t *testing.T) {
 		t.Fatalf("expected *RateLimitError, got %T: %v", err, err)
 	}
 }
+
+func TestDispatchWorkflow_Success(t *testing.T) {
+	var gotMethod, gotPath, gotAuth string
+	var gotBody map[string]any
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotMethod = r.Method
+		gotPath = r.URL.Path
+		gotAuth = r.Header.Get("Authorization")
+		raw, _ := io.ReadAll(r.Body)
+		if err := json.Unmarshal(raw, &gotBody); err != nil {
+			t.Errorf("decoding request body: %v", err)
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	err := c.DispatchWorkflow("test_token", "owner", "repo", "renovate.yml", "main", map[string]any{
+		"dryRun":   true,
+		"logLevel": "debug",
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if gotMethod != http.MethodPost {
+		t.Errorf("expected POST, got %s", gotMethod)
+	}
+	if gotPath != "/repos/owner/repo/actions/workflows/renovate.yml/dispatches" {
+		t.Errorf("unexpected path: %s", gotPath)
+	}
+	if gotAuth != "Bearer test_token" {
+		t.Errorf("unexpected auth header: %s", gotAuth)
+	}
+	if gotBody["ref"] != "main" {
+		t.Errorf("expected ref main, got %v", gotBody["ref"])
+	}
+	inputs, ok := gotBody["inputs"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected inputs object, got %T", gotBody["inputs"])
+	}
+	if inputs["dryRun"] != true || inputs["logLevel"] != "debug" {
+		t.Errorf("unexpected inputs: %v", inputs)
+	}
+}
+
+func TestDispatchWorkflow_NotFoundReturnsAPIError(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte(`{"message":"Not Found"}`))
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	err := c.DispatchWorkflow("token", "owner", "repo", "missing.yml", "main", nil)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	var apiErr *APIError
+	if !errors.As(err, &apiErr) {
+		t.Fatalf("expected *APIError, got %T: %v", err, err)
+	}
+	if apiErr.StatusCode != http.StatusNotFound {
+		t.Errorf("expected status 404, got %d", apiErr.StatusCode)
+	}
+}
+
+func TestDispatchWorkflow_UnprocessableReturnsAPIError(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+	}))
+	defer srv.Close()
+
+	c := NewClient("", "")
+	c.APIURL = srv.URL
+
+	err := c.DispatchWorkflow("token", "owner", "repo", "renovate.yml", "no-such-branch", nil)
+	var apiErr *APIError
+	if !errors.As(err, &apiErr) || apiErr.StatusCode != http.StatusUnprocessableEntity {
+		t.Fatalf("expected 422 *APIError, got %T: %v", err, err)
+	}
+}
+
+func TestDispatchWorkflow_RequiresWorkflowAndRef(t *testing.T) {
+	c := NewClient("", "")
+	if err := c.DispatchWorkflow("token", "owner", "repo", "", "main", nil); err == nil {
+		t.Fatal("expected error for empty workflow")
+	}
+	if err := c.DispatchWorkflow("token", "owner", "repo", "renovate.yml", "", nil); err == nil {
+		t.Fatal("expected error for empty ref")
+	}
+}
