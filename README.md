@@ -10,7 +10,7 @@ A Go-based web application for monitoring and visualizing GitHub repository acti
 - **Release status tracking** — See whether the latest release's CI passed or failed
 - **Automated syncing** — Per-user configurable sync intervals (1 min to 24 hours)
 - **DORA metrics** — Commit type breakdown (feat/fix/docs/chore), workflow pass rate, lead time, release frequency
-- **GitHub webhook** — Real-time updates on push events
+- **GitHub webhook** — Real-time updates on push events and workflow failures
 - **WebSocket live updates** — Repo cards refresh automatically when data changes
 - **GitHub OAuth** — Secure authentication via GitHub
 - **Forgejo support** — Connect your Forgejo/Gitea instance as an additional provider alongside GitHub
@@ -276,7 +276,7 @@ task test:e2e
 | `/prs/batch-merge` | POST | Merge selected PRs from the unified queue |
 | `/prs/close` | POST | Close a single PR from the unified queue |
 | `/prs/batch-close` | POST | Close selected PRs from the unified queue |
-| `/webhook/github` | POST | GitHub webhook — push (sync) and release (deploy) events |
+| `/webhook/github` | POST | GitHub webhook — push (sync), release/package (deploy), and workflow failure notifications |
 | `/api/trmnl/summary` | GET | Public TRMNL summary — latest releases + CI failures (JSON) |
 | `/ws` | GET | WebSocket endpoint |
 | `/api/tokens` | POST | Create a personal API token (secret shown once) |

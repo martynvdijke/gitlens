@@ -147,8 +147,8 @@ func TestGitHubApp_HandleInstallation_Created(t *testing.T) {
 		if p.Config.URL != "http://example.com/webhook/github" {
 			t.Errorf("unexpected webhook URL: %s", p.Config.URL)
 		}
-		if len(p.Events) != 1 || p.Events[0] != "push" {
-			t.Errorf("expected events [push], got %v", p.Events)
+		if len(p.Events) != 2 || p.Events[0] != "push" || p.Events[1] != "workflow_run" {
+			t.Errorf("expected events [push workflow_run], got %v", p.Events)
 		}
 	}
 }
@@ -367,8 +367,8 @@ func TestGitHubApp_SetupAutoWebhooks_CreatesWebhooks(t *testing.T) {
 		if p.Config.URL != "http://example.com/webhook/github" {
 			t.Errorf("unexpected webhook URL: %s", p.Config.URL)
 		}
-		if len(p.Events) != 1 || p.Events[0] != "push" {
-			t.Errorf("expected events [push], got %v", p.Events)
+		if len(p.Events) != 2 || p.Events[0] != "push" || p.Events[1] != "workflow_run" {
+			t.Errorf("expected events [push workflow_run], got %v", p.Events)
 		}
 	}
 }
@@ -408,8 +408,8 @@ func TestGitHubApp_SetupAutoWebhooks_DeployEnabled(t *testing.T) {
 		t.Fatalf("expected 2 webhook registrations, got %d", len(stub.posts))
 	}
 	for _, p := range stub.posts {
-		if len(p.Events) != 2 || p.Events[0] != "push" || p.Events[1] != "release" {
-			t.Errorf("expected events [push release], got %v", p.Events)
+		if len(p.Events) != 3 || p.Events[0] != "push" || p.Events[1] != "workflow_run" || p.Events[2] != "release" {
+			t.Errorf("expected events [push workflow_run release], got %v", p.Events)
 		}
 	}
 }

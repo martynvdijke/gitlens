@@ -185,6 +185,8 @@ func (h *WebhookHandler) HandlePush(c *gin.Context) {
 		h.handleRelease(c, body)
 	case "registry_package", "package":
 		h.handlePackage(c, body)
+	case "workflow_run":
+		h.handleWorkflowRun(c, body)
 	default:
 		// Legacy behavior: treat as push event (or unknown)
 		h.handlePushEvent(c, body)
@@ -476,6 +478,83 @@ func deployMessage(release releaseInfo, target deploy.Target, imageTag string, d
 		b.WriteString(release.URL)
 	}
 	return b.String()
+}
+
+// workflowRunPayload is the GitHub Actions workflow_run webhook. It fires when
+// a workflow run completes, including runs triggered by pull requests and
+// scheduled jobs that never produce a release.
+type workflowRunPayload struct {
+	Action      string `json:"action"`
+	WorkflowRun struct {
+		Name       string `json:"name"`
+		Conclusion string `json:"conclusion"`
+		Status     string `json:"status"`
+		HTMLURL    string `json:"html_url"`
+		HeadBranch string `json:"head_branch"`
+		Event      string `json:"event"`
+		Actor      struct {
+			Login string `json:"login"`
+		} `json:"actor"`
+		PullRequests []struct {
+			Number int `json:"number"`
+		} `json:"pull_requests"`
+	} `json:"workflow_run"`
+	Repository struct {
+		FullName string `json:"full_name"`
+	} `json:"repository"`
+}
+
+// handleWorkflowRun notifies configured channels when a workflow fails. Only
+// completed failures are forwarded: successful and cancelled runs are noise,
+// and in-progress events would duplicate the final notification.
+func (h *WebhookHandler) handleWorkflowRun(c *gin.Context, body []byte) {
+	var payload workflowRunPayload
+	if err := json.Unmarshal(body, &payload); err != nil {
+		log.Printf("Webhook: error parsing workflow_run payload: %v", err)
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	if payload.Action != "completed" {
+		c.Status(http.StatusOK)
+		return
+	}
+	if payload.WorkflowRun.Conclusion != "failure" && payload.WorkflowRun.Conclusion != "timed_out" {
+		c.Status(http.StatusOK)
+		return
+	}
+	if len(h.notifiers) == 0 {
+		c.Status(http.StatusOK)
+		return
+	}
+
+	repo := payload.Repository.FullName
+	if repo == "" {
+		repo = "repository"
+	}
+	name := payload.WorkflowRun.Name
+	if name == "" {
+		name = "workflow"
+	}
+
+	title := fmt.Sprintf("%s workflow failed: %s", repo, name)
+	var b strings.Builder
+	fmt.Fprintf(&b, "Workflow %s finished with %s\n", name, payload.WorkflowRun.Conclusion)
+	if payload.WorkflowRun.HeadBranch != "" {
+		fmt.Fprintf(&b, "Branch: %s\n", payload.WorkflowRun.HeadBranch)
+	}
+	if len(payload.WorkflowRun.PullRequests) > 0 {
+		fmt.Fprintf(&b, "Pull request: #%d\n", payload.WorkflowRun.PullRequests[0].Number)
+	}
+	if payload.WorkflowRun.Actor.Login != "" {
+		fmt.Fprintf(&b, "Triggered by: %s\n", payload.WorkflowRun.Actor.Login)
+	}
+	if payload.WorkflowRun.HTMLURL != "" {
+		b.WriteString(payload.WorkflowRun.HTMLURL)
+	}
+
+	h.notify(c.Request.Context(), title, strings.TrimRight(b.String(), "\n"), 5)
+	c.Status(http.StatusOK)
 }
 
 // commitMessageForTag fetches the first line of the commit message at the

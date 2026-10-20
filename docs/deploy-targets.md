@@ -150,7 +150,9 @@ Notes:
 3. **Add the `release` event to your GitHub webhook.** In the GitHub repo:
    Settings → Webhooks → Edit your webhook, then under *Which events would you
    like to trigger this webhook?* select **Let me select individual events** and
-   tick **Releases**. Keep *Pushes* ticked if you want real-time dashboard sync.
+   tick **Releases**. Keep *Pushes* ticked if you want real-time dashboard sync,
+   and tick **Workflow runs** to receive a push notification when a GitHub
+   Actions workflow fails.
 
    The webhook URL stays the same as for pushes: `https://your-gitlens-host/webhook/github`.
 

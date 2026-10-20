@@ -248,10 +248,11 @@ func buildHookURL(c *gin.Context) string {
 	return scheme + "://" + c.Request.Host + "/webhook/github"
 }
 
-// webhookEvents returns the GitHub events this instance subscribes to. The
-// release event is added when the deploy subsystem is enabled.
+// webhookEvents returns the GitHub events this instance subscribes to.
+// workflow_run powers failure notifications; the release event is added when
+// the deploy subsystem is enabled.
 func (h *GitHubAppHandler) webhookEvents() []string {
-	events := []string{"push"}
+	events := []string{"push", "workflow_run"}
 	if h.deployEnabled {
 		events = append(events, "release")
 	}

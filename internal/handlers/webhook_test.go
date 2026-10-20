@@ -14,6 +14,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"gitlens/ent/enttest"
 	"gitlens/internal/deploy"
@@ -1047,5 +1048,89 @@ func TestDeployMessage_OmitsCommitWhenUnknown(t *testing.T) {
 	}
 	if !strings.Contains(msg, "Container test-app updated to img:1.2.3") {
 		t.Errorf("expected container update line, got: %s", msg)
+	}
+}
+
+func makeWorkflowRunPayload(action, conclusion, name, repo, branch string) string {
+	return fmt.Sprintf(`{"action":%q,"workflow_run":{"name":%q,"conclusion":%q,"status":"completed","html_url":"https://github.com/%s/actions/runs/1","head_branch":%q,"actor":{"login":"octocat"},"pull_requests":[{"number":42}]},"repository":{"full_name":%q}}`,
+		action, name, conclusion, repo, branch, repo)
+}
+
+func TestHandleWorkflowRun_FailureNotifies(t *testing.T) {
+	handler := newTestWebhookHandler(t, "")
+	fake := newFakeNotifier()
+	handler.SetNotifiers(fake)
+
+	payload := makeWorkflowRunPayload("completed", "failure", "CI", "acme/app", "main")
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest("POST", "/webhook/github", bytes.NewReader([]byte(payload)))
+	c.Request.Header.Set("X-GitHub-Event", "workflow_run")
+	handler.HandlePush(c)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	select {
+	case <-fake.done:
+	case <-time.After(2 * time.Second):
+		t.Fatal("expected a failure notification")
+	}
+	if len(fake.sends) != 1 {
+		t.Fatalf("expected 1 notification, got %d", len(fake.sends))
+	}
+	send := fake.sends[0]
+	if !strings.Contains(send.Title, "acme/app") || !strings.Contains(send.Title, "CI") {
+		t.Fatalf("unexpected title %q", send.Title)
+	}
+	if !strings.Contains(send.Message, "main") || !strings.Contains(send.Message, "#42") {
+		t.Fatalf("unexpected message %q", send.Message)
+	}
+	if send.Priority != 5 {
+		t.Fatalf("expected priority 5, got %d", send.Priority)
+	}
+}
+
+func TestHandleWorkflowRun_SuccessIsQuiet(t *testing.T) {
+	handler := newTestWebhookHandler(t, "")
+	fake := newFakeNotifier()
+	handler.SetNotifiers(fake)
+
+	payload := makeWorkflowRunPayload("completed", "success", "CI", "acme/app", "main")
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest("POST", "/webhook/github", bytes.NewReader([]byte(payload)))
+	c.Request.Header.Set("X-GitHub-Event", "workflow_run")
+	handler.HandlePush(c)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	select {
+	case <-fake.done:
+		t.Fatal("successful runs must not notify")
+	case <-time.After(100 * time.Millisecond):
+	}
+}
+
+func TestHandleWorkflowRun_InProgressIsIgnored(t *testing.T) {
+	handler := newTestWebhookHandler(t, "")
+	fake := newFakeNotifier()
+	handler.SetNotifiers(fake)
+
+	payload := makeWorkflowRunPayload("requested", "", "CI", "acme/app", "main")
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest("POST", "/webhook/github", bytes.NewReader([]byte(payload)))
+	c.Request.Header.Set("X-GitHub-Event", "workflow_run")
+	handler.HandlePush(c)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	select {
+	case <-fake.done:
+		t.Fatal("in-progress runs must not notify")
+	case <-time.After(100 * time.Millisecond):
 	}
 }
