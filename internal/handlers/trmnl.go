@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"sort"
 	"time"
@@ -55,7 +56,8 @@ func (h *TRMNLSummaryHandler) Summary(c *gin.Context) {
 	ctx := c.Request.Context()
 	repos, err := h.client.Repository.Query().All(ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		log.Printf("trmnl: failed to query repositories: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "summary unavailable"})
 		return
 	}
 

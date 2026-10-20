@@ -10,6 +10,7 @@ import (
 
 	"gitlens/ent"
 	"gitlens/internal/otel"
+	"gitlens/internal/secrets"
 
 	"github.com/gin-gonic/gin"
 )
@@ -184,6 +185,15 @@ func (h *AdminHandler) UpdateGotify(c *gin.Context) {
 
 	url := strings.TrimSpace(c.PostForm("gotify_url"))
 	token := strings.TrimSpace(c.PostForm("gotify_token"))
+	if token != "" {
+		sealed, err := secrets.Encrypt(token)
+		if err != nil {
+			log.Printf("admin: failed to encrypt Gotify token: %v", err)
+			c.String(http.StatusInternalServerError, "Failed to save Gotify configuration")
+			return
+		}
+		token = sealed
+	}
 
 	_, err := h.client.AdminConfig.Get(ctx, 1)
 	if ent.IsNotFound(err) {
@@ -255,6 +265,15 @@ func (h *AdminHandler) UpdateTelegram(c *gin.Context) {
 
 	token := strings.TrimSpace(c.PostForm("telegram_bot_token"))
 	chatID := strings.TrimSpace(c.PostForm("telegram_chat_id"))
+	if token != "" {
+		sealed, err := secrets.Encrypt(token)
+		if err != nil {
+			log.Printf("admin: failed to encrypt Telegram token: %v", err)
+			c.String(http.StatusInternalServerError, "Failed to save Telegram configuration")
+			return
+		}
+		token = sealed
+	}
 
 	_, err := h.client.AdminConfig.Get(ctx, 1)
 	if ent.IsNotFound(err) {

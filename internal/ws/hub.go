@@ -2,7 +2,10 @@ package ws
 
 import (
 	"log"
+	"net"
 	"net/http"
+	"net/url"
+	"strings"
 	"sync"
 	"time"
 
@@ -13,7 +16,22 @@ var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 	CheckOrigin: func(r *http.Request) bool {
-		return true
+		origin := r.Header.Get("Origin")
+		// Non-browser clients do not send Origin; the endpoint still requires
+		// an authenticated session, so allow those.
+		if origin == "" {
+			return true
+		}
+		u, err := url.Parse(origin)
+		if err != nil || u.Host == "" {
+			return false
+		}
+		originHost := strings.ToLower(u.Hostname())
+		reqHost := strings.ToLower(r.Host)
+		if h, _, err := net.SplitHostPort(reqHost); err == nil {
+			reqHost = h
+		}
+		return originHost == reqHost
 	},
 }
 

@@ -760,7 +760,7 @@ func friendlyMergeError(err error) string {
 	case strings.Contains(msg, "rate limit"):
 		return "The provider's API rate limit is exhausted; try again later."
 	default:
-		return msg
+		return "The pull request action failed. Refresh and try again."
 	}
 }
 
@@ -778,7 +778,7 @@ func friendlyRerunError(err error) string {
 	case strings.Contains(msg, "rate limit"):
 		return "The provider's API rate limit is exhausted; try again later."
 	default:
-		return msg
+		return "The build re-run request failed. Refresh and try again."
 	}
 }
 
@@ -1598,7 +1598,8 @@ func (h *DashboardHandler) WallTab(c *gin.Context) {
 	query := h.client.Repository.Query().Where(repository.HasUserWith(user.IDEQ(int(uid))))
 	repos, err := query.Order(ent.Desc(repository.FieldSyncedAt)).All(c.Request.Context())
 	if err != nil {
-		c.HTML(http.StatusInternalServerError, "wall_tab", gin.H{"Error": err.Error()})
+		log.Printf("dashboard: failed to load wall tab: %v", err)
+		c.HTML(http.StatusInternalServerError, "wall_tab", gin.H{"Error": "Unable to load repositories."})
 		return
 	}
 

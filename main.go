@@ -29,6 +29,7 @@ import (
 	"gitlens/internal/middleware"
 	"gitlens/internal/otel"
 	"gitlens/internal/provider"
+	"gitlens/internal/secrets"
 	"gitlens/internal/sync"
 	"gitlens/internal/telegram"
 	"gitlens/internal/ws"
@@ -65,7 +66,7 @@ func main() {
 		log.Fatalf("Failed to dedupe repositories: %v", err)
 	}
 
-	if err := client.Schema.Create(context.Background(), migrate.WithDropIndex(true)); err != nil {
+	if err := client.Schema.Create(context.Background()); err != nil {
 		log.Fatalf("Failed to run migrations: %v", err)
 	}
 
@@ -325,10 +326,12 @@ func main() {
 		g := gotify.New() // env fallback
 		var t *telegram.Client
 		if cfg, err := client.AdminConfig.Get(context.Background(), 1); err == nil {
-			if dbg := gotify.NewWith(cfg.GotifyURL, cfg.GotifyToken); dbg != nil {
+			gotifyToken, _ := secrets.Decrypt(cfg.GotifyToken)
+			telegramToken, _ := secrets.Decrypt(cfg.TelegramBotToken)
+			if dbg := gotify.NewWith(cfg.GotifyURL, gotifyToken); dbg != nil {
 				g = dbg
 			}
-			t = telegram.NewWith(cfg.TelegramBotToken, cfg.TelegramChatID)
+			t = telegram.NewWith(telegramToken, cfg.TelegramChatID)
 		}
 		webhookHandler.SetNotifiers(g, t)
 		deployHandler.SetGotifyOn(g != nil)
@@ -426,7 +429,7 @@ func main() {
 	r.POST("/webhook/github-app", gitHubAppHandler.HandleInstallation)
 
 	authed := r.Group("/")
-	authed.Use(middleware.AuthRequired(sessionStore))
+	authed.Use(middleware.AuthRequired(sessionStore), middleware.CSRF())
 	{
 		authed.GET("/dashboard", middleware.HTMXOnly(), dashHandler.ReposTab)
 		authed.GET("/dashboard/wall", middleware.HTMXOnly(), dashHandler.WallTab)
@@ -512,9 +515,14 @@ func main() {
 
 	r.GET("/ws", func(c *gin.Context) {
 		var userID int64
-		cookie, err := c.Cookie("gitlens_session")
-		if err == nil {
+		if id, ok := auth.GetUserIDFromSession(c); ok {
+			userID = id
+		} else if cookie, err := c.Cookie("gitlens_session"); err == nil {
 			userID, _ = sessionStore.Get(cookie)
+		}
+		if userID == 0 {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			return
 		}
 		hub.HandleWebSocket(c.Writer, c.Request, userID)
 	})
