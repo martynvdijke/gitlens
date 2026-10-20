@@ -1,3 +1,10 @@
+# [1.37.0](https://github.com/martynvdijke/gitlens/compare/v1.36.0...v1.37.0) (2026-10-20)
+
+
+### Features
+
+* notify on failed GitHub Actions workflows ([8b9ce77](https://github.com/martynvdijke/gitlens/commit/8b9ce77d266dc067f93783d939bf17a8b15592b9))
+
 # [1.36.0](https://github.com/martynvdijke/gitlens/compare/v1.35.4...v1.36.0) (2026-10-20)
 
 
