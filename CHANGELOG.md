@@ -1,3 +1,10 @@
+## [1.38.1](https://github.com/martynvdijke/gitlens/compare/v1.38.0...v1.38.1) (2026-10-21)
+
+
+### Bug Fixes
+
+* **deps:** update dependency cupertino_icons to v2 ([#73](https://github.com/martynvdijke/gitlens/issues/73)) ([15e0196](https://github.com/martynvdijke/gitlens/commit/15e019697ae82d175c2f8ce381396c3d8de5e0ea))
+
 # [1.38.0](https://github.com/martynvdijke/gitlens/compare/v1.37.0...v1.38.0) (2026-10-21)
 
 
