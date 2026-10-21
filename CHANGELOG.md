@@ -1,3 +1,10 @@
+# [1.38.0](https://github.com/martynvdijke/gitlens/compare/v1.37.0...v1.38.0) (2026-10-21)
+
+
+### Features
+
+* **android:** add GitLens Android app with OIDC login ([5c66e03](https://github.com/martynvdijke/gitlens/commit/5c66e03e61ffae50e5acde375ef149062cbdabe3))
+
 # [1.37.0](https://github.com/martynvdijke/gitlens/compare/v1.36.0...v1.37.0) (2026-10-20)
 
 
