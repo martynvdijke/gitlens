@@ -9,6 +9,7 @@ import (
 	"gitlens/ent/event"
 	"gitlens/ent/repository"
 	"gitlens/ent/user"
+	mw "gitlens/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,36 +23,44 @@ func NewFeedHandler(client *ent.Client) *FeedHandler {
 }
 
 type feedEvent struct {
-	ID        int
-	Type      string
-	Title     string
-	URL       string
-	Metadata  string
-	Timestamp time.Time
-	RepoOwner string
-	RepoName  string
-	RepoFull  string
+	ID        int       `json:"id"`
+	Type      string    `json:"type"`
+	Title     string    `json:"title"`
+	URL       string    `json:"url"`
+	Metadata  string    `json:"metadata"`
+	Timestamp time.Time `json:"timestamp"`
+	RepoOwner string    `json:"repo_owner"`
+	RepoName  string    `json:"repo_name"`
+	RepoFull  string    `json:"repo_full"`
 }
 
 type feedGroup struct {
-	Date   string // "Today", "Yesterday", "May 24"
-	Events []feedEvent
+	Date   string      `json:"date"` // "Today", "Yesterday", "May 24"
+	Events []feedEvent `json:"events"`
 }
 
 type feedData struct {
-	Groups []feedGroup
-	Since  string
-	Types  string
-	Count  int
+	Groups []feedGroup `json:"groups"`
+	Since  string      `json:"since"`
+	Types  string      `json:"types"`
+	Count  int         `json:"count"`
 }
 
 func (h *FeedHandler) Feed(c *gin.Context) {
 	data := h.queryFeed(c)
+	if mw.WantsJSON(c) {
+		c.JSON(http.StatusOK, data)
+		return
+	}
 	c.HTML(http.StatusOK, "feed", data)
 }
 
 func (h *FeedHandler) FeedFilter(c *gin.Context) {
 	data := h.queryFeed(c)
+	if mw.WantsJSON(c) {
+		c.JSON(http.StatusOK, data)
+		return
+	}
 	c.HTML(http.StatusOK, "feed", data)
 }
 

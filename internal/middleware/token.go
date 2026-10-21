@@ -15,6 +15,7 @@ import (
 
 	"gitlens/ent"
 	"gitlens/ent/apitoken"
+	"gitlens/internal/auth"
 )
 
 const bearerPrefix = "Bearer "
@@ -97,8 +98,9 @@ func RequireToken(client *ent.Client) gin.HandlerFunc {
 }
 
 // SessionOrToken authenticates via bearer token when present, otherwise
-// falls back to the browser session cookie. Used by token-management
-// endpoints so users can bootstrap their first token from the UI.
+// falls back to an OIDC signed session or the legacy browser session cookie.
+// Used by token-management and mobile bootstrap endpoints so users can
+// authenticate with whichever mechanism their client uses.
 func SessionOrToken(store *SessionStore, client *ent.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if raw := bearerToken(c); raw != "" {
@@ -109,6 +111,12 @@ func SessionOrToken(store *SessionStore, client *ent.Client) gin.HandlerFunc {
 			}
 			c.Set("user_id", userID)
 			c.Set("api_token_id", id)
+			c.Next()
+			return
+		}
+		if userID, ok := auth.GetUserIDFromSession(c); ok {
+			c.Set("user_id", userID)
+			c.Set("oidc_user_id", userID)
 			c.Next()
 			return
 		}
@@ -124,5 +132,45 @@ func SessionOrToken(store *SessionStore, client *ent.Client) gin.HandlerFunc {
 		}
 		c.Set("user_id", userID)
 		c.Next()
+	}
+}
+
+// AuthOrToken protects both the HTML UI and machine-facing routes. It accepts
+// a bearer token, an OIDC signed session cookie, or the legacy session cookie.
+// Unauthenticated JSON/API requests receive a 401 instead of an HTML redirect.
+func AuthOrToken(store *SessionStore, client *ent.Client) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if raw := bearerToken(c); raw != "" {
+			id, userID, err := VerifyToken(c.Request.Context(), client, raw)
+			if err != nil {
+				abortUnauthorized(c)
+				return
+			}
+			c.Set("user_id", userID)
+			c.Set("api_token_id", id)
+			c.Next()
+			return
+		}
+		if userID, ok := auth.GetUserIDFromSession(c); ok {
+			c.Set("user_id", userID)
+			c.Set("oidc_user_id", userID)
+			c.Next()
+			return
+		}
+		if cookie, err := c.Cookie(sessionCookieName); err == nil {
+			if userID, ok := store.Get(cookie); ok {
+				c.Set("session_id", cookie)
+				c.Set("user_id", userID)
+				c.Next()
+				return
+			}
+			c.SetCookie(sessionCookieName, "", -1, "/", "", false, true)
+		}
+		if WantsJSON(c) || strings.HasPrefix(c.Request.URL.Path, "/api/") {
+			abortUnauthorized(c)
+			return
+		}
+		c.Redirect(http.StatusFound, "/")
+		c.Abort()
 	}
 }

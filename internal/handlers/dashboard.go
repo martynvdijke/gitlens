@@ -59,11 +59,128 @@ type DORAMetrics struct {
 }
 
 type RepoOverview struct {
-	TotalRepos    int
-	OpenPRs       int
-	FailingRepos  int
-	TotalReleases int
-	LastSyncTime  string
+	TotalRepos    int    `json:"total_repos"`
+	OpenPRs       int    `json:"open_prs"`
+	FailingRepos  int    `json:"failing_repos"`
+	TotalReleases int    `json:"total_releases"`
+	LastSyncTime  string `json:"last_sync_time"`
+}
+
+// repoJSON is the safe, mobile-facing representation of a repository. It
+// deliberately omits internal/owned fields such as webhook secrets.
+type repoJSON struct {
+	ID                   int         `json:"id"`
+	Owner                string      `json:"owner"`
+	Name                 string      `json:"name"`
+	FullName             string      `json:"full_name"`
+	Description          string      `json:"description"`
+	HTMLURL              string      `json:"html_url"`
+	Language             string      `json:"language"`
+	DefaultBranch        string      `json:"default_branch"`
+	Provider             string      `json:"provider"`
+	WorkflowStatus       string      `json:"workflow_status"`
+	LatestCommitSHA      string      `json:"latest_commit_sha"`
+	LatestCommitMessage  string      `json:"latest_commit_message"`
+	LatestCommitDate     time.Time   `json:"latest_commit_date"`
+	LatestReleaseTag     string      `json:"latest_release_tag"`
+	LatestReleaseName    string      `json:"latest_release_name"`
+	LatestReleaseDate    *time.Time  `json:"latest_release_date,omitempty"`
+	TotalCommitsFetched  int         `json:"total_commits_fetched"`
+	FeatCount            int         `json:"feat_count"`
+	FixCount             int         `json:"fix_count"`
+	DocsCount            int         `json:"docs_count"`
+	ChoreCount           int         `json:"chore_count"`
+	OtherCommitCount     int         `json:"other_commit_count"`
+	ReleaseCount         int         `json:"release_count"`
+	AvgLeadTimeHours     float64     `json:"avg_lead_time_hours"`
+	WorkflowSuccessCount int         `json:"workflow_success_count"`
+	WorkflowFailureCount int         `json:"workflow_failure_count"`
+	OpenPRCount          int         `json:"open_pr_count"`
+	PullRequests         []prSummary `json:"pull_requests"`
+	SyncedAt             time.Time   `json:"synced_at"`
+	UpdatedAt            time.Time   `json:"updated_at"`
+	BackfillStatus       string      `json:"backfill_status"`
+}
+
+func toRepoJSON(r *ent.Repository) repoJSON {
+	var prs []prSummary
+	if r.PullRequests != "" {
+		_ = json.Unmarshal([]byte(r.PullRequests), &prs)
+	}
+	if prs == nil {
+		prs = []prSummary{}
+	}
+	out := repoJSON{
+		ID:                   r.ID,
+		Owner:                r.Owner,
+		Name:                 r.Name,
+		FullName:             r.FullName,
+		Description:          r.Description,
+		HTMLURL:              r.HTMLURL,
+		Language:             r.Language,
+		DefaultBranch:        r.DefaultBranch,
+		Provider:             r.Provider,
+		WorkflowStatus:       r.WorkflowStatus,
+		LatestCommitSHA:      r.LatestCommitSha,
+		LatestCommitMessage:  r.LatestCommitMessage,
+		LatestCommitDate:     r.LatestCommitDate,
+		LatestReleaseTag:     r.LatestReleaseTag,
+		LatestReleaseName:    r.LatestReleaseName,
+		TotalCommitsFetched:  r.TotalCommitsFetched,
+		FeatCount:            r.FeatCount,
+		FixCount:             r.FixCount,
+		DocsCount:            r.DocsCount,
+		ChoreCount:           r.ChoreCount,
+		OtherCommitCount:     r.OtherCommitCount,
+		ReleaseCount:         r.ReleaseCount,
+		AvgLeadTimeHours:     r.AvgLeadTimeHours,
+		WorkflowSuccessCount: r.WorkflowSuccessCount,
+		WorkflowFailureCount: r.WorkflowFailureCount,
+		OpenPRCount:          r.OpenPrCount,
+		PullRequests:         prs,
+		SyncedAt:             r.SyncedAt,
+		UpdatedAt:            r.UpdatedAt,
+		BackfillStatus:       r.BackfillStatus,
+	}
+	if !r.LatestReleaseDate.IsZero() {
+		d := r.LatestReleaseDate
+		out.LatestReleaseDate = &d
+	}
+	return out
+}
+
+func toRepoJSONList(repos []*ent.Repository) []repoJSON {
+	out := make([]repoJSON, 0, len(repos))
+	for _, r := range repos {
+		out = append(out, toRepoJSON(r))
+	}
+	return out
+}
+
+type userJSON struct {
+	ID        int    `json:"id"`
+	Username  string `json:"username"`
+	Name      string `json:"name"`
+	AvatarURL string `json:"avatar_url"`
+	Role      string `json:"role"`
+}
+
+func toUserJSON(u *ent.User) *userJSON {
+	if u == nil {
+		return nil
+	}
+	role := "user"
+	if u.IsAdmin {
+		role = "admin"
+	}
+	return &userJSON{ID: u.ID, Username: u.Login, Name: u.Name, AvatarURL: u.AvatarURL, Role: role}
+}
+
+func toPRQueueJSON(prs []PRQueueItem) []PRQueueItem {
+	if prs == nil {
+		return []PRQueueItem{}
+	}
+	return prs
 }
 
 type DashboardHandler struct {
@@ -146,12 +263,12 @@ func roundPct(v float64) float64 {
 
 // repoFilters holds structured filter dimensions parsed from query params.
 type repoFilters struct {
-	Sort     string
-	Query    string
-	Provider string
-	Status   string
-	Language string
-	PRs      string
+	Sort     string `json:"sort"`
+	Query    string `json:"query"`
+	Provider string `json:"provider"`
+	Status   string `json:"status"`
+	Language string `json:"language"`
+	PRs      string `json:"prs"`
 }
 
 // HasActiveFilters reports whether any structured filter dimension is set.
@@ -215,7 +332,21 @@ func (h *DashboardHandler) ListRepos(c *gin.Context) {
 	userID := c.GetInt64("user_id")
 	repos, f, ok := h.queryRepos(c, userID)
 	if !ok {
+		if mw.WantsJSON(c) {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch repositories"})
+			return
+		}
 		c.HTML(http.StatusInternalServerError, "repo_list", gin.H{"Error": "Failed to fetch repositories"})
+		return
+	}
+	if mw.WantsJSON(c) {
+		c.JSON(http.StatusOK, gin.H{
+			"repos":       toRepoJSONList(repos),
+			"query":       f.Query,
+			"sort":        f.Sort,
+			"filters":     f,
+			"has_filters": f.HasActiveFilters(),
+		})
 		return
 	}
 	c.HTML(http.StatusOK, "repo_list", gin.H{
@@ -231,6 +362,10 @@ func (h *DashboardHandler) SyncRepo(c *gin.Context) {
 	userID := c.GetInt64("user_id")
 	repoID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
+		if mw.WantsJSON(c) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid repo id"})
+			return
+		}
 		c.String(http.StatusBadRequest, "Invalid repo ID")
 		return
 	}
@@ -243,11 +378,19 @@ func (h *DashboardHandler) SyncRepo(c *gin.Context) {
 		).
 		Only(ctx)
 	if err != nil {
+		if mw.WantsJSON(c) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "repository not found"})
+			return
+		}
 		c.String(http.StatusNotFound, "Repository not found")
 		return
 	}
 
 	r = h.syncer.SyncOne(ctx, r)
+	if mw.WantsJSON(c) {
+		c.JSON(http.StatusOK, gin.H{"ok": true, "repository": toRepoJSON(r)})
+		return
+	}
 	c.HTML(http.StatusOK, "repo_card", r)
 }
 
@@ -400,20 +543,20 @@ func (h *DashboardHandler) ListPullRequests(c *gin.Context) {
 
 // PRQueueItem represents a pull request in the unified cross-repo queue.
 type PRQueueItem struct {
-	RepoID       int
-	RepoFullName string
-	Number       int
-	Title        string
-	Author       string
-	CreatedAt    string
-	HTMLURL      string
-	HeadRef      string
-	BaseRef      string
+	RepoID       int    `json:"repo_id"`
+	RepoFullName string `json:"repo_full_name"`
+	Number       int    `json:"number"`
+	Title        string `json:"title"`
+	Author       string `json:"author"`
+	CreatedAt    string `json:"created_at"`
+	HTMLURL      string `json:"html_url"`
+	HeadRef      string `json:"head_ref"`
+	BaseRef      string `json:"base_ref"`
 	// MergeableState is the provider's mergeability hint, if reported.
-	MergeableState string
+	MergeableState string `json:"mergeable_state"`
 	// BuildStatus is the CI build status for the PR's head commit
 	// (e.g. "success", "failure", "in_progress"). Empty when unknown.
-	BuildStatus string
+	BuildStatus string `json:"build_status"`
 }
 
 // prSummary is the JSON-unmarshalled form of a pull request stored on a Repository.
@@ -642,6 +785,15 @@ func (h *DashboardHandler) ReposTab(c *gin.Context) {
 	events := h.queryHomepageTimeline(c)
 	timelineGroups := groupEventsByDate(events)
 
+	if mw.WantsJSON(c) {
+		c.JSON(http.StatusOK, gin.H{
+			"user":     toUserJSON(u),
+			"repos":    toRepoJSONList(repos),
+			"overview": computeOverview(repos),
+		})
+		return
+	}
+
 	c.HTML(http.StatusOK, "repos_tab", gin.H{
 		"User":           u,
 		"Repos":          repos,
@@ -659,7 +811,23 @@ func (h *DashboardHandler) ReposTab(c *gin.Context) {
 func (h *DashboardHandler) PRsTab(c *gin.Context) {
 	data, err := h.fetchPRTabData(c.Request.Context(), int(c.GetInt64("user_id")), c.Query("repo"))
 	if err != nil {
+		if mw.WantsJSON(c) {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch data"})
+			return
+		}
 		c.HTML(http.StatusInternalServerError, "prs_tab", gin.H{"Error": "Failed to fetch data"})
+		return
+	}
+	if mw.WantsJSON(c) {
+		prs, _ := data["PRs"].([]PRQueueItem)
+		repos, _ := data["Repos"].([]*ent.Repository)
+		c.JSON(http.StatusOK, gin.H{
+			"user":          toUserJSON(data["User"].(*ent.User)),
+			"prs":           toPRQueueJSON(prs),
+			"repos":         toRepoJSONList(repos),
+			"filter_repo":   data["FilterRepo"],
+			"passing_count": data["PassingCount"],
+		})
 		return
 	}
 	c.HTML(http.StatusOK, "prs_tab", data)
@@ -813,6 +981,10 @@ func (h *DashboardHandler) MergeSinglePR(c *gin.Context) {
 
 	var req mergeRequest
 	if err := c.ShouldBind(&req); err != nil {
+		if mw.WantsJSON(c) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+			return
+		}
 		c.String(http.StatusBadRequest, "Invalid request")
 		return
 	}
@@ -825,12 +997,20 @@ func (h *DashboardHandler) MergeSinglePR(c *gin.Context) {
 		).
 		Only(ctx)
 	if err != nil {
+		if mw.WantsJSON(c) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "repository not found"})
+			return
+		}
 		c.String(http.StatusNotFound, "Repository not found")
 		return
 	}
 
 	u, err := h.client.User.Get(ctx, int(userID))
 	if err != nil {
+		if mw.WantsJSON(c) {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "user not found"})
+			return
+		}
 		c.String(http.StatusInternalServerError, "User not found")
 		return
 	}
@@ -839,16 +1019,32 @@ func (h *DashboardHandler) MergeSinglePR(c *gin.Context) {
 	merged, msg, err := p.MergePullRequest(ctx, token, r.Owner, r.Name, req.PRNumber)
 	if err != nil {
 		log.Printf("Error merging PR #%d for %s: %v", req.PRNumber, r.FullName, err)
+		if mw.WantsJSON(c) {
+			c.JSON(http.StatusOK, gin.H{"ok": false, "message": fmt.Sprintf("Failed to merge #%d", req.PRNumber), "details": friendlyMergeError(err)})
+			return
+		}
 		h.renderPRQueue(c, ctx, int(userID), "danger", fmt.Sprintf("Failed to merge #%d", req.PRNumber), friendlyMergeError(err), nil, nil)
 		return
 	}
 	if !merged {
+		if mw.WantsJSON(c) {
+			c.JSON(http.StatusOK, gin.H{"ok": false, "message": fmt.Sprintf("Merge failed for #%d", req.PRNumber), "details": msg})
+			return
+		}
 		h.renderPRQueue(c, ctx, int(userID), "warning", fmt.Sprintf("Merge failed for #%d", req.PRNumber), msg, nil, nil)
 		return
 	}
 
 	// Respond immediately; refresh repo state in the background.
 	h.syncer.SyncOneBackground(r)
+	if mw.WantsJSON(c) {
+		c.JSON(http.StatusOK, gin.H{
+			"ok":      true,
+			"message": fmt.Sprintf("PR #%d merged successfully", req.PRNumber),
+			"merged":  []string{fmt.Sprintf("%d:%d", r.ID, req.PRNumber)},
+		})
+		return
+	}
 	h.renderPRQueue(c, ctx, int(userID), "success", fmt.Sprintf("PR #%d merged successfully", req.PRNumber), "",
 		map[string]bool{fmt.Sprintf("%d:%d", r.ID, req.PRNumber): true}, nil)
 }
@@ -860,6 +1056,10 @@ func (h *DashboardHandler) BatchMergePRs(c *gin.Context) {
 
 	prIDs := c.PostFormArray("pr_ids")
 	if len(prIDs) == 0 {
+		if mw.WantsJSON(c) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "no PRs selected"})
+			return
+		}
 		c.String(http.StatusBadRequest, "No PRs selected")
 		return
 	}
@@ -927,6 +1127,16 @@ func (h *DashboardHandler) BatchMergePRs(c *gin.Context) {
 
 	total := len(merged) + len(failed)
 
+	if mw.WantsJSON(c) {
+		c.JSON(http.StatusOK, gin.H{
+			"ok":      len(failed) == 0,
+			"message": fmt.Sprintf("Merged %d/%d", len(merged), total),
+			"merged":  merged,
+			"failed":  failed,
+		})
+		return
+	}
+
 	data, err := h.fetchPRTabData(ctx, int(userID), c.Query("repo"))
 	if err != nil {
 		c.String(http.StatusOK, "Merged %d/%d", len(merged), total)
@@ -951,6 +1161,10 @@ func (h *DashboardHandler) CloseSinglePR(c *gin.Context) {
 
 	var req mergeRequest
 	if err := c.ShouldBind(&req); err != nil {
+		if mw.WantsJSON(c) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+			return
+		}
 		c.String(http.StatusBadRequest, "Invalid request")
 		return
 	}
@@ -963,12 +1177,20 @@ func (h *DashboardHandler) CloseSinglePR(c *gin.Context) {
 		).
 		Only(ctx)
 	if err != nil {
+		if mw.WantsJSON(c) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "repository not found"})
+			return
+		}
 		c.String(http.StatusNotFound, "Repository not found")
 		return
 	}
 
 	u, err := h.client.User.Get(ctx, int(userID))
 	if err != nil {
+		if mw.WantsJSON(c) {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "user not found"})
+			return
+		}
 		c.String(http.StatusInternalServerError, "User not found")
 		return
 	}
@@ -976,12 +1198,24 @@ func (h *DashboardHandler) CloseSinglePR(c *gin.Context) {
 	p, token := h.syncer.ProviderFor(u, r)
 	if err := p.ClosePullRequest(ctx, token, r.Owner, r.Name, req.PRNumber); err != nil {
 		log.Printf("Error closing PR #%d for %s: %v", req.PRNumber, r.FullName, err)
+		if mw.WantsJSON(c) {
+			c.JSON(http.StatusOK, gin.H{"ok": false, "message": fmt.Sprintf("Failed to close #%d", req.PRNumber), "details": friendlyMergeError(err)})
+			return
+		}
 		h.renderPRQueue(c, ctx, int(userID), "danger", fmt.Sprintf("Failed to close #%d", req.PRNumber), friendlyMergeError(err), nil, nil)
 		return
 	}
 
 	// Respond immediately; refresh repo state in the background.
 	h.syncer.SyncOneBackground(r)
+	if mw.WantsJSON(c) {
+		c.JSON(http.StatusOK, gin.H{
+			"ok":      true,
+			"message": fmt.Sprintf("PR #%d closed", req.PRNumber),
+			"closed":  []string{fmt.Sprintf("%d:%d", r.ID, req.PRNumber)},
+		})
+		return
+	}
 	h.renderPRQueue(c, ctx, int(userID), "success", fmt.Sprintf("PR #%d closed", req.PRNumber), "",
 		nil, map[string]bool{fmt.Sprintf("%d:%d", r.ID, req.PRNumber): true})
 }
@@ -993,6 +1227,10 @@ func (h *DashboardHandler) RerunPRBuilds(c *gin.Context) {
 
 	var req mergeRequest
 	if err := c.ShouldBind(&req); err != nil {
+		if mw.WantsJSON(c) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+			return
+		}
 		c.String(http.StatusBadRequest, "Invalid request")
 		return
 	}
@@ -1005,12 +1243,20 @@ func (h *DashboardHandler) RerunPRBuilds(c *gin.Context) {
 		).
 		Only(ctx)
 	if err != nil {
+		if mw.WantsJSON(c) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "repository not found"})
+			return
+		}
 		c.String(http.StatusNotFound, "Repository not found")
 		return
 	}
 
 	u, err := h.client.User.Get(ctx, int(userID))
 	if err != nil {
+		if mw.WantsJSON(c) {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "user not found"})
+			return
+		}
 		c.String(http.StatusInternalServerError, "User not found")
 		return
 	}
@@ -1019,17 +1265,29 @@ func (h *DashboardHandler) RerunPRBuilds(c *gin.Context) {
 	count, err := p.RerunFailedWorkflowRuns(ctx, token, r.Owner, r.Name, req.PRNumber)
 	if err != nil {
 		if errors.Is(err, provider.ErrUnsupported) {
+			if mw.WantsJSON(c) {
+				c.JSON(http.StatusOK, gin.H{"ok": false, "message": fmt.Sprintf("Can't re-run builds for #%d", req.PRNumber), "details": "Re-running builds is not supported for this provider."})
+				return
+			}
 			h.renderPRQueue(c, ctx, int(userID), "warning",
 				fmt.Sprintf("Can't re-run builds for #%d", req.PRNumber),
 				"Re-running builds is not supported for this provider.", nil, nil)
 			return
 		}
 		log.Printf("Error re-running builds for PR #%d for %s: %v", req.PRNumber, r.FullName, err)
+		if mw.WantsJSON(c) {
+			c.JSON(http.StatusOK, gin.H{"ok": false, "message": fmt.Sprintf("Failed to re-run builds for #%d", req.PRNumber), "details": friendlyRerunError(err)})
+			return
+		}
 		h.renderPRQueue(c, ctx, int(userID), "danger",
 			fmt.Sprintf("Failed to re-run builds for #%d", req.PRNumber), friendlyRerunError(err), nil, nil)
 		return
 	}
 	if count == 0 {
+		if mw.WantsJSON(c) {
+			c.JSON(http.StatusOK, gin.H{"ok": false, "message": fmt.Sprintf("No failed builds for #%d", req.PRNumber), "details": "No completed runs with a failing conclusion match this PR's head commit."})
+			return
+		}
 		h.renderPRQueue(c, ctx, int(userID), "warning",
 			fmt.Sprintf("No failed builds for #%d", req.PRNumber),
 			"No completed runs with a failing conclusion match this PR's head commit.", nil, nil)
@@ -1038,6 +1296,10 @@ func (h *DashboardHandler) RerunPRBuilds(c *gin.Context) {
 
 	// Respond immediately; refresh repo state in the background.
 	h.syncer.SyncOneBackground(r)
+	if mw.WantsJSON(c) {
+		c.JSON(http.StatusOK, gin.H{"ok": true, "message": fmt.Sprintf("Re-queued %d failed build(s) for #%d", count, req.PRNumber), "count": count})
+		return
+	}
 	h.renderPRQueue(c, ctx, int(userID), "success",
 		fmt.Sprintf("Re-queued %d failed build(s) for #%d", count, req.PRNumber), "", nil, nil)
 }
@@ -1049,6 +1311,10 @@ func (h *DashboardHandler) BatchClosePRs(c *gin.Context) {
 
 	prIDs := c.PostFormArray("pr_ids")
 	if len(prIDs) == 0 {
+		if mw.WantsJSON(c) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "no PRs selected"})
+			return
+		}
 		c.String(http.StatusBadRequest, "No PRs selected")
 		return
 	}
@@ -1111,6 +1377,16 @@ func (h *DashboardHandler) BatchClosePRs(c *gin.Context) {
 
 	total := len(closed) + len(failed)
 
+	if mw.WantsJSON(c) {
+		c.JSON(http.StatusOK, gin.H{
+			"ok":      len(failed) == 0,
+			"message": fmt.Sprintf("Closed %d/%d", len(closed), total),
+			"closed":  closed,
+			"failed":  failed,
+		})
+		return
+	}
+
 	data, err := h.fetchPRTabData(ctx, int(userID), c.Query("repo"))
 	if err != nil {
 		c.String(http.StatusOK, "Closed %d/%d", len(closed), total)
@@ -1160,6 +1436,10 @@ func (h *DashboardHandler) BatchMergePassingPRs(c *gin.Context) {
 		passing = append(passing, pr)
 	}
 	if len(passing) == 0 {
+		if mw.WantsJSON(c) {
+			c.JSON(http.StatusOK, gin.H{"ok": false, "message": "No passing PRs to merge", "details": "No PRs with Build: Passing (and mergeable) in the current filter."})
+			return
+		}
 		h.renderPRQueue(c, ctx, int(userID), "warning", "No passing PRs to merge", "No PRs with Build: Passing (and mergeable) in the current filter.", nil, nil)
 		return
 	}
@@ -1197,6 +1477,16 @@ func (h *DashboardHandler) BatchMergePassingPRs(c *gin.Context) {
 
 	for _, r := range affectedRepos {
 		h.syncer.SyncOneBackground(r)
+	}
+
+	if mw.WantsJSON(c) {
+		c.JSON(http.StatusOK, gin.H{
+			"ok":      len(failed) == 0,
+			"message": fmt.Sprintf("Merged %d/%d passing", len(merged), len(passing)),
+			"merged":  merged,
+			"failed":  failed,
+		})
+		return
 	}
 
 	fresh, fetchErr := h.fetchPRTabData(ctx, int(userID), filterRepo)
@@ -1294,6 +1584,15 @@ func (h *DashboardHandler) MetricsTab(c *gin.Context) {
 		Where(repository.HasUserWith(user.ID(int(userID)))).
 		Order(ent.Desc(repository.FieldUpdatedAt)).
 		All(c.Request.Context())
+
+	if mw.WantsJSON(c) {
+		c.JSON(http.StatusOK, gin.H{
+			"user":    toUserJSON(u),
+			"repos":   toRepoJSONList(repos),
+			"metrics": computeMetrics(repos),
+		})
+		return
+	}
 
 	c.HTML(http.StatusOK, "metrics_tab", gin.H{
 		"User":      u,
@@ -1575,22 +1874,25 @@ func (h *DashboardHandler) RenovateRebaseAll(c *gin.Context) {
 	err = h.gh.RebaseAllOpenPRs(u.AccessToken, r.Owner, r.Name)
 	if err != nil {
 		log.Printf("Error triggering Renovate rebase-all on %s: %v", r.FullName, err)
+		if mw.WantsJSON(c) {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to trigger Renovate rebase: %v", err)})
+			return
+		}
 		c.String(http.StatusInternalServerError, "Failed to trigger Renovate rebase: %v", err)
 		return
 	}
 
+	if mw.WantsJSON(c) {
+		c.JSON(http.StatusOK, gin.H{"ok": true, "message": fmt.Sprintf("Renovate rebase-all triggered successfully for %s!", r.FullName)})
+		return
+	}
 	c.String(http.StatusOK, "Renovate rebase-all triggered successfully for %s!", r.FullName)
 }
 
 // WallTab renders the e-ink wall dashboard (large, text-only repo cards).
 func (h *DashboardHandler) WallTab(c *gin.Context) {
-	userID, exists := c.Get("userID")
-	if !exists {
-		c.Status(http.StatusUnauthorized)
-		return
-	}
-	uid, ok := userID.(int64)
-	if !ok {
+	uid := c.GetInt64("user_id")
+	if uid == 0 {
 		c.Status(http.StatusUnauthorized)
 		return
 	}

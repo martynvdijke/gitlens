@@ -293,6 +293,7 @@ func main() {
 	dashHandler := handlers.NewDashboardHandler(client, sessionStore, ghClient, syncer)
 	settingsHandler := handlers.NewSettingsHandler(client, sessionStore, ghClient, providers, syncer)
 	apiTokenHandler := handlers.NewApiTokenHandler(client)
+	meHandler := handlers.NewMeHandler(client)
 	chartHandler := handlers.NewChartHandler(client)
 	badgeHandler := handlers.NewBadgeHandler(client)
 	trmnlHandler := handlers.NewTRMNLSummaryHandler(client)
@@ -429,7 +430,7 @@ func main() {
 	r.POST("/webhook/github-app", gitHubAppHandler.HandleInstallation)
 
 	authed := r.Group("/")
-	authed.Use(middleware.AuthRequired(sessionStore), middleware.CSRF())
+	authed.Use(middleware.AuthOrToken(sessionStore, client), middleware.CSRF())
 	{
 		authed.GET("/dashboard", middleware.HTMXOnly(), dashHandler.ReposTab)
 		authed.GET("/dashboard/wall", middleware.HTMXOnly(), dashHandler.WallTab)
@@ -477,6 +478,7 @@ func main() {
 		authed.GET("/charts/data", chartHandler.Data)
 		authed.GET("/feed", feedHandler.Feed)
 		authed.POST("/feed/filter", feedHandler.FeedFilter)
+		authed.GET("/api/user/me", meHandler.Me)
 		authed.POST("/repos/setup-webhooks", gitHubAppHandler.SetupAutoWebhooks)
 
 		admin := authed.Group("/admin")
@@ -517,10 +519,20 @@ func main() {
 
 	r.GET("/ws", func(c *gin.Context) {
 		var userID int64
-		if id, ok := auth.GetUserIDFromSession(c); ok {
-			userID = id
-		} else if cookie, err := c.Cookie("gitlens_session"); err == nil {
-			userID, _ = sessionStore.Get(cookie)
+		if authHeader := c.GetHeader("Authorization"); strings.HasPrefix(authHeader, "Bearer ") {
+			raw := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
+			if raw != "" {
+				if _, uid, err := middleware.VerifyToken(c.Request.Context(), client, raw); err == nil {
+					userID = uid
+				}
+			}
+		}
+		if userID == 0 {
+			if id, ok := auth.GetUserIDFromSession(c); ok {
+				userID = id
+			} else if cookie, err := c.Cookie("gitlens_session"); err == nil {
+				userID, _ = sessionStore.Get(cookie)
+			}
 		}
 		if userID == 0 {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})

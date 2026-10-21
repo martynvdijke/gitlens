@@ -12,6 +12,7 @@ import (
 
 	"gitlens/ent"
 	"gitlens/ent/enttest"
+	"gitlens/internal/auth"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
@@ -175,5 +176,83 @@ func TestSessionOrToken_Fallback(t *testing.T) {
 	engine.ServeHTTP(w, httptest.NewRequest("GET", "/protected", nil))
 	if w.Code != http.StatusUnauthorized {
 		t.Fatalf("expected 401 with no credentials, got %d", w.Code)
+	}
+}
+
+func TestAuthOrToken_JSONUnauthorizedAndBearer(t *testing.T) {
+	client := newTokenTestClient(t)
+	ctx := context.Background()
+	store := newTestSessionStore(t)
+
+	u := client.User.Create().SetGithubID(20).SetLogin("json").SetAccessToken("t").SaveX(ctx)
+	plain, hash, _ := GenerateToken()
+	client.ApiToken.Create().SetUserID(u.ID).SetName("json").SetTokenHash(hash).SaveX(ctx)
+
+	engine := ginTestEngine(AuthOrToken(store, client))
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/protected", nil)
+	req.Header.Set("Accept", "application/json")
+	engine.ServeHTTP(w, req)
+	if w.Code != http.StatusUnauthorized {
+		t.Fatalf("expected JSON 401 without credentials, got %d", w.Code)
+	}
+	if !strings.Contains(w.Header().Get("Content-Type"), "application/json") {
+		t.Fatalf("expected JSON content type, got %q", w.Header().Get("Content-Type"))
+	}
+
+	w = httptest.NewRecorder()
+	req = httptest.NewRequest(http.MethodGet, "/protected", nil)
+	req.Header.Set("Authorization", "Bearer "+plain)
+	engine.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected bearer to authenticate, got %d: %s", w.Code, w.Body.String())
+	}
+}
+
+func TestAuthOrToken_LegacySessionFallback(t *testing.T) {
+	client := newTokenTestClient(t)
+	ctx := context.Background()
+	store := newTestSessionStore(t)
+	u := client.User.Create().SetGithubID(21).SetLogin("legacy").SetAccessToken("t").SaveX(ctx)
+	sessionID := store.Set(int64(u.ID))
+
+	engine := ginTestEngine(AuthOrToken(store, client))
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/protected", nil)
+	req.AddCookie(&http.Cookie{Name: sessionCookieName, Value: sessionID})
+	engine.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected legacy session to authenticate, got %d", w.Code)
+	}
+}
+
+func TestAuthOrToken_OIDCSessionCookie(t *testing.T) {
+	t.Setenv("SESSION_SECRET", "test-oidc-secret")
+	client := newTokenTestClient(t)
+	ctx := context.Background()
+	store := newTestSessionStore(t)
+	u := client.User.Create().SetGithubID(22).SetLogin("oidc").SetAccessToken("t").SaveX(ctx)
+
+	gin.SetMode(gin.TestMode)
+	setCookieRecorder := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(setCookieRecorder)
+	c.Request = httptest.NewRequest(http.MethodGet, "/", nil)
+	auth.SetSessionCookie(c, int64(u.ID))
+	cookies := setCookieRecorder.Result().Cookies()
+	if len(cookies) == 0 {
+		t.Fatal("expected signed OIDC cookie")
+	}
+
+	engine := ginTestEngine(AuthOrToken(store, client))
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/protected", nil)
+	req.Header.Set("Accept", "application/json")
+	for _, cookie := range cookies {
+		req.AddCookie(cookie)
+	}
+	engine.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected OIDC session to authenticate, got %d: %s", w.Code, w.Body.String())
 	}
 }

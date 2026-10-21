@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -115,12 +116,21 @@ func ClearSessionCookie(c *gin.Context) {
 	c.SetCookie(sessionCookieName, "", -1, "/", "", false, true)
 }
 
-// HTMXOnly aborts with a redirect to / when the request is not an HTMX
-// partial request. This prevents direct browser refreshes on push-url
-// routes from rendering raw partial templates.
+// WantsJSON reports whether the client explicitly asked for a JSON
+// representation. Native/mobile clients set Accept: application/json while
+// the HTMX UI keeps its existing partial-rendering behaviour.
+func WantsJSON(c *gin.Context) bool {
+	accept := strings.ToLower(c.GetHeader("Accept"))
+	return strings.Contains(accept, "application/json")
+}
+
+// HTMXOnly aborts with a redirect to / when the request is neither an HTMX
+// partial request nor an explicit JSON API request. This prevents direct
+// browser refreshes on push-url routes from rendering raw partial templates
+// while letting mobile clients consume the same routes as JSON.
 func HTMXOnly() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if c.GetHeader("HX-Request") == "" {
+		if c.GetHeader("HX-Request") == "" && !WantsJSON(c) {
 			c.Redirect(http.StatusFound, "/")
 			c.Abort()
 		}
