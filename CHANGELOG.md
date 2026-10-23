@@ -1,3 +1,10 @@
+# [1.39.0](https://github.com/martynvdijke/gitlens/compare/v1.38.3...v1.39.0) (2026-10-23)
+
+
+### Features
+
+* **repos:** add one-click Renovate all trigger ([bc9a2f8](https://github.com/martynvdijke/gitlens/commit/bc9a2f823f5648a7df02b23989d75e0f7d54474c))
+
 ## [1.38.3](https://github.com/martynvdijke/gitlens/compare/v1.38.2...v1.38.3) (2026-10-22)
 
 ## [1.38.2](https://github.com/martynvdijke/gitlens/compare/v1.38.1...v1.38.2) (2026-10-21)
