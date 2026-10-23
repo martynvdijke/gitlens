@@ -13,6 +13,10 @@
     <button class="btn btn-outline-info btn-sm" hx-get="/workflows/dispatch?preset=renovate" hx-target="#modal-root" hx-swap="innerHTML">
         Renovate
     </button>
+    <button class="btn btn-outline-info btn-sm" hx-post="/repos/renovate-all" hx-target="#renovate-all-results" hx-swap="innerHTML" hx-confirm="Run Renovate across all tracked GitHub repositories?" hx-indicator="#renovate-all-spinner" hx-disabled-elt="this">
+        Renovate All
+    </button>
+    <span id="renovate-all-spinner" class="htmx-indicator small text-info">Dispatching Renovate...</span>
     <span class="text-secondary small">Sort:</span>
     <select class="form-select form-select-sm bg-dark text-light border-secondary" style="width:auto"
         hx-get="/dashboard" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true" hx-trigger="change"
@@ -28,6 +32,8 @@
     </select>
     <span id="sync-spinner" class="htmx-indicator small text-info">Working...</span>
 </div>
+
+<div id="renovate-all-results"></div>
 
 <!-- Import progress bar (hidden until import starts) -->
 <div id="import-progress-bar" class="mb-3" style="display:none">

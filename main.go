@@ -445,6 +445,7 @@ func main() {
 		authed.GET("/repos", middleware.HTMXOnly(), dashHandler.ListRepos)
 		authed.POST("/repos/:id/sync", dashHandler.SyncRepo)
 		authed.POST("/repos/import-all", dashHandler.ImportAllRepos)
+		authed.POST("/repos/renovate-all", dashHandler.RenovateAll)
 		authed.GET("/repos/import-progress", dashHandler.ImportProgressHandler)
 		authed.GET("/repos/:id/prs", dashHandler.ListPullRequests)
 		authed.POST("/repos/:id/prs/:number/merge", dashHandler.MergePR)

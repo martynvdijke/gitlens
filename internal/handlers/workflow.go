@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -172,16 +173,60 @@ func (h *DashboardHandler) RunWorkflow(c *gin.Context) {
 		}
 	}
 
-	results := make([]workflowDispatchResult, len(ordered))
+	results := h.dispatchWorkflow(ctx, u, ordered, workflowFile, req.Ref, inputs)
+	c.HTML(http.StatusOK, "workflow_dispatch_results", results)
+}
+
+// RenovateAll dispatches the Renovate workflow to every repository tracked by
+// the signed-in user, using each repository's default branch. It is the
+// one-click counterpart to the workflow-dispatch modal.
+func (h *DashboardHandler) RenovateAll(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	ctx := c.Request.Context()
+
+	repos, err := h.client.Repository.Query().
+		Where(repository.HasUserWith(user.ID(int(userID)))).
+		All(ctx)
+	if err != nil {
+		log.Printf("renovate all: loading repositories: %v", err)
+		renderWorkflowDispatchError(c, "Failed to load repositories.")
+		return
+	}
+	if len(repos) == 0 {
+		renderWorkflowDispatchError(c, "No tracked repositories. Import repositories first.")
+		return
+	}
+
+	sort.Slice(repos, func(i, j int) bool {
+		return strings.ToLower(repos[i].FullName) < strings.ToLower(repos[j].FullName)
+	})
+
+	u, err := h.client.User.Get(ctx, int(userID))
+	if err != nil {
+		log.Printf("renovate all: loading user %d: %v", userID, err)
+		renderWorkflowDispatchError(c, "Failed to load user.")
+		return
+	}
+
+	results := h.dispatchWorkflow(ctx, u, repos, "renovate.yml", "", nil)
+	c.HTML(http.StatusOK, "workflow_dispatch_results", results)
+}
+
+// dispatchWorkflow dispatches workflowFile to every repository in repos,
+// honouring the default-branch fallback and skipping providers that do not
+// support workflow dispatch. Individual failures do not abort the remaining
+// dispatches.
+func (h *DashboardHandler) dispatchWorkflow(ctx context.Context, u *ent.User, repos []*ent.Repository, workflowFile, ref string, inputs map[string]any) workflowDispatchResultsData {
+	results := make([]workflowDispatchResult, len(repos))
 	sem := make(chan struct{}, workflowDispatchConcurrency)
 	var wg sync.WaitGroup
 
-	for i, r := range ordered {
-		ref := strings.TrimSpace(req.Ref)
-		if ref == "" {
-			ref = r.DefaultBranch
-			if ref == "" {
-				ref = "main"
+	for i, r := range repos {
+		repoRef := strings.TrimSpace(ref)
+		if repoRef == "" {
+			repoRef = r.DefaultBranch
+			if repoRef == "" {
+				repoRef = "main"
 			}
 		}
 		providerName := r.Provider
@@ -196,7 +241,7 @@ func (h *DashboardHandler) RunWorkflow(c *gin.Context) {
 			results[i] = workflowDispatchResult{
 				FullName: r.FullName,
 				Provider: providerName,
-				Ref:      ref,
+				Ref:      repoRef,
 				Status:   "skipped",
 				Message:  "Workflow dispatch is not supported for Forgejo repositories.",
 			}
@@ -230,7 +275,7 @@ func (h *DashboardHandler) RunWorkflow(c *gin.Context) {
 				log.Printf("workflow dispatch failed for %s: %v", r.FullName, err)
 			}
 			results[i] = result
-		}(i, r, ref, providerName)
+		}(i, r, repoRef, providerName)
 	}
 
 	wg.Wait()
@@ -246,7 +291,7 @@ func (h *DashboardHandler) RunWorkflow(c *gin.Context) {
 			data.Skipped++
 		}
 	}
-	c.HTML(http.StatusOK, "workflow_dispatch_results", data)
+	return data
 }
 
 // normalizeWorkflowID trims the input and accepts either a bare workflow

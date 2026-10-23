@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -31,6 +32,7 @@ func newWorkflowTestEngine(t *testing.T, h *DashboardHandler, userID int64) *gin
 	authed := engine.Group("/", func(c *gin.Context) { c.Set("user_id", userID); c.Next() })
 	authed.GET("/workflows/dispatch", h.WorkflowDispatchModal)
 	authed.POST("/workflows/dispatch", h.RunWorkflow)
+	authed.POST("/repos/renovate-all", h.RenovateAll)
 	return engine
 }
 
@@ -321,6 +323,84 @@ func TestRunWorkflow_ValidationErrors(t *testing.T) {
 	}
 	if len(fake.dispatchCalls) != 0 {
 		t.Errorf("expected no dispatch calls, got %v", fake.dispatchCalls)
+	}
+}
+
+func TestRenovateAll_DispatchesEveryTrackedRepo(t *testing.T) {
+	fake := &mergeFakeProvider{name: "fake"}
+	h, client := newMergeTestHandler(t, map[string]provider.Provider{"fake": fake})
+	u := createMergeUser(t, client)
+	createWorkflowRepo(t, client, u.ID, "zeta", "one", "fake", "main")
+	createWorkflowRepo(t, client, u.ID, "alpha", "two", "fake", "develop")
+	createWorkflowRepo(t, client, u.ID, "acme", "legacy", "forgejo", "trunk")
+
+	other, err := client.User.Create().
+		SetGithubID(8888).SetLogin("other").SetAccessToken("tok").
+		Save(context.Background())
+	if err != nil {
+		t.Fatalf("create other user: %v", err)
+	}
+	createWorkflowRepo(t, client, other.ID, "other", "repo", "fake", "main")
+
+	engine := newWorkflowTestEngine(t, h, int64(u.ID))
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest("POST", "/repos/renovate-all", http.NoBody)
+	engine.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	body := w.Body.String()
+	if !strings.Contains(body, "T=3;OK=2;F=0;S=1") {
+		t.Errorf("expected two successes and one skip, got: %s", body)
+	}
+	if len(fake.dispatchCalls) != 2 {
+		t.Fatalf("expected two dispatch calls, got %v", fake.dispatchCalls)
+	}
+	joined := strings.Join(fake.dispatchCalls, ",")
+	if !strings.Contains(joined, "zeta/one@renovate.yml:main") || !strings.Contains(joined, "alpha/two@renovate.yml:develop") {
+		t.Errorf("unexpected dispatch calls: %v", fake.dispatchCalls)
+	}
+	if strings.Contains(joined, "other/repo") {
+		t.Errorf("expected only the signed-in user's repos, got %v", fake.dispatchCalls)
+	}
+}
+
+func TestRenovateAll_NoTrackedRepos(t *testing.T) {
+	fake := &mergeFakeProvider{name: "fake"}
+	h, client := newMergeTestHandler(t, map[string]provider.Provider{"fake": fake})
+	u := createMergeUser(t, client)
+	engine := newWorkflowTestEngine(t, h, int64(u.ID))
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest("POST", "/repos/renovate-all", http.NoBody)
+	engine.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200 partial, got %d: %s", w.Code, w.Body.String())
+	}
+	if !strings.Contains(w.Body.String(), "ERR=No tracked repositories. Import repositories first.") {
+		t.Errorf("expected no-repos error, got: %s", w.Body.String())
+	}
+	if len(fake.dispatchCalls) != 0 {
+		t.Errorf("expected no dispatch calls, got %v", fake.dispatchCalls)
+	}
+}
+
+func TestRenovateAllButtonInReposTab(t *testing.T) {
+	raw, err := os.ReadFile("../../views/dashboard.html")
+	if err != nil {
+		t.Fatalf("read dashboard template: %v", err)
+	}
+	body := string(raw)
+	for _, want := range []string{
+		`hx-post="/repos/renovate-all"`,
+		"Renovate All",
+		`id="renovate-all-results"`,
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("repos tab missing %q", want)
+		}
 	}
 }
 
