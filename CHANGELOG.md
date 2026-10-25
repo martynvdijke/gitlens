@@ -1,3 +1,10 @@
+# [1.40.0](https://github.com/martynvdijke/gitlens/compare/v1.39.2...v1.40.0) (2026-10-25)
+
+
+### Features
+
+* **admin:** allow removing tracked repositories ([804a289](https://github.com/martynvdijke/gitlens/commit/804a2899df0d62a4aa12d2ee8bbf09628c0a6576))
+
 ## [1.39.2](https://github.com/martynvdijke/gitlens/compare/v1.39.1...v1.39.2) (2026-10-25)
 
 ## [1.39.1](https://github.com/martynvdijke/gitlens/compare/v1.39.0...v1.39.1) (2026-10-23)
