@@ -80,8 +80,16 @@ func (h *SettingsHandler) Index(c *gin.Context) {
 			log.Printf("settings: error loading admin config: %v", err)
 		}
 		users, _ := h.client.User.Query().All(c.Request.Context())
+		allRepos, err := h.client.Repository.Query().
+			WithUser().
+			Order(ent.Asc(repository.FieldFullName)).
+			All(c.Request.Context())
+		if err != nil {
+			log.Printf("settings: error loading all repositories: %v", err)
+		}
 		data["Config"] = cfg
 		data["Users"] = users
+		data["AllRepos"] = allRepos
 		data["UserID"] = userID
 	}
 

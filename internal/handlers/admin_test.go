@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"gitlens/ent"
 	"gitlens/ent/enttest"
@@ -60,6 +61,7 @@ var adminTestTmpl = template.Must(template.New("").Funcs(template.FuncMap{
 {{define "admin_gotify_form"}}<div>gotify_form url={{if .Config}}{{.Config.GotifyURL}}{{end}}</div>{{end}}
 {{define "admin_telegram_form"}}<div>telegram_form chat={{if .Config}}{{.Config.TelegramChatID}}{{end}}</div>{{end}}
 {{define "admin_users_tab"}}<div>users_tab {{range .Users}}user={{.Login}}:admin={{.IsAdmin}} {{end}}current={{.UserID}}</div>{{end}}
+{{define "admin_repos_tab"}}<div>repos_tab {{range .AllRepos}}repo={{.FullName}}:user={{if .Edges.User}}{{.Edges.User.Login}}{{end}} {{end}}</div>{{end}}
 `))
 
 func adminRequest(h *AdminHandler, userID int64, method, path, body string) *httptest.ResponseRecorder {
@@ -94,6 +96,12 @@ func adminRequest(h *AdminHandler, userID int64, method, path, body string) *htt
 	case method == "GET" && path == "/admin/users":
 		handlerFn = h.ListUsers
 		routeMethod, routePath = "GET", "/admin/users"
+	case method == "GET" && path == "/admin/repos":
+		handlerFn = h.ListRepositories
+		routeMethod, routePath = "GET", "/admin/repos"
+	case method == "DELETE" && strings.HasPrefix(path, "/admin/repos/"):
+		handlerFn = h.RemoveRepository
+		routeMethod, routePath = "DELETE", "/admin/repos/:id"
 	case method == "POST" && strings.HasPrefix(path, "/admin/users/"):
 		handlerFn = h.ToggleAdmin
 		routeMethod, routePath = "POST", "/admin/users/:id/toggle-admin"
@@ -109,6 +117,8 @@ func adminRequest(h *AdminHandler, userID int64, method, path, body string) *htt
 		engine.GET(routePath, wrapper)
 	case routeMethod == "POST":
 		engine.POST(routePath, wrapper)
+	case routeMethod == "DELETE":
+		engine.DELETE(routePath, wrapper)
 	}
 
 	req := httptest.NewRequest(method, path, strings.NewReader(body))
@@ -637,6 +647,112 @@ func TestAdminHandler_ToggleAdmin_NonexistentUser(t *testing.T) {
 	adminID := createAdminUser(t, client)
 
 	w := adminRequest(h, int64(adminID), "POST", "/admin/users/99999/toggle-admin", "")
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d, body: %s", w.Code, w.Body.String())
+	}
+}
+
+func createTrackedRepo(t *testing.T, client *ent.Client, userID int, fullName string) *ent.Repository {
+	t.Helper()
+	r, err := client.Repository.Create().
+		SetGithubID(42).
+		SetOwner("owner").
+		SetName("repo").
+		SetFullName(fullName).
+		SetHTMLURL("https://example.com/" + fullName).
+		SetDefaultBranch("main").
+		SetUserID(userID).
+		Save(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	return r
+}
+
+func TestAdminHandler_ListRepositories(t *testing.T) {
+	h, client := newTestAdminHandler(t)
+	adminID := createAdminUser(t, client)
+	regularID := createRegularUser(t, client)
+	createTrackedRepo(t, client, regularID, "regular/project")
+
+	w := adminRequest(h, int64(adminID), "GET", "/admin/repos", "")
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d, body: %s", w.Code, w.Body.String())
+	}
+
+	body := w.Body.String()
+	if !strings.Contains(body, "regular/project") {
+		t.Fatalf("expected repository in response, body: %s", body)
+	}
+	if !strings.Contains(body, "user=regular") {
+		t.Fatalf("expected owning user in response, body: %s", body)
+	}
+}
+
+func TestAdminHandler_RemoveRepository_DeletesRelatedData(t *testing.T) {
+	h, client := newTestAdminHandler(t)
+	adminID := createAdminUser(t, client)
+	regularID := createRegularUser(t, client)
+	repo := createTrackedRepo(t, client, regularID, "regular/project")
+
+	ctx := context.Background()
+	if _, err := client.CommitActivity.Create().
+		SetRepoID(repo.ID).
+		SetDate(time.Now()).
+		SetCommitCount(3).
+		Save(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := client.Event.Create().
+		SetRepoID(repo.ID).
+		SetType("release").
+		SetTitle("v1.0.0").
+		SetURL("https://example.com/release").
+		SetTimestamp(time.Now()).
+		Save(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := client.MetricSnapshot.Create().
+		SetRepoID(repo.ID).
+		SetTimestamp(time.Now()).
+		Save(ctx); err != nil {
+		t.Fatal(err)
+	}
+
+	w := adminRequest(h, int64(adminID), "DELETE", fmt.Sprintf("/admin/repos/%d", repo.ID), "")
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d, body: %s", w.Code, w.Body.String())
+	}
+
+	if n, err := client.Repository.Query().Count(ctx); err != nil || n != 0 {
+		t.Fatalf("expected repository to be deleted, count=%d err=%v", n, err)
+	}
+	if n, err := client.CommitActivity.Query().Count(ctx); err != nil || n != 0 {
+		t.Fatalf("expected commit activity to be deleted, count=%d err=%v", n, err)
+	}
+	if n, err := client.Event.Query().Count(ctx); err != nil || n != 0 {
+		t.Fatalf("expected events to be deleted, count=%d err=%v", n, err)
+	}
+	if n, err := client.MetricSnapshot.Query().Count(ctx); err != nil || n != 0 {
+		t.Fatalf("expected metric snapshots to be deleted, count=%d err=%v", n, err)
+	}
+}
+
+func TestAdminHandler_RemoveRepository_InvalidID(t *testing.T) {
+	h, client := newTestAdminHandler(t)
+	adminID := createAdminUser(t, client)
+
+	w := adminRequest(h, int64(adminID), "DELETE", "/admin/repos/notanumber", "")
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d, body: %s", w.Code, w.Body.String())
+	}
+}
+
+func TestAdminHandler_RemoveRepository_NotFound(t *testing.T) {
+	h, client := newTestAdminHandler(t)
+	adminID := createAdminUser(t, client)
+
+	w := adminRequest(h, int64(adminID), "DELETE", "/admin/repos/99999", "")
 	if w.Code != http.StatusNotFound {
 		t.Fatalf("expected 404, got %d, body: %s", w.Code, w.Body.String())
 	}

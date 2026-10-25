@@ -149,3 +149,56 @@
     </div>
 </div>
 {{end}}
+
+{{define "admin_repos_tab"}}
+<div class="card border-secondary mb-4">
+    <div class="card-body p-0">
+        <div class="px-3 pt-3">
+            <h5 class="card-title mb-1">Tracked Repositories ({{len .AllRepos}})</h5>
+            <p class="card-text text-secondary small">Repositories tracked by any user on this instance. Removing one permanently deletes the repository and its commit activity, events, and metric snapshots from the database.</p>
+        </div>
+        <table class="table table-dark table-striped table-hover mb-0 align-middle">
+            <thead class="table-secondary">
+                <tr>
+                    <th>Repository</th>
+                    <th style="width:90px">Provider</th>
+                    <th>Tracked by</th>
+                    <th style="width:150px">Last synced</th>
+                    <th style="width:100px">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .AllRepos}}
+                <tr id="admin-repo-row-{{.ID}}">
+                    <td class="small">
+                        <a href="{{.HTMLURL}}" target="_blank" rel="noopener" class="text-info text-decoration-none">{{.FullName}}</a>
+                    </td>
+                    <td>
+                        {{if eq .Provider "forgejo"}}
+                        <span class="badge bg-info text-dark">Forgejo</span>
+                        {{else}}
+                        <span class="badge bg-secondary">GitHub</span>
+                        {{end}}
+                    </td>
+                    <td class="small text-secondary">{{if .Edges.User}}{{.Edges.User.Login}}{{end}}</td>
+                    <td class="small text-secondary">{{if .SyncedAt}}{{.SyncedAt.Format "2006-01-02 15:04"}}{{else}}never{{end}}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-danger"
+                                hx-delete="/admin/repos/{{.ID}}"
+                                hx-target="#admin-repos-panel"
+                                hx-swap="innerHTML"
+                                hx-confirm="Remove {{.FullName}} from tracking? This permanently deletes its repository data from the database.">
+                            Remove
+                        </button>
+                    </td>
+                </tr>
+                {{else}}
+                <tr>
+                    <td colspan="5" class="text-secondary fst-italic small py-3">No repositories tracked yet.</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div>
+</div>
+{{end}}

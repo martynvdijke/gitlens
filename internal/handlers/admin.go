@@ -9,6 +9,10 @@ import (
 	"strings"
 
 	"gitlens/ent"
+	"gitlens/ent/commitactivity"
+	"gitlens/ent/event"
+	"gitlens/ent/metricsnapshot"
+	"gitlens/ent/repository"
 	"gitlens/internal/otel"
 	"gitlens/internal/secrets"
 
@@ -140,6 +144,90 @@ func (h *AdminHandler) ToggleAdmin(c *gin.Context) {
 
 	// Re-render user rows partial
 	h.renderUserRows(c)
+}
+
+// ListRepositories renders the instance-wide tracked repositories table
+// (HTMX). Unlike the user-facing repo list, this includes repositories
+// owned by every user so an admin can clean up stale tracking data.
+func (h *AdminHandler) ListRepositories(c *gin.Context) {
+	repos, err := h.client.Repository.Query().
+		WithUser().
+		Order(ent.Asc(repository.FieldFullName)).
+		All(c.Request.Context())
+	if err != nil {
+		log.Printf("admin: error loading repositories: %v", err)
+		c.String(http.StatusInternalServerError, "Failed to load repositories")
+		return
+	}
+	h.renderReposTable(c, repos)
+}
+
+// RemoveRepository permanently deletes a tracked repository and all data
+// derived from it (commit activity, events, metric snapshots). The delete is
+// performed in a transaction so a partial cleanup cannot leave orphaned rows.
+func (h *AdminHandler) RemoveRepository(c *gin.Context) {
+	ctx := c.Request.Context()
+	repoID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.String(http.StatusBadRequest, "Invalid repository ID")
+		return
+	}
+
+	tx, err := h.client.Tx(ctx)
+	if err != nil {
+		log.Printf("admin: error starting transaction for repo %d removal: %v", repoID, err)
+		c.String(http.StatusInternalServerError, "Failed to remove repository")
+		return
+	}
+
+	n, err := tx.Repository.Delete().Where(repository.ID(repoID)).Exec(ctx)
+	if err != nil {
+		_ = tx.Rollback()
+		log.Printf("admin: error removing repo %d: %v", repoID, err)
+		c.String(http.StatusInternalServerError, "Failed to remove repository")
+		return
+	}
+	if n == 0 {
+		_ = tx.Rollback()
+		c.String(http.StatusNotFound, "Repository not found")
+		return
+	}
+
+	if _, err := tx.CommitActivity.Delete().Where(commitactivity.RepoID(repoID)).Exec(ctx); err != nil {
+		_ = tx.Rollback()
+		log.Printf("admin: error removing commit activity for repo %d: %v", repoID, err)
+		c.String(http.StatusInternalServerError, "Failed to remove repository")
+		return
+	}
+	if _, err := tx.Event.Delete().Where(event.RepoID(repoID)).Exec(ctx); err != nil {
+		_ = tx.Rollback()
+		log.Printf("admin: error removing events for repo %d: %v", repoID, err)
+		c.String(http.StatusInternalServerError, "Failed to remove repository")
+		return
+	}
+	if _, err := tx.MetricSnapshot.Delete().Where(metricsnapshot.RepoID(repoID)).Exec(ctx); err != nil {
+		_ = tx.Rollback()
+		log.Printf("admin: error removing metric snapshots for repo %d: %v", repoID, err)
+		c.String(http.StatusInternalServerError, "Failed to remove repository")
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
+		log.Printf("admin: error committing repo %d removal: %v", repoID, err)
+		c.String(http.StatusInternalServerError, "Failed to remove repository")
+		return
+	}
+
+	repos, err := h.client.Repository.Query().
+		WithUser().
+		Order(ent.Asc(repository.FieldFullName)).
+		All(ctx)
+	if err != nil {
+		log.Printf("admin: error loading repositories after removal: %v", err)
+		c.String(http.StatusInternalServerError, "Repository removed, but failed to reload the list")
+		return
+	}
+	h.renderReposTable(c, repos)
 }
 
 // ListSettings returns the admin configuration (OTEL + Gotify) as JSON.
@@ -362,4 +450,8 @@ func (h *AdminHandler) renderUserRows(c *gin.Context) {
 		"Users":  users,
 		"UserID": userID,
 	})
+}
+
+func (h *AdminHandler) renderReposTable(c *gin.Context, repos []*ent.Repository) {
+	c.HTML(http.StatusOK, "admin_repos_tab", gin.H{"AllRepos": repos})
 }

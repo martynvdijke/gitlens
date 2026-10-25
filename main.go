@@ -497,6 +497,8 @@ func main() {
 			admin.POST("/telegram/test", adminHandler.TestTelegram)
 			admin.GET("/users", adminHandler.ListUsers)
 			admin.POST("/users/:id/toggle-admin", adminHandler.ToggleAdmin)
+			admin.GET("/repos", adminHandler.ListRepositories)
+			admin.DELETE("/repos/:id", adminHandler.RemoveRepository)
 		}
 
 		// Admin-only JSON API.
