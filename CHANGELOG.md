@@ -1,3 +1,10 @@
+# [1.41.0](https://github.com/martynvdijke/gitlens/compare/v1.40.1...v1.41.0) (2026-10-27)
+
+
+### Features
+
+* **release:** publish android bundles to google play and add emulator e2e ([83c5f83](https://github.com/martynvdijke/gitlens/commit/83c5f83b3b583b799ce046a56567db6b967f3059))
+
 ## [1.40.1](https://github.com/martynvdijke/gitlens/compare/v1.40.0...v1.40.1) (2026-10-26)
 
 # [1.40.0](https://github.com/martynvdijke/gitlens/compare/v1.39.2...v1.40.0) (2026-10-25)
