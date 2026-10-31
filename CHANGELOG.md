@@ -1,3 +1,10 @@
+# [1.42.0](https://github.com/martynvdijke/gitlens/compare/v1.41.1...v1.42.0) (2026-10-31)
+
+
+### Features
+
+* **mobile:** default to gitlens.vandijke.xyz and offer self-hosted option ([6068082](https://github.com/martynvdijke/gitlens/commit/60680823e30430636d20ef766f480446175e7ab5))
+
 ## [1.41.1](https://github.com/martynvdijke/gitlens/compare/v1.41.0...v1.41.1) (2026-10-31)
 
 # [1.41.0](https://github.com/martynvdijke/gitlens/compare/v1.40.1...v1.41.0) (2026-10-27)
