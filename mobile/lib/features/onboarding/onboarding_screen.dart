@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/auth.dart';
+import '../../core/config.dart';
 import '../../core/server_url.dart';
 import '../../ui/brand.dart';
 import '../../ui/theme.dart';
@@ -39,16 +40,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Future<void> _loadSavedAddress() async {
-    // There is no default server address and no hosted GitLens service. Only
-    // an address this device previously used is ever prefilled.
+    // A previously saved address always wins; otherwise fall back to the
+    // hosted default instance on first run.
     final saved = await ref.read(storageProvider).getBaseUrl();
-    if (!mounted || saved == null || saved.isEmpty) return;
+    final address = saved != null && saved.isNotEmpty ? saved : defaultServerUrl;
+    if (!mounted) return;
+    final valid = serverUrlError(address) == null;
     setState(() {
-      _urlController.text = saved;
-      _urlValid = serverUrlError(saved) == null;
+      _urlController.text = address;
+      _urlValid = valid;
     });
-    _checking = true;
-    _checkOidc(normalizeServerUrl(saved));
+    if (valid) await _checkOidc(normalizeServerUrl(address));
   }
 
   void _onUrlChanged(String value) {
@@ -180,7 +182,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     const Text('Connect your server', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: -0.4)),
                     const SizedBox(height: 6),
                     const Text(
-                      'GitLens is self-hosted. Enter the address of your own instance — there is no default server.',
+                      'Use the default instance below, or enter another self-hosted GitLens server.',
                       style: TextStyle(color: gitLensMuted, height: 1.45),
                     ),
                     const SizedBox(height: 20),
@@ -201,7 +203,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                                 hintText: 'https://gitlens.example.com',
                                 prefixIcon: const Icon(Icons.dns_outlined),
                                 errorText: _urlError,
-                                helperText: 'Your self-hosted GitLens address',
+                                helperText: 'Prefilled with the default instance',
                                 suffixIcon: _urlValid ? const Icon(Icons.check_circle, color: gitLensGreen) : null,
                               ),
                             ),
@@ -329,7 +331,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 /// Small indirection keeps the API dependency out of the widget while letting
 /// tests override the probe if needed.
 class ApiClientOidcProbe {
+  /// Tests can override the network probe so the onboarding widget stays
+  /// deterministic and offline.
+  static Future<bool> Function(WidgetRef ref, String baseUrl)? override;
+
   static Future<bool> oidcEnabled(WidgetRef ref, String baseUrl) async {
+    final custom = override;
+    if (custom != null) return custom(ref, baseUrl);
     return ref.read(authProvider.notifier).oidcEnabled(baseUrl);
   }
 }

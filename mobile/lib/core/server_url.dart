@@ -1,8 +1,7 @@
 /// Server address handling for self-hosted GitLens.
 ///
-/// GitLens has no hosted service and no default server address: the app must
-/// never invent one. The field starts empty and only a URL the user previously
-/// saved is ever prefilled.
+/// The app defaults to the hosted instance from `config.dart` on first run;
+/// a URL the user previously saved is always preferred and never overwritten.
 library;
 
 String normalizeServerUrl(String input) {
