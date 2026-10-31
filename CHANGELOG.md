@@ -1,3 +1,10 @@
+## [1.42.1](https://github.com/martynvdijke/gitlens/compare/v1.42.0...v1.42.1) (2026-10-31)
+
+
+### Bug Fixes
+
+* **ci:** point flutter setup at root fvmrc ([034a7ed](https://github.com/martynvdijke/gitlens/commit/034a7ed6c98a2e2bd94fd68b67bd5ad62a10e8b6))
+
 # [1.42.0](https://github.com/martynvdijke/gitlens/compare/v1.41.1...v1.42.0) (2026-10-31)
 
 
