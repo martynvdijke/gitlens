@@ -1,3 +1,10 @@
+## [1.42.2](https://github.com/martynvdijke/gitlens/compare/v1.42.1...v1.42.2) (2026-11-01)
+
+
+### Bug Fixes
+
+* **ci:** skip Play Store publish when credentials are missing ([1187f43](https://github.com/martynvdijke/gitlens/commit/1187f4393f48faaef46e8699b74ef6eadaefe696))
+
 ## [1.42.1](https://github.com/martynvdijke/gitlens/compare/v1.42.0...v1.42.1) (2026-10-31)
 
 
