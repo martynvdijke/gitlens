@@ -1,3 +1,10 @@
+# [1.43.0](https://github.com/martynvdijke/gitlens/compare/v1.42.4...v1.43.0) (2026-11-05)
+
+
+### Features
+
+* add Play Store demo account, deletion flows, and EU privacy ([fa97f83](https://github.com/martynvdijke/gitlens/commit/fa97f83bb2d52526ca454a6488989949319cb255))
+
 ## [1.42.4](https://github.com/martynvdijke/gitlens/compare/v1.42.3...v1.42.4) (2026-11-03)
 
 ## [1.42.3](https://github.com/martynvdijke/gitlens/compare/v1.42.2...v1.42.3) (2026-11-02)
