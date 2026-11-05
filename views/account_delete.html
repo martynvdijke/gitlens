@@ -1,0 +1,50 @@
+{{define "account_delete_content"}}
+<section class="legal mx-auto" style="max-width:760px">
+  <p class="text-secondary text-uppercase small fw-semibold mb-1">Account</p>
+  <h1 class="h2 fw-semibold mb-3">Delete your account</h1>
+  <p class="lead fs-6 text-secondary">Deletion is immediate. Your identity is erased the moment you confirm; nothing is held for a waiting period.</p>
+
+  <h2 class="h5 fw-semibold mt-4">Delete it yourself</h2>
+  {{if .User}}
+  <p>You are signed in as <strong>{{.User.Login}}</strong>. Go to <a href="/settings">Settings</a>, open <strong>Delete account</strong>, and type your username to confirm.</p>
+  {{else}}
+  <p>Sign in, then go to <a href="/settings">Settings</a> → <strong>Delete account</strong> and type your username to confirm. <a href="/auth/login">Sign in</a> if you have not already.</p>
+  {{end}}
+  <p>In the Android app the same action lives under <strong>Settings</strong> (account icon) → <strong>Delete account</strong>. It asks you to type your username to confirm and calls the same endpoint as the web Settings page.</p>
+  <p>This page is the public web deletion page. If you cannot sign in, use the contact route below.</p>
+
+  <h2 class="h5 fw-semibold mt-4">Google Play</h2>
+  <p>Google Play requires an in-app account deletion path and a public web page. Both are provided: the Android app's <strong>Settings → Delete account</strong>, and this page. There is no separate retention period; deletion is immediate.</p>
+
+  <h2 class="h5 fw-semibold mt-4">Your GDPR erasure right</h2>
+  <p>This is your right to erasure under Article 17 of the GDPR. Confirmation is immediate: once you type your username and confirm, your identity and linked data are erased without a waiting period. If you want a copy first, use <a href="/api/v1/me/export">the data export</a>. For erasure requests you cannot complete while signed in, use the contact route below.</p>
+
+  <h2 class="h5 fw-semibold mt-4">The shared demo account</h2>
+  <p>The public demo account contains only generated sample data. Deleting it resets it to the sample state so the public demo remains available for the next visitor. It does not contain the personal data of the person reviewing or trying the demo.</p>
+
+  <h2 class="h5 fw-semibold mt-4">If you cannot sign in</h2>
+  {{if .Legal.ContactEmail}}
+  <p>Write to <a href="mailto:{{.Legal.ContactEmail}}">{{.Legal.ContactEmail}}</a> from the address on the account, or from the provider account you used, and ask for it to be deleted. Requests are handled within one month, usually much sooner.</p>
+  {{else}}
+  <p>Ask the operator of this instance to delete the account for you. There is no self-service route that works without signing in.</p>
+  {{end}}
+
+  <h2 class="h5 fw-semibold mt-4">What is removed</h2>
+  <ul>
+    <li>Your GitHub/Forgejo login, display name, avatar, numeric provider IDs and any OIDC subject, email or groups link.</li>
+    <li>Your stored GitHub and Forgejo OAuth access tokens. GitLens asks each provider to revoke them and always deletes the stored copy.</li>
+    <li>Your stored API tokens (hashes and metadata), every browser session, and your server-side session rows.</li>
+    <li>Your tracked repository list and the commit, pull-request, release, workflow and metric history derived from those repositories for your account.</li>
+    <li>Your preferences, including sync interval, e-ink mode and Umami settings.</li>
+  </ul>
+
+  <h2 class="h5 fw-semibold mt-4">What stays</h2>
+  <p>Repository data that another GitLens account also tracks stays with that account. Aggregate metrics or history that cannot be linked back to you may also remain. Your provider-side repositories are not touched: deleting GitLens does not delete anything on GitHub or Forgejo.</p>
+  <p>Backups taken before the deletion may still contain the old data until they rotate out; they are not used to restore an individual account.</p>
+
+  <h2 class="h5 fw-semibold mt-4">If you are the last admin</h2>
+  <p>GitLens refuses to delete the only administrator, because that would leave nobody able to manage the instance. Promote or create another administrator first, then delete this account.</p>
+
+  <p class="text-secondary small mt-4">The full detail is in the <a href="/privacy">privacy policy</a>.</p>
+</section>
+{{end}}

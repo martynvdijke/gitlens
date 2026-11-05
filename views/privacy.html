@@ -1,0 +1,109 @@
+{{define "privacy_content"}}
+<section class="legal mx-auto" style="max-width:760px">
+  <p class="text-secondary text-uppercase small fw-semibold mb-1">Legal</p>
+  <h1 class="h2 fw-semibold mb-3">Privacy</h1>
+  <p class="lead fs-6 text-secondary">What {{.AppName}} stores about you, why it stores it, who else sees it, and how to get it back or remove it. Last updated {{.Year}}.</p>
+
+  <h2 class="h5 fw-semibold mt-4" id="who-is-responsible">Who is responsible</h2>
+  <p><strong>{{.Legal.Controller}}</strong> runs this instance and decides what is done with the data described here. The instance is hosted in {{.Legal.HostingRegion}}.</p>
+  {{if .Legal.EURepresentative}}
+  <p>For data protection purposes in the European Union, the controller's representative is <strong>{{.Legal.EURepresentative}}</strong>.</p>
+  {{end}}
+  {{if .Legal.DPOEmail}}
+  <p>The data protection officer can be reached at <a href="mailto:{{.Legal.DPOEmail}}">{{.Legal.DPOEmail}}</a>.</p>
+  {{end}}
+  {{if .Legal.ContactEmail}}
+  <p>For any privacy question, or to exercise a right below, write to <a href="mailto:{{.Legal.ContactEmail}}">{{.Legal.ContactEmail}}</a>.{{if .Legal.ContactAddress}} Postal address: {{.Legal.ContactAddress}}.{{end}}</p>
+  {{else}}
+  <p>This instance has not published a dedicated privacy address. Requests can be made from the account itself (see <a href="/account/delete">Delete your account</a>) or through the operator who runs this server.</p>
+  {{end}}
+
+  <h2 class="h5 fw-semibold mt-4">What is stored</h2>
+  <ul>
+    <li><strong>Account.</strong> Your GitHub (and, if connected, Forgejo) numeric user ID, login, display name and avatar URL. There is no GitLens password: sign-in happens through GitHub, Forgejo or the configured identity provider.</li>
+    <li><strong>OAuth access tokens.</strong> The GitHub token, and the Forgejo token when you connect Forgejo, are stored so GitLens can read repository data on your behalf. They are used only for the read and management calls the app makes for your account, and they are revoked or deleted when you delete your account.</li>
+    {{if .Legal.OIDC}}<li><strong>Single sign-on.</strong> If you sign in through the configured OIDC provider, we store the provider's subject identifier, the email address it returns, and the groups claim when the provider supplies one.</li>{{end}}
+    <li><strong>Tracked repositories and derived data.</strong> The repositories you choose to track, their metadata, commits and commit messages, pull requests, releases, workflow status, and the metrics GitLens computes from them (commit-type counts, lead time, workflow success and failure counts, and metric snapshots over time).</li>
+    <li><strong>Preferences.</strong> Sync interval, e-ink display mode, dismissed warnings, and any Umami URL and site ID you enter.</li>
+    <li><strong>Technical.</strong> A session cookie and matching server-side session row so you stay signed in, API tokens when you create one (stored only as a SHA-256 hash, never as the plaintext secret), the IP address each request comes from, and server logs used to rate-limit and diagnose failures.</li>
+    <li><strong>Analytics.</strong> If you enter a Umami URL and site ID under Settings, the site loads that Umami script for your account. It records page views without cookies; GitLens itself does not send your profile data to Umami. If you leave the fields empty, no analytics script is loaded.</li>
+    {{if .Legal.Traces}}<li><strong>Server traces.</strong> OpenTelemetry tracing is enabled on this instance. Traces describe request timings on the server and are not used to build a profile of you.</li>{{end}}
+    {{if .Legal.Notifications}}<li><strong>Deploy notifications.</strong> The operator may configure Gotify or Telegram to receive release and deploy notifications. Those messages contain repository, release and workflow metadata, not your account profile.</li>{{end}}
+  </ul>
+
+  <h2 class="h5 fw-semibold mt-4">Why it is stored</h2>
+  <ul>
+    <li><strong>To run your account</strong> — signing you in, showing the repositories and metrics you asked for, and keeping your settings when you come back. Legal basis: performance of a contract.</li>
+    <li><strong>To keep the instance secure</strong> — rate limiting, abuse prevention and diagnosing failures. Legal basis: legitimate interest in a working, safe service.</li>
+    <li><strong>To keep records we are required to keep</strong> — for example a log line showing that an account was closed at your request. Legal basis: legal obligation.</li>
+  </ul>
+
+  <h2 class="h5 fw-semibold mt-4">Who else sees it</h2>
+  <p>Repository data is read from GitHub and, when you connect it, from your Forgejo instance using your own token. Nobody else gets a copy of your GitLens data, and it is never sold.</p>
+  <p>Processors that may handle it on our behalf:</p>
+  <ul>
+    <li><strong>GitHub</strong> and, when connected, <strong>your Forgejo instance</strong>, which provide the repository data you track.</li>
+    {{if .Legal.OIDC}}<li><strong>Your identity provider</strong>, which authenticates you and returns your identity to us.</li>{{end}}
+    <li><strong>The hosting provider</strong> running this server and its backups.</li>
+    {{if .Legal.Notifications}}<li><strong>Gotify or Telegram</strong>, when the operator configures them, which deliver deploy notifications containing repository metadata.</li>{{end}}
+    <li><strong>Your Umami instance</strong>, only if you enter its URL in Settings, which records cookieless page views.</li>
+    {{if .Legal.Traces}}<li><strong>The operator's OpenTelemetry collector</strong>, which receives request traces and server logs.</li>{{end}}
+  </ul>
+  <p>Some of these may process data outside the European Economic Area. Where that happens, transfers rely on an adequacy decision or the standard contractual clauses of the provider.</p>
+
+  <h2 class="h5 fw-semibold mt-4" id="eu-data-protection">EU data protection law</h2>
+  <p>This section explains the legal basis for processing, the rights the General Data Protection Regulation (GDPR) gives you, and how to use them. It applies to everyone, and is written for users in the European Union and the European Economic Area in particular.</p>
+  <p><strong>Legal bases.</strong> We process personal data only where the GDPR allows it:</p>
+  <ul>
+    <li><strong>Performance of a contract — Article 6(1)(b).</strong> Creating and running your account, signing you in, reading the repositories you choose to track, computing metrics and storing your preferences are all necessary to provide the service you asked for.</li>
+    <li><strong>Legitimate interests — Article 6(1)(f).</strong> Keeping the instance secure, preventing abuse, rate limiting, and diagnosing and fixing failures. These interests are balanced against your rights, and you may object to them (see below).</li>
+    <li><strong>Legal obligation — Article 6(1)(c).</strong> Keeping the limited records we are required by law to keep, such as a record that an account was closed at your request.</li>
+  </ul>
+  <p>We do not rely on consent for any optional processing, so there is nothing optional to opt in or out of beyond the features described above. If consent-based processing is ever introduced, it will be requested separately and can be withdrawn as easily as it was given. We do not intentionally collect special-category data (such as health, biometric, religious or political data), and you should not submit it to GitLens.</p>
+  <p><strong>Your rights.</strong> Subject to the conditions in the GDPR, you have the right to:</p>
+  <ul>
+    <li><strong>Access (Article 15).</strong> Get a copy of the personal data we hold about you. Use <a href="/api/v1/me/export">GET /api/v1/me/export</a> for a machine-readable export.</li>
+    <li><strong>Rectification (Article 16).</strong> Have inaccurate data corrected. Profile fields come from your identity provider and update on the next sign-in or sync; preferences are editable in Settings.</li>
+    <li><strong>Erasure (Article 17).</strong> Have your data deleted. Use <a href="/account/delete">Delete your account</a>; deletion takes effect immediately.</li>
+    <li><strong>Restriction (Article 18).</strong> Ask us to limit processing while a request is being resolved.</li>
+    <li><strong>Portability (Article 20).</strong> Receive the data you provided in a structured, commonly used, machine-readable format, and transmit it elsewhere. The export endpoint provides this.</li>
+    <li><strong>Objection (Article 21).</strong> Object to processing based on legitimate interests. Stop tracking a repository, leave the Umami fields empty, or contact us to record an objection.</li>
+    <li><strong>Automated decision-making (Article 22).</strong> Not to be subject to a decision based solely on automated processing that produces legal or similarly significant effects. GitLens performs no automated decision-making or profiling of that kind; metrics are informational only.</li>
+  </ul>
+  <p>These rights are free of charge. We answer requests within one month of receiving them, and that period may be extended by up to two further months where a request is complex or we receive several from you, in which case we will tell you why. To exercise a right that the self-service pages do not cover, use the contact details in <a href="#who-is-responsible">Who is responsible</a>{{if .Legal.ContactEmail}}, or write to <a href="mailto:{{.Legal.ContactEmail}}">{{.Legal.ContactEmail}}</a>{{end}}.</p>
+  <p><strong>Where the data comes from.</strong> We receive data directly from you (preferences, API tokens, the repositories you choose), from GitHub, Forgejo or your OIDC identity provider (your identity, avatar and the repository data you are authorised to read), and from repository metadata itself (commits, pull requests, releases and workflow status). We do not buy personal data from data brokers or other third parties.</p>
+  <p><strong>International transfers.</strong> We prefer to host within the European Economic Area. Where a processor is outside the EEA, the transfer relies on an adequacy decision of the European Commission or on the EU Standard Contractual Clauses together with any supplementary measures the circumstances require. You can ask us for a copy of the safeguards that apply to a particular transfer.</p>
+  <p><strong>Security and data breaches.</strong> Traffic to the instance is encrypted with TLS in transit, API tokens are stored only as hashes, OAuth tokens are scoped to the reads the app performs, and access to production data is limited to the operator. If a breach of personal data occurs, we notify the competent supervisory authority within 72 hours where the GDPR requires it, and we notify affected users without undue delay where the breach is likely to result in a high risk to their rights and freedoms.</p>
+  <p><strong>Retention.</strong> We keep personal data only for as long as your account exists, plus short-lived sessions, rotated request logs and rotating backups. Deleting your account removes your data immediately. Backups rotate out on their normal schedule and are never used to restore an individual account that was deleted at its owner's request.</p>
+  <p><strong>No sale and no advertising.</strong> Personal data is never sold, rented, or used for advertising or cross-site tracking.</p>
+
+  <h2 class="h5 fw-semibold mt-4" id="cookies">Cookies and tracking</h2>
+  <p>This site sets <code>gitlens_session</code> for the legacy session and <code>gitlens_session_oidc</code> for single sign-on. Both hold opaque or signed session values, are <code>HttpOnly</code> and <code>SameSite=Lax</code>, and exist so you do not have to sign in on every page. They are cleared when you sign out; deleting your account removes the server-side session rows.</p>
+  <p>There are no advertising cookies, no third-party tracking scripts and no cross-site pixels. The only optional analytics is the Umami instance you configure yourself, and it is cookieless. Because nothing here is optional beyond the sign-in cookie, the site does not show a consent banner.</p>
+
+  <h2 class="h5 fw-semibold mt-4">How long it is kept</h2>
+  <p>Account data is kept while your account exists. Legacy sessions expire after 7 days, OIDC sessions after 24 hours, and old request logs are discarded as the logs rotate. Repository metrics and snapshots are kept until you stop tracking the repository or delete your account.</p>
+  <p>When you delete your account, your profile and linked identity are removed, your GitHub and Forgejo tokens are revoked or deleted from this instance, your API tokens and sessions are deleted, and the repositories you tracked are removed together with the commit, release, pull-request and metric history derived from them. Repository data that another account also tracks stays with that account. More detail is on <a href="/account/delete">Delete your account</a>.</p>
+
+  <h2 class="h5 fw-semibold mt-4">Your rights</h2>
+  <ul>
+    <li><strong>Get a copy.</strong> Use <a href="/api/v1/me/export">GET /api/v1/me/export</a> from your account. It returns your profile, preferences, tracked repositories and token metadata as JSON, never token secrets.</li>
+    <li><strong>Correct it.</strong> Profile fields come from GitHub or Forgejo; preferences are editable in Settings. Changing them at the provider updates them here on the next sign-in or sync.</li>
+    <li><strong>Delete it.</strong> Use <a href="/account/delete">Delete your account</a>. It takes effect immediately, without a waiting period.</li>
+    <li><strong>Object or restrict.</strong> Leave the Umami fields empty, stop tracking a repository, or ask us to restrict processing.</li>
+    <li><strong>Complain.</strong> {{if .Legal.SupervisoryAuthority}}You can complain to {{.Legal.SupervisoryAuthority}}, or the authority where you live or work.{{else}}You can lodge a complaint with the data protection authority in the country where you live or work.{{end}}</li>
+  </ul>
+  <p>The <a href="#eu-data-protection">EU data protection law</a> section maps each of these rights to the relevant GDPR article and explains how to use it. Anything not covered by the self-service pages can be requested from the contact above; we answer within one month, as the GDPR requires.</p>
+
+  <h2 class="h5 fw-semibold mt-4">Children</h2>
+  <p>This instance is not intended for anyone under 16, and accounts for younger users are not knowingly created.</p>
+
+  <h2 class="h5 fw-semibold mt-4">Backups</h2>
+  <p>The operator keeps database backups so the service can be restored after a failure. A backup taken before your deletion may still contain the old data until it rotates out; backups are not used to restore an individual account that was deleted at its owner's request.</p>
+
+  <h2 class="h5 fw-semibold mt-4">Changes</h2>
+  <p>If this policy changes in a way that affects you, the change is announced in the app before it takes effect.</p>
+
+  <p class="text-secondary small mt-4">See also the <a href="/terms">terms of use</a>.</p>
+</section>
+{{end}}

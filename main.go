@@ -20,7 +20,10 @@ import (
 	"gitlens/ent/migrate"
 	"gitlens/ent/repository"
 	"gitlens/ent/user"
+	"gitlens/internal/account"
 	"gitlens/internal/auth"
+	"gitlens/internal/config"
+	"gitlens/internal/demo"
 	"gitlens/internal/deploy"
 	"gitlens/internal/forgejo"
 	"gitlens/internal/github"
@@ -70,14 +73,24 @@ func main() {
 		log.Fatalf("Failed to run migrations: %v", err)
 	}
 
-	// Promote all existing users to admin. The first-user-auto-admin logic in
-	// the auth handlers only fires at registration, so users created before
-	// that (or by earlier releases) would never see the admin sections.
-	// This app is single-admin by design, so everyone is an admin.
-	if n, err := client.User.Update().SetIsAdmin(true).Save(context.Background()); err != nil {
+	demoCfg := config.LoadDemo()
+
+	// Promote all existing users to admin, except the shared demo account. The
+	// first-user-auto-admin logic in the auth handlers only fires at
+	// registration, so users created before that (or by earlier releases) would
+	// never see the admin sections. This app is single-admin by design, so
+	// everyone is an admin — but the demo must never gain admin rights.
+	if n, err := client.User.Update().
+		Where(user.GithubIDNEQ(demo.GithubID)).
+		SetIsAdmin(true).
+		Save(context.Background()); err != nil {
 		log.Fatalf("Failed to promote users to admin: %v", err)
 	} else if n > 0 {
 		log.Printf("Promoted %d user(s) to admin", n)
+	}
+
+	if _, err := demo.Ensure(context.Background(), client, demoCfg); err != nil {
+		log.Printf("WARNING: demo account unavailable: %v", err)
 	}
 
 	sessionStore := middleware.NewSessionStore(db)
@@ -109,13 +122,14 @@ func main() {
 	if fjID != "" && fjSecret == "" {
 		log.Fatalf("FORGEJO_CLIENT_ID is set but FORGEJO_CLIENT_SECRET is missing")
 	}
+	var fjClient *forgejo.Client
 	if fjID != "" && fjSecret != "" {
-		fj := forgejo.NewClient(
+		fjClient = forgejo.NewClient(
 			fjID,
 			fjSecret,
 			os.Getenv("FORGEJO_DEFAULT_URL"), // may be "" — picked at login time
 		)
-		providers["forgejo"] = provider.NewForgejoAdapter(fj)
+		providers["forgejo"] = provider.NewForgejoAdapter(fjClient)
 		log.Println("Forgejo provider registered")
 	}
 
@@ -294,6 +308,16 @@ func main() {
 	settingsHandler := handlers.NewSettingsHandler(client, sessionStore, ghClient, providers, syncer)
 	apiTokenHandler := handlers.NewApiTokenHandler(client)
 	meHandler := handlers.NewMeHandler(client)
+	legalHandler := handlers.NewLegalHandler(client, sessionStore, config.LoadLegal())
+	accountSvc := account.New(client, db)
+	accountSvc.GitHubRevoker = ghClient
+	if fjClient != nil {
+		accountSvc.ForgejoRevoker = fjClient
+	}
+	accountHandler := handlers.NewAccountHandler(client, accountSvc)
+	accountHandler.SetDemo(demoCfg)
+	demoHandler := handlers.NewDemoHandler(client, sessionStore, demoCfg)
+	dashHandler.SetDemo(demoCfg.Enabled, demoCfg.Login)
 	chartHandler := handlers.NewChartHandler(client)
 	badgeHandler := handlers.NewBadgeHandler(client)
 	trmnlHandler := handlers.NewTRMNLSummaryHandler(client)
@@ -368,12 +392,23 @@ func main() {
 	r.SetHTMLTemplate(tmpl)
 	r.Static("/static", "./static")
 
+	// Public legal pages: app stores and data-protection law both require these
+	// to be readable before sign-up, so they never sit behind authentication.
+	r.GET("/privacy", legalHandler.Privacy)
+	r.GET("/terms", legalHandler.Terms)
+	r.GET("/account/delete", legalHandler.AccountDelete)
+
 	// OIDC SSO (Authelia) — first auth layer
 	r.GET("/api/auth/oidc/status", auth.StatusHandler)
 	r.GET("/api/auth/oidc/login", auth.LoginHandler(client))
 	r.GET("/api/auth/oidc/callback", auth.CallbackHandler(client))
 	r.GET("/api/auth/oidc/logout", auth.LogoutHandler)
 	r.GET("/auth/login", auth.LoginHandler(client))
+
+	// Public demo entry points: the web button and the Flutter app bootstrap.
+	// Registered before the auth middleware block so GET stays unauthenticated.
+	r.GET("/auth/demo", demoHandler.Login)
+	r.GET("/api/v1/auth/config", demoHandler.Config)
 
 	// Protect all /api mutations (POST/PUT/PATCH/DELETE) with OIDC session, legacy session, or Bearer token.
 	// GET stays public. Exempt OIDC routes + health/metrics.
@@ -467,6 +502,7 @@ func main() {
 		authed.POST("/settings/forgejo/select", settingsHandler.SelectForgejoRepos)
 		authed.POST("/settings/eink", settingsHandler.UpdateEinkMode)
 		authed.POST("/settings/forgejo/warning/dismiss", settingsHandler.DismissForgejoWarning)
+		authed.POST("/settings/account/delete", accountHandler.DeleteSelf)
 		authed.DELETE("/repos/:id", settingsHandler.RemoveRepo)
 
 		authed.GET("/metrics/history", trendsHandler.MetricsHistory)
@@ -480,6 +516,8 @@ func main() {
 		authed.GET("/feed", feedHandler.Feed)
 		authed.POST("/feed/filter", feedHandler.FeedFilter)
 		authed.GET("/api/user/me", meHandler.Me)
+		authed.GET("/api/v1/me/export", accountHandler.Export)
+		authed.DELETE("/api/v1/me", accountHandler.DeleteAPI)
 		authed.POST("/repos/setup-webhooks", gitHubAppHandler.SetupAutoWebhooks)
 
 		admin := authed.Group("/admin")

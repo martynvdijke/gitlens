@@ -189,10 +189,20 @@ type DashboardHandler struct {
 	gh     *github.Client
 	syncer *appsync.Syncer
 	bgCtx  context.Context
+	// demoEnabled/demoLogin drive the public "Try the demo" button on the
+	// logged-out landing page.
+	demoEnabled bool
+	demoLogin   string
 }
 
 func NewDashboardHandler(client *ent.Client, store *mw.SessionStore, gh *github.Client, syncer *appsync.Syncer) *DashboardHandler {
 	return &DashboardHandler{client: client, store: store, gh: gh, syncer: syncer, bgCtx: context.Background()}
+}
+
+// SetDemo configures whether the landing page offers the shared demo login.
+func (h *DashboardHandler) SetDemo(enabled bool, login string) {
+	h.demoEnabled = enabled
+	h.demoLogin = login
 }
 
 func computeMetrics(repos []*ent.Repository) *DORAMetrics {
@@ -676,6 +686,8 @@ func (h *DashboardHandler) Index(c *gin.Context) {
 		"Metrics":           computeMetrics(nil),
 		"ActiveTab":         "repos",
 		"ForgejoDefaultURL": os.Getenv("FORGEJO_DEFAULT_URL"),
+		"DemoEnabled":       h.demoEnabled,
+		"DemoLogin":         h.demoLogin,
 	})
 }
 

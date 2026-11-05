@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gitlens/core/api_client.dart';
 import 'package:gitlens/core/auth.dart';
 import 'package:gitlens/core/config.dart';
 import 'package:gitlens/core/storage.dart';
@@ -39,10 +40,12 @@ class _FakeStorage extends StorageService {
 void main() {
   setUp(() {
     ApiClientOidcProbe.override = (ref, baseUrl) async => false;
+    ApiClientDemoProbe.override = (ref, baseUrl) async => PublicAuthConfig.disabled;
   });
 
   tearDown(() {
     ApiClientOidcProbe.override = null;
+    ApiClientDemoProbe.override = null;
   });
 
   testWidgets('prefills the default server on first run', (tester) async {
@@ -59,6 +62,40 @@ void main() {
     expect(storage.baseUrl, isNull);
     expect(find.text('Use the default instance below, or enter another self-hosted GitLens server.'), findsOneWidget);
     expect(find.text('Sign in with SSO'), findsNothing);
+    expect(find.text('Try the demo'), findsNothing);
+  });
+
+  testWidgets('offers the public demo account when the server advertises it', (tester) async {
+    ApiClientDemoProbe.override = (ref, baseUrl) async => const PublicAuthConfig(
+          demoEnabled: true,
+          demoLogin: 'demo',
+          demoToken: 'glt_demo_public_preview_2026',
+        );
+    final storage = _FakeStorage();
+    await tester.pumpWidget(ProviderScope(
+      overrides: [storageProvider.overrideWithValue(storage)],
+      child: const MaterialApp(home: OnboardingScreen()),
+    ));
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('Try the demo'), findsOneWidget);
+    expect(
+      find.text('Shared demo account with sample repositories. No GitHub login is needed.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('hides the demo button when the server does not offer it', (tester) async {
+    final storage = _FakeStorage();
+    await tester.pumpWidget(ProviderScope(
+      overrides: [storageProvider.overrideWithValue(storage)],
+      child: const MaterialApp(home: OnboardingScreen()),
+    ));
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('Try the demo'), findsNothing);
   });
 
   testWidgets('a previously saved server URL wins over the default', (tester) async {

@@ -1,0 +1,45 @@
+{{define "terms_content"}}
+<section class="legal mx-auto" style="max-width:760px">
+  <p class="text-secondary text-uppercase small fw-semibold mb-1">Legal</p>
+  <h1 class="h2 fw-semibold mb-3">Terms of use</h1>
+  <p class="lead fs-6 text-secondary">The short version: track repositories you are allowed to see, be decent to other people, and keep your account secure. Last updated {{.Year}}.</p>
+
+  <h2 class="h5 fw-semibold mt-4">Your account</h2>
+  <p>You sign in with GitHub, Forgejo or the configured identity provider. Keep one account per person and keep your provider account secure. You are responsible for what happens under your account; if you think someone else has access, revoke the OAuth grant at your provider, delete your API tokens in Settings, and sign out.</p>
+  <p>You can delete your account at any time from <a href="/account/delete">Delete your account</a>. Administrators may suspend accounts that break these terms.</p>
+
+  <h2 class="h5 fw-semibold mt-4">Your rights in the EU and EEA</h2>
+  <p>If you are a consumer in the European Union or the European Economic Area, you keep all mandatory statutory rights your local law gives you. Nothing in these terms reduces them. In particular, you have the data protection rights described in the <a href="/privacy">privacy policy</a>, including access, rectification, erasure, restriction, portability and objection, and the Liability section below does not exclude or limit any right that cannot be waived by law.</p>
+  {{if or .Legal.EURepresentative .Legal.DPOEmail}}<p>{{if .Legal.EURepresentative}}The controller's EU representative is <strong>{{.Legal.EURepresentative}}</strong>.{{end}}{{if .Legal.DPOEmail}} The data protection officer can be reached at <a href="mailto:{{.Legal.DPOEmail}}">{{.Legal.DPOEmail}}</a>.{{end}}</p>{{end}}
+
+  <h2 class="h5 fw-semibold mt-4">Repository data and your content</h2>
+  <p>GitLens reads repository data from GitHub and, when you connect it, from Forgejo or another Gitea-compatible instance. You may only track repositories you are authorised to access. The underlying repositories, commits, pull requests, releases and metadata belong to their respective owners and remain subject to their licences and terms.</p>
+  <p>Your account data, preferences and the metrics GitLens derives for you belong to you. By using the instance you give it permission to store and display that data to you. That permission ends when the data is deleted, except for copies in backups that have not yet rotated.</p>
+
+  <h2 class="h5 fw-semibold mt-4">What is not allowed</h2>
+  <ul>
+    <li>Tracking or scraping repositories you do not have permission to access.</li>
+    <li>Bulk-downloading or reselling other people's data.</li>
+    <li>Automated account creation, or otherwise evading rate limits and abuse controls.</li>
+    <li>Uploading malware, or probing the service for vulnerabilities without asking first.</li>
+    <li>Impersonating another person or a brand you do not represent.</li>
+  </ul>
+
+  <h2 class="h5 fw-semibold mt-4">Third-party services</h2>
+  <p>GitLens depends on GitHub, your Forgejo instance, your identity provider and any services the operator configures (for example Gotify, Telegram, Umami or an OpenTelemetry collector). Their availability and terms are outside this instance's control.</p>
+
+  <h2 class="h5 fw-semibold mt-4">Availability</h2>
+  <p>This is a self-hosted instance, offered as it is. It can go down for maintenance, lose data if a backup fails, or shut down entirely. Do not rely on it as the only copy of anything you care about — use <a href="/api/v1/me/export">the data export</a> to keep your own copy.</p>
+
+  <h2 class="h5 fw-semibold mt-4">Liability</h2>
+  <p>To the extent the law allows, the operator is not liable for indirect or consequential loss arising from use of the instance. Nothing here limits liability that cannot be limited by law, including for death, personal injury or fraud.</p>
+
+  <h2 class="h5 fw-semibold mt-4">Governing law</h2>
+  <p>These terms are governed by the law of the country in which the operator of this instance is established, without affecting consumer protections you have where you live.</p>
+
+  <h2 class="h5 fw-semibold mt-4">Changes</h2>
+  <p>Material changes are announced in the app before they take effect. Continuing to use the instance after that means you accept the updated terms.</p>
+
+  <p class="text-secondary small mt-4">See also the <a href="/privacy">privacy policy</a>, which explains what data is stored and how to remove it.</p>
+</section>
+{{end}}

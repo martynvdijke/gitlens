@@ -17,6 +17,7 @@ import (
 
 	"gitlens/ent"
 	"gitlens/ent/user"
+	"gitlens/internal/demo"
 )
 
 type oidcProvider struct {
@@ -346,7 +347,7 @@ func linkOrProvision(ctx context.Context, client *ent.Client, sub string, claims
 		create = create.SetName(claims.Name)
 	}
 	// first user becomes admin (single-admin by design) if no groups claim present
-	count, _ := client.User.Query().Count(ctx)
+	count, _ := client.User.Query().Where(user.GithubIDNEQ(demo.GithubID)).Count(ctx)
 	if count == 0 && !groupsPresent {
 		create = create.SetIsAdmin(true)
 	}

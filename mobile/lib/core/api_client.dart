@@ -15,6 +15,42 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
+/// Public sign-in options advertised by a GitLens server.
+///
+/// The demo account is intended for evaluation only: the server hands out a
+/// shared token that the app can exchange through the normal token login flow.
+class PublicAuthConfig {
+  const PublicAuthConfig({
+    this.oidcEnabled = false,
+    this.demoEnabled = false,
+    this.demoLogin,
+    this.demoToken,
+  });
+
+  final bool oidcEnabled;
+  final bool demoEnabled;
+  final String? demoLogin;
+  final String? demoToken;
+
+  bool get hasDemo =>
+      demoEnabled && demoToken != null && demoToken!.isNotEmpty;
+
+  factory PublicAuthConfig.fromJson(Map<String, dynamic> json) {
+    final rawDemo = json['demo'];
+    final demo = rawDemo is Map ? rawDemo : const <String, dynamic>{};
+    final login = demo['login'];
+    final token = demo['token'];
+    return PublicAuthConfig(
+      oidcEnabled: json['oidc_enabled'] == true,
+      demoEnabled: demo['enabled'] == true,
+      demoLogin: login is String && login.isNotEmpty ? login : null,
+      demoToken: token is String && token.isNotEmpty ? token : null,
+    );
+  }
+
+  static const disabled = PublicAuthConfig();
+}
+
 /// JSON client for the GitLens server.
 ///
 /// Sends `Accept: application/json` so the Go handlers return data instead of
@@ -90,6 +126,19 @@ class ApiClient {
     }
   }
 
+  Future<dynamic> _delete(String path, {Map<String, dynamic>? body}) async {
+    try {
+      final response = await _dio.delete<dynamic>(
+        path,
+        data: body,
+        options: await _options(),
+      );
+      return _decode(response);
+    } on DioException catch (e) {
+      throw ApiException(_networkMessage(e), statusCode: e.response?.statusCode);
+    }
+  }
+
   dynamic _decode(Response<dynamic> response) {
     final code = response.statusCode ?? 0;
     final data = response.data;
@@ -136,6 +185,29 @@ class ApiClient {
       // Unreachable server or non-JSON response: OIDC isn't usable yet.
     }
     return false;
+  }
+
+  /// Reads the server's public sign-in options. Onboarding uses this to decide
+  /// whether to offer the shared demo account. Failures are expected on older
+  /// servers and never escape the probe.
+  static Future<PublicAuthConfig> publicConfigAt(String baseUrl) async {
+    final dio = Dio(BaseOptions(
+      baseUrl: baseUrl,
+      connectTimeout: const Duration(seconds: 8),
+      receiveTimeout: const Duration(seconds: 8),
+      headers: const {'Accept': 'application/json'},
+      validateStatus: (_) => true,
+    ));
+    try {
+      final response = await dio.get<dynamic>('/api/v1/auth/config');
+      final data = response.data;
+      if (response.statusCode == 200 && data is Map) {
+        return PublicAuthConfig.fromJson(data.cast<String, dynamic>());
+      }
+    } catch (_) {
+      // Unreachable server or older API: no demo account to offer.
+    }
+    return PublicAuthConfig.disabled;
   }
 
   static Future<bool> testConnection(String baseUrl) async {
@@ -260,6 +332,12 @@ class ApiClient {
   Future<String> createApiToken(String name) async {
     final data = await _post('/api/tokens', body: {'name': name});
     return (data as Map)['token'] as String;
+  }
+
+  /// Permanently removes the signed-in account. The server requires the current
+  /// username as confirmation and rejects deleting the last administrator.
+  Future<void> deleteAccount(String confirm) async {
+    await _delete('/api/v1/me', body: {'confirm': confirm});
   }
 
   static Map<String, dynamic> decodeJson(String raw) =>

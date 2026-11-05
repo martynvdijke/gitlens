@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/api_client.dart';
 import 'core/auth.dart';
 import 'features/feed/feed_screen.dart';
 import 'features/metrics/metrics_screen.dart';
@@ -99,7 +100,63 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   Future<void> _showSettings(BuildContext context, WidgetRef ref) async {
     final auth = ref.read(authProvider);
     final nameController = TextEditingController(text: 'Android app');
+    final confirmController = TextEditingController();
+    final username = auth.user?.username ?? '';
+    const danger = Color(0xFFF85149);
     String? createdToken;
+    String? deleteError;
+    var deleting = false;
+
+    Future<void> confirmDelete(BuildContext sheetContext, StateSetter setSheetState) async {
+      final messenger = ScaffoldMessenger.of(sheetContext);
+      final confirm = confirmController.text.trim();
+      if (confirm.isEmpty || confirm != username) {
+        setSheetState(() => deleteError = 'Type your username exactly to confirm.');
+        return;
+      }
+      final approved = await showDialog<bool>(
+        context: sheetContext,
+        builder: (dialogContext) => AlertDialog(
+          backgroundColor: gitLensSurface,
+          title: const Text('Delete account permanently?'),
+          content: const Text('This cannot be undone.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: danger, foregroundColor: Colors.white),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Delete'),
+            ),
+          ],
+        ),
+      );
+      if (approved != true || !sheetContext.mounted) return;
+      setSheetState(() {
+        deleting = true;
+        deleteError = null;
+      });
+      try {
+        await ref.read(apiClientProvider).deleteAccount(confirm);
+        if (sheetContext.mounted) Navigator.of(sheetContext).pop();
+        await ref.read(authProvider.notifier).logout();
+        messenger.showSnackBar(const SnackBar(content: Text('Account deleted.')));
+      } on ApiException catch (e) {
+        if (!sheetContext.mounted) return;
+        setSheetState(() {
+          deleting = false;
+          deleteError = e.message;
+        });
+      } catch (_) {
+        if (!sheetContext.mounted) return;
+        setSheetState(() {
+          deleting = false;
+          deleteError = 'Could not delete the account. Try again.';
+        });
+      }
+    }
 
     await showModalBottomSheet<void>(
       context: context,
@@ -107,7 +164,8 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       backgroundColor: gitLensSurface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (sheetContext) => StatefulBuilder(
-        builder: (context, setSheetState) => Padding(
+        builder: (context, setSheetState) => SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           padding: EdgeInsets.fromLTRB(22, 18, 22, 24 + MediaQuery.of(context).viewInsets.bottom),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -166,9 +224,41 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('Create API token'),
               ),
-              const SizedBox(height: 8),
+              const Divider(height: 30),
+              const Text('Delete account', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: danger)),
+              const SizedBox(height: 6),
+              const Text(
+                'Removes your profile, tokens, sessions, tracked repositories and derived history. This is immediate and cannot be undone. The only administrator cannot delete the last admin account.',
+                style: TextStyle(fontSize: 12, color: gitLensMuted, height: 1.45),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: confirmController,
+                autocorrect: false,
+                enableSuggestions: false,
+                decoration: InputDecoration(
+                  labelText: 'Type ${username.isEmpty ? 'your username' : username} to confirm',
+                  prefixIcon: const Icon(Icons.badge_outlined),
+                  errorText: deleteError,
+                ),
+              ),
+              const SizedBox(height: 10),
               FilledButton.icon(
-                style: FilledButton.styleFrom(backgroundColor: const Color(0xFFF85149), foregroundColor: Colors.white),
+                style: FilledButton.styleFrom(backgroundColor: danger, foregroundColor: Colors.white),
+                onPressed: deleting ? null : () => confirmDelete(sheetContext, setSheetState),
+                icon: deleting
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.delete_forever_outlined, size: 18),
+                label: Text(deleting ? 'Deleting…' : 'Delete account permanently'),
+              ),
+              const SizedBox(height: 10),
+              SelectableText(
+                'Privacy policy: ${auth.baseUrl ?? ''}/privacy\nAccount deletion: ${auth.baseUrl ?? ''}/account/delete',
+                style: const TextStyle(fontSize: 11, color: gitLensMuted, height: 1.4),
+              ),
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                style: FilledButton.styleFrom(backgroundColor: danger, foregroundColor: Colors.white),
                 onPressed: () async {
                   Navigator.of(sheetContext).pop();
                   await ref.read(authProvider.notifier).logout();
@@ -182,5 +272,6 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       ),
     );
     nameController.dispose();
+    confirmController.dispose();
   }
 }

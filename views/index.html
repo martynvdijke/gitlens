@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitLens</title>
+    <title>{{if .Title}}{{.Title}} · {{end}}GitLens</title>
+    {{if .MetaDescription}}<meta name="description" content="{{.MetaDescription}}">{{end}}
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <script src="https://unpkg.com/htmx.org@2.0.4/dist/ext/ws.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
@@ -48,7 +49,11 @@
     {{end}}
 
     <main class="container py-4">
-        {{if .User}}
+        {{if .LegalPage}}
+        {{if eq .LegalPage "privacy"}}{{template "privacy_content" .}}{{end}}
+        {{if eq .LegalPage "terms"}}{{template "terms_content" .}}{{end}}
+        {{if eq .LegalPage "account_delete"}}{{template "account_delete_content" .}}{{end}}
+        {{else if .User}}
         <div id="main-content">
             {{if .ShowSetup}}
             {{template "available_repos" .}}
@@ -108,6 +113,11 @@
     <footer class="text-center py-3 text-secondary small border-top border-secondary mt-4">
         <div class="container">
             <span>GitLens <span class="font-monospace">{{appVersion}}</span></span>
+            <div class="mt-1">
+                <a href="/privacy" class="link-secondary text-decoration-none me-3">Privacy</a>
+                <a href="/terms" class="link-secondary text-decoration-none me-3">Terms</a>
+                <a href="/account/delete" class="link-secondary text-decoration-none">Delete account</a>
+            </div>
         </div>
     </footer>
     <script type="module" src="/static/js/index.js"></script>

@@ -9,6 +9,7 @@ import (
 
 	"gitlens/ent"
 	"gitlens/ent/user"
+	"gitlens/internal/demo"
 	"gitlens/internal/github"
 	"gitlens/internal/middleware"
 	"gitlens/internal/provider"
@@ -96,7 +97,7 @@ func (h *AuthHandler) Callback(c *gin.Context) {
 
 	u, err := h.client.User.Query().Where(user.GithubID(ghUser.ID)).Only(c.Request.Context())
 	if ent.IsNotFound(err) {
-		count, _ := h.client.User.Query().Count(c.Request.Context())
+		count, _ := h.client.User.Query().Where(user.GithubIDNEQ(demo.GithubID)).Count(c.Request.Context())
 
 		create := h.client.User.Create().
 			SetGithubID(ghUser.ID).
@@ -295,7 +296,7 @@ func (h *AuthHandler) CallbackForgejo(c *gin.Context) {
 			}
 		} else {
 			// New user — create with forgejo credentials.
-			count, _ := h.client.User.Query().Count(c.Request.Context())
+			count, _ := h.client.User.Query().Where(user.GithubIDNEQ(demo.GithubID)).Count(c.Request.Context())
 			create := h.client.User.Create().
 				SetForgejoID(fjUser.ID).
 				SetForgejoLogin(fjUser.Login).

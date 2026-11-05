@@ -13,6 +13,7 @@ import (
 	"gitlens/ent/event"
 	"gitlens/ent/metricsnapshot"
 	"gitlens/ent/repository"
+	"gitlens/internal/demo"
 	"gitlens/internal/otel"
 	"gitlens/internal/secrets"
 
@@ -130,6 +131,11 @@ func (h *AdminHandler) ToggleAdmin(c *gin.Context) {
 	u, err := h.client.User.Get(ctx, targetID)
 	if err != nil {
 		c.String(http.StatusNotFound, "User not found")
+		return
+	}
+
+	if u.GithubID == demo.GithubID {
+		c.String(http.StatusForbidden, "The shared demo account cannot be an administrator.")
 		return
 	}
 

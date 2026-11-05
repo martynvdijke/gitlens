@@ -193,6 +193,44 @@ func (c *Client) AuthURLFor(instanceBase, state, redirectURL string) string {
 	return u
 }
 
+// RevokeToken asks a Forgejo instance to invalidate an OAuth access token.
+// Gitea-family servers expose /login/oauth/revoke; older versions may answer
+// 404, in which case the caller still removes the token from this instance.
+func (c *Client) RevokeToken(ctx context.Context, instanceBase, token string) error {
+	if token == "" {
+		return nil
+	}
+	base := c.resolveBase(instanceBase)
+	if base == "" {
+		return fmt.Errorf("forgejo: no instance base URL provided for token revocation")
+	}
+	if c.clientID == "" || c.clientSecret == "" {
+		return fmt.Errorf("forgejo: client credentials not configured for token revocation")
+	}
+	form := url.Values{
+		"client_id":     {c.clientID},
+		"client_secret": {c.clientSecret},
+		"token":         {token},
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, base+"/login/oauth/revoke", strings.NewReader(form.Encode()))
+	if err != nil {
+		return fmt.Errorf("forgejo: creating revoke request: %w", err)
+	}
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("forgejo: revoking token: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusNoContent || resp.StatusCode == http.StatusNotFound {
+		return nil
+	}
+	body, _ := io.ReadAll(resp.Body)
+	return fmt.Errorf("forgejo: revoke failed: %s: %s", resp.Status, strings.TrimSpace(string(body)))
+}
+
 // ExchangeCodeFor exchanges a code against the specified instance and
 // returns the access token + user identity. The handler passes the
 // instance base via the oauth_state cookie.

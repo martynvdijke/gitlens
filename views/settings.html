@@ -158,6 +158,24 @@
         </div>
     </div>
 
+    <div class="card border-danger mb-4">
+        <div class="card-body">
+            <h5 class="card-title text-danger">Delete account</h5>
+            <p class="card-text text-secondary small">
+                This removes your profile, stored GitHub/Forgejo tokens, API tokens, sessions, tracked repositories and the history derived from them. It cannot be undone. Read the <a href="/account/delete" class="link-secondary">deletion page</a> for what is kept. The only administrator cannot delete the last admin account: promote another user first.
+            </p>
+            <form hx-post="/settings/account/delete" hx-target="#delete-account-status" hx-swap="innerHTML"
+                  hx-confirm="Delete this account permanently?">
+                <label for="delete-confirm" class="form-label small">Type <strong>{{.User.Login}}</strong> to confirm</label>
+                <div class="d-flex gap-2">
+                    <input id="delete-confirm" type="text" name="confirm" class="form-control form-control-sm bg-dark text-light border-secondary" autocomplete="off" required>
+                    <button type="submit" class="btn btn-sm btn-danger text-nowrap">Delete account</button>
+                </div>
+            </form>
+            <div id="delete-account-status" class="mt-2"></div>
+        </div>
+    </div>
+
     {{if .User.IsAdmin}}
     <hr class="my-4 border-secondary">
     <h3 class="h5 fw-semibold mb-3">Administration</h3>

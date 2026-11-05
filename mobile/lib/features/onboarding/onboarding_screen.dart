@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/api_client.dart';
 import '../../core/auth.dart';
 import '../../core/config.dart';
 import '../../core/server_url.dart';
@@ -27,6 +28,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   bool _submitting = false;
   bool _obscureToken = true;
   bool _oidcEnabled = false;
+  bool _demoEnabled = false;
+  String? _demoLogin;
+  String? _demoToken;
+  bool _demoSubmitting = false;
   String? _urlError;
   String? _formError;
   Timer? _debounce;
@@ -50,7 +55,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       _urlController.text = address;
       _urlValid = valid;
     });
-    if (valid) await _checkOidc(normalizeServerUrl(address));
+    if (valid) await _checkAuthOptions(normalizeServerUrl(address));
   }
 
   void _onUrlChanged(String value) {
@@ -64,20 +69,31 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       _checking = false;
       if (_oidcForUrl != normalized) {
         _oidcEnabled = false;
+        _demoEnabled = false;
+        _demoLogin = null;
+        _demoToken = null;
         _oidcForUrl = null;
       }
     });
     if (serverUrlError(value) != null) return;
-    _debounce = Timer(const Duration(milliseconds: 500), () => _checkOidc(normalized));
+    _debounce = Timer(const Duration(milliseconds: 500), () => _checkAuthOptions(normalized));
   }
 
-  Future<void> _checkOidc(String baseUrl) async {
+  Future<void> _checkAuthOptions(String baseUrl) async {
     final generation = ++_oidcGeneration;
     if (mounted) setState(() => _checking = true);
-    final enabled = await ApiClientOidcProbe.oidcEnabled(ref, baseUrl);
+    // Start both probes together so switching servers doesn't fire requests
+    // twice, and drop the result if a newer URL has already superseded it.
+    final oidcFuture = ApiClientOidcProbe.oidcEnabled(ref, baseUrl);
+    final demoFuture = ApiClientDemoProbe.config(ref, baseUrl);
+    final enabled = await oidcFuture;
+    final demo = await demoFuture;
     if (!mounted || generation != _oidcGeneration) return;
     setState(() {
       _oidcEnabled = enabled;
+      _demoEnabled = demo.demoEnabled;
+      _demoLogin = demo.demoLogin;
+      _demoToken = demo.demoToken;
       _oidcForUrl = baseUrl;
       _checking = false;
     });
@@ -103,7 +119,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       _urlValid = ok;
       _urlError = ok ? null : 'Could not reach that GitLens server.';
     });
-    if (ok) _checkOidc(baseUrl);
+    if (ok) _checkAuthOptions(baseUrl);
+  }
+
+  Future<void> _demoSignIn() async {
+    if (_validateUrl() != null) return;
+    final token = _demoToken;
+    if (token == null || token.isEmpty) return;
+    setState(() {
+      _demoSubmitting = true;
+      _formError = null;
+    });
+    await ref.read(authProvider.notifier).loginWithToken(
+          normalizeServerUrl(_urlController.text),
+          token,
+        );
+    if (mounted) setState(() => _demoSubmitting = false);
   }
 
   Future<void> _tokenLogin() async {
@@ -154,6 +185,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget build(BuildContext context) {
     final auth = ref.watch(authProvider);
     final error = _formError ?? auth.error;
+    final privacyBase = serverUrlError(_urlController.text) == null
+        ? normalizeServerUrl(_urlController.text)
+        : '';
     return Scaffold(
       body: BrandBackdrop(
         child: SafeArea(
@@ -232,7 +266,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     if (_oidcEnabled) ...[
                       const SizedBox(height: 14),
                       FilledButton.icon(
-                        onPressed: _submitting ? null : _oidcLogin,
+                        onPressed: (_submitting || _demoSubmitting) ? null : _oidcLogin,
                         style: FilledButton.styleFrom(
                           backgroundColor: gitLensGreen,
                           foregroundColor: gitLensBackground,
@@ -244,6 +278,31 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       const SizedBox(height: 6),
                       const Text('Opens your identity provider securely inside the app.',
                           textAlign: TextAlign.center, style: TextStyle(fontSize: 11.5, color: gitLensMuted)),
+                    ],
+                    if (_demoEnabled && _demoToken != null && _demoToken!.isNotEmpty) ...[
+                      const SizedBox(height: 14),
+                      Tooltip(
+                        message: _demoLogin != null ? 'Demo account: ${_demoLogin!}' : 'Shared demo account',
+                        child: OutlinedButton.icon(
+                          onPressed: (_submitting || _demoSubmitting) ? null : _demoSignIn,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: gitLensGreen,
+                            backgroundColor: gitLensGreen.withValues(alpha: 0.1),
+                            side: const BorderSide(color: gitLensGreen),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          icon: _demoSubmitting
+                              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                              : const Icon(Icons.science_outlined, size: 19),
+                          label: const Text('Try the demo', style: TextStyle(fontWeight: FontWeight.w700)),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Shared demo account with sample repositories. No GitHub login is needed.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 11.5, color: gitLensMuted, height: 1.35),
+                      ),
                     ],
                     const SizedBox(height: 18),
                     const Row(children: [
@@ -279,7 +338,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             ),
                             const SizedBox(height: 12),
                             FilledButton.icon(
-                              onPressed: _submitting ? null : _tokenLogin,
+                              onPressed: (_submitting || _demoSubmitting) ? null : _tokenLogin,
                               style: FilledButton.styleFrom(
                                 backgroundColor: gitLensSurfaceRaised,
                                 foregroundColor: Colors.white,
@@ -317,6 +376,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 11, color: gitLensMuted, height: 1.4),
                     ),
+                    const SizedBox(height: 14),
+                    const Text(
+                      'By continuing you agree to the privacy policy and terms of the server you connect to.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 11, color: gitLensMuted, height: 1.4),
+                    ),
+                    if (privacyBase.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      SelectableText(
+                        '$privacyBase/privacy\n$privacyBase/terms',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 10.5, color: gitLensMuted, height: 1.4),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -339,5 +412,17 @@ class ApiClientOidcProbe {
     final custom = override;
     if (custom != null) return custom(ref, baseUrl);
     return ref.read(authProvider.notifier).oidcEnabled(baseUrl);
+  }
+}
+
+/// Mirrors [ApiClientOidcProbe] for the public demo account so widget tests can
+/// keep onboarding fully offline.
+class ApiClientDemoProbe {
+  static Future<PublicAuthConfig> Function(WidgetRef ref, String baseUrl)? override;
+
+  static Future<PublicAuthConfig> config(WidgetRef ref, String baseUrl) async {
+    final custom = override;
+    if (custom != null) return custom(ref, baseUrl);
+    return ApiClient.publicConfigAt(baseUrl);
   }
 }

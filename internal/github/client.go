@@ -302,6 +302,41 @@ func (c *Client) GetAccessToken(code string) (string, error) {
 	return result.AccessToken, nil
 }
 
+// RevokeToken asks GitHub to invalidate an OAuth access token. GitHub's
+// application-token endpoint requires HTTP Basic authentication with the
+// OAuth app's client id and secret. A 404 means the token is already gone,
+// which is the desired end state.
+func (c *Client) RevokeToken(ctx context.Context, token string) error {
+	if token == "" {
+		return nil
+	}
+	if c.clientID == "" || c.clientSecret == "" {
+		return fmt.Errorf("github: client credentials not configured for token revocation")
+	}
+	body, err := json.Marshal(map[string]string{"access_token": token})
+	if err != nil {
+		return fmt.Errorf("github: encoding revoke request: %w", err)
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete,
+		c.APIURL+"/applications/"+url.PathEscape(c.clientID)+"/token", bytes.NewReader(body))
+	if err != nil {
+		return fmt.Errorf("github: creating revoke request: %w", err)
+	}
+	req.SetBasicAuth(c.clientID, c.clientSecret)
+	req.Header.Set("Accept", "application/vnd.github+json")
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("github: revoking token: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusNoContent || resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusNotFound {
+		return nil
+	}
+	return &APIError{StatusCode: resp.StatusCode, Status: resp.Status}
+}
+
 func (c *Client) GetUser(token string) (*User, error) {
 	resp, err := c.doRequest("GET", c.APIURL+"/user", token, nil)
 	if err != nil {
