@@ -16,6 +16,8 @@ import (
 
 	"gitlens/ent"
 	"gitlens/ent/repository"
+	"gitlens/ent/user"
+	"gitlens/internal/demo"
 	"gitlens/internal/deploy"
 	"gitlens/internal/sync"
 
@@ -86,9 +88,20 @@ func (h *WebhookHandler) notify(ctx context.Context, title, message string, prio
 type pushPayload struct {
 	Ref        string `json:"ref"`
 	Repository struct {
-		ID       int64  `json:"id"`
-		FullName string `json:"full_name"`
+		ID            int64  `json:"id"`
+		Name          string `json:"name"`
+		FullName      string `json:"full_name"`
+		HTMLURL       string `json:"html_url"`
+		Description   string `json:"description"`
+		Language      string `json:"language"`
+		DefaultBranch string `json:"default_branch"`
+		Owner         struct {
+			Login string `json:"login"`
+		} `json:"owner"`
 	} `json:"repository"`
+	Sender struct {
+		Login string `json:"login"`
+	} `json:"sender"`
 }
 
 type releasePayload struct {
@@ -236,6 +249,10 @@ func (h *WebhookHandler) handlePushEvent(c *gin.Context, body []byte) {
 		Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
+			if repo := h.autoImportRepo(ctx, &payload); repo != nil {
+				log.Printf("Webhook: auto-imported %s — syncing", repo.FullName)
+				go h.syncer.SyncOne(context.Background(), repo)
+			}
 			c.Status(http.StatusOK)
 			return
 		}
@@ -248,6 +265,87 @@ func (h *WebhookHandler) handlePushEvent(c *gin.Context, body []byte) {
 	go h.syncer.SyncOne(context.Background(), repo)
 
 	c.Status(http.StatusOK)
+}
+
+// autoImportRepo creates a Repository row for a push to a repo that is not
+// tracked yet. It resolves the owning user from the repository owner, the
+// sender, or (for single-user instances) the only non-demo user. Returns nil
+// when no owner can be determined or the row cannot be created.
+func (h *WebhookHandler) autoImportRepo(ctx context.Context, payload *pushPayload) *ent.Repository {
+	owner := strings.TrimSpace(payload.Repository.Owner.Login)
+	name := strings.TrimSpace(payload.Repository.Name)
+	if owner == "" || name == "" {
+		parts := strings.SplitN(payload.Repository.FullName, "/", 2)
+		if len(parts) == 2 {
+			if owner == "" {
+				owner = strings.TrimSpace(parts[0])
+			}
+			if name == "" {
+				name = strings.TrimSpace(parts[1])
+			}
+		}
+	}
+	if owner == "" || name == "" {
+		return nil
+	}
+
+	u, err := h.client.User.Query().Where(user.Login(owner)).Only(ctx)
+	if err != nil {
+		if sender := strings.TrimSpace(payload.Sender.Login); sender != "" {
+			u, err = h.client.User.Query().Where(user.Login(sender)).Only(ctx)
+		}
+	}
+	if err != nil {
+		others, qErr := h.client.User.Query().
+			Where(user.GithubIDNEQ(demo.GithubID)).
+			All(ctx)
+		if qErr != nil || len(others) != 1 {
+			return nil
+		}
+		u = others[0]
+	}
+
+	fullName := payload.Repository.FullName
+	if fullName == "" {
+		fullName = owner + "/" + name
+	}
+	defaultBranch := payload.Repository.DefaultBranch
+	if defaultBranch == "" {
+		defaultBranch = strings.TrimPrefix(payload.Ref, "refs/heads/")
+	}
+	if defaultBranch == "" {
+		defaultBranch = "main"
+	}
+	htmlURL := payload.Repository.HTMLURL
+	if htmlURL == "" {
+		htmlURL = "https://github.com/" + fullName
+	}
+
+	repo, err := h.client.Repository.Create().
+		SetGithubID(payload.Repository.ID).
+		SetOwner(owner).
+		SetName(name).
+		SetFullName(fullName).
+		SetHTMLURL(htmlURL).
+		SetDescription(payload.Repository.Description).
+		SetLanguage(payload.Repository.Language).
+		SetDefaultBranch(defaultBranch).
+		SetUserID(u.ID).
+		Save(ctx)
+	if err != nil {
+		// A concurrent webhook may have created the row first; reuse it.
+		existing, qErr := h.client.Repository.Query().
+			Where(repository.GithubID(payload.Repository.ID)).
+			Only(ctx)
+		if qErr == nil {
+			return existing
+		}
+		log.Printf("Webhook: auto-import %s failed: %v", fullName, err)
+		return nil
+	}
+
+	log.Printf("Webhook: auto-imported %s for %s", repo.FullName, u.Login)
+	return repo
 }
 
 func (h *WebhookHandler) handleRelease(c *gin.Context, body []byte) {

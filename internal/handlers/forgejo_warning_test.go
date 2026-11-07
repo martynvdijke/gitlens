@@ -26,7 +26,7 @@ func TestComputeForgejoWarning_NoForgejoConnected(t *testing.T) {
 
 func TestComputeForgejoWarning_AllReposMirrored(t *testing.T) {
 	h := &SettingsHandler{}
-	u := &ent.User{ForgejoID: 7, ForgejoURL: "https://git.example.com"}
+	u := &ent.User{ForgejoID: 7, ForgejoAccessToken: "fj_token", ForgejoURL: "https://git.example.com"}
 	repos := []*ent.Repository{
 		{Provider: "github", FullName: "martynvdijke/gitlens"},
 		{Provider: "forgejo", FullName: "martynvdijke/gitlens", ForgejoFullName: "martynvdijke/gitlens"},
@@ -41,7 +41,7 @@ func TestComputeForgejoWarning_AllReposMirrored(t *testing.T) {
 
 func TestComputeForgejoWarning_MissingCounterpart(t *testing.T) {
 	h := &SettingsHandler{}
-	u := &ent.User{ForgejoID: 7, ForgejoURL: "https://git.example.com"}
+	u := &ent.User{ForgejoID: 7, ForgejoAccessToken: "fj_token", ForgejoURL: "https://git.example.com"}
 	repos := []*ent.Repository{
 		{Provider: "github", FullName: "martynvdijke/gitlens"},
 		{Provider: "github", FullName: "org/gh-only"},
@@ -67,7 +67,7 @@ func TestComputeForgejoWarning_MissingCounterpart(t *testing.T) {
 
 func TestComputeForgejoWarning_NoForgejoReposAtAll(t *testing.T) {
 	h := &SettingsHandler{}
-	u := &ent.User{ForgejoID: 7, ForgejoURL: "https://git.example.com"}
+	u := &ent.User{ForgejoID: 7, ForgejoAccessToken: "fj_token", ForgejoURL: "https://git.example.com"}
 	repos := []*ent.Repository{
 		{Provider: "github", FullName: "martynvdijke/gitlens"},
 	}
@@ -81,6 +81,7 @@ func TestComputeForgejoWarning_DismissedRepo(t *testing.T) {
 	h := &SettingsHandler{}
 	u := &ent.User{
 		ForgejoID:                  7,
+		ForgejoAccessToken:         "fj_token",
 		ForgejoURL:                 "https://git.example.com",
 		DismissedForgejoWarningFor: `["org/gh-only"]`,
 	}
@@ -97,7 +98,7 @@ func TestComputeForgejoWarning_DismissedRepo(t *testing.T) {
 
 func TestComputeForgejoWarning_CappedAtTen(t *testing.T) {
 	h := &SettingsHandler{}
-	u := &ent.User{ForgejoID: 7, ForgejoURL: "https://git.example.com"}
+	u := &ent.User{ForgejoID: 7, ForgejoAccessToken: "fj_token", ForgejoURL: "https://git.example.com"}
 	var repos []*ent.Repository
 	// 12 GitHub-only repos, plus one mirrored repo on Forgejo.
 	repos = append(repos, &ent.Repository{Provider: "forgejo", FullName: "org/mirrored", ForgejoFullName: "org/mirrored"})
@@ -121,7 +122,7 @@ func TestComputeForgejoWarning_CappedAtTen(t *testing.T) {
 
 func TestComputeForgejoWarning_CaseInsensitiveMatch(t *testing.T) {
 	h := &SettingsHandler{}
-	u := &ent.User{ForgejoID: 7, ForgejoURL: "https://git.example.com"}
+	u := &ent.User{ForgejoID: 7, ForgejoAccessToken: "fj_token", ForgejoURL: "https://git.example.com"}
 	repos := []*ent.Repository{
 		{Provider: "github", FullName: "Org/Repo"},
 		{Provider: "forgejo", FullName: "Org/Repo", ForgejoFullName: "org/repo"},

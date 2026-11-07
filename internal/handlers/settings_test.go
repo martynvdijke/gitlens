@@ -380,3 +380,111 @@ func TestSettingsHandler_UpdateEinkMode_EmptyForm(t *testing.T) {
 		t.Fatal("expected eink_mode to be false when form value is not 'true'")
 	}
 }
+
+func newTokenTestContext(userID int64, form string) (*gin.Context, *httptest.ResponseRecorder) {
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Set("user_id", userID)
+	c.Request = httptest.NewRequest("POST", "/settings/tokens", strings.NewReader(form))
+	c.Request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	return c, w
+}
+
+func TestSettingsHandler_UpdateProviderTokens_EmptyFieldsUnchanged(t *testing.T) {
+	handler, _ := newTestSettingsHandler(t, "")
+	client := handler.client
+	u, err := client.User.Create().
+		SetGithubID(1101).SetLogin("tok1").
+		SetAccessToken("gho_original_token").
+		SetForgejoAccessToken("fj_original_token").
+		SetForgejoURL("https://git.example.com").
+		Save(context.Background())
+	if err != nil {
+		t.Fatalf("failed to create user: %v", err)
+	}
+
+	c, w := newTokenTestContext(int64(u.ID), "forgejo_token=fj_new_token&forgejo_url=")
+	handler.UpdateProviderTokens(c)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d, body: %s", w.Code, w.Body.String())
+	}
+	if !strings.Contains(w.Body.String(), "Provider tokens saved") {
+		t.Fatalf("expected success message, got: %s", w.Body.String())
+	}
+
+	updated, _ := client.User.Get(context.Background(), int(u.ID))
+	if updated.AccessToken != "gho_original_token" {
+		t.Fatalf("expected GitHub token unchanged, got %q", updated.AccessToken)
+	}
+	if updated.ForgejoAccessToken != "fj_new_token" {
+		t.Fatalf("expected Forgejo token updated, got %q", updated.ForgejoAccessToken)
+	}
+	if updated.ForgejoURL != "https://git.example.com" {
+		t.Fatalf("expected Forgejo URL unchanged, got %q", updated.ForgejoURL)
+	}
+}
+
+func TestSettingsHandler_UpdateProviderTokens_ForgejoWithoutURL(t *testing.T) {
+	t.Setenv("FORGEJO_DEFAULT_URL", "")
+	handler, _ := newTestSettingsHandler(t, "")
+	client := handler.client
+	u, err := client.User.Create().
+		SetGithubID(1102).SetLogin("tok2").
+		SetAccessToken("gho_tok2").
+		Save(context.Background())
+	if err != nil {
+		t.Fatalf("failed to create user: %v", err)
+	}
+
+	c, w := newTokenTestContext(int64(u.ID), "forgejo_token=fj_tok")
+	handler.UpdateProviderTokens(c)
+
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d, body: %s", w.Code, w.Body.String())
+	}
+	if !strings.Contains(w.Body.String(), "Forgejo instance URL required") {
+		t.Fatalf("expected URL required message, got: %s", w.Body.String())
+	}
+
+	updated, _ := client.User.Get(context.Background(), int(u.ID))
+	if updated.ForgejoAccessToken != "" {
+		t.Fatalf("expected no Forgejo token saved, got %q", updated.ForgejoAccessToken)
+	}
+}
+
+func TestSettingsHandler_ClearProviderToken(t *testing.T) {
+	handler, _ := newTestSettingsHandler(t, "")
+	client := handler.client
+	u, err := client.User.Create().
+		SetGithubID(1103).SetLogin("tok3").
+		SetAccessToken("gho_clear_me").
+		SetForgejoID(42).SetForgejoLogin("fjuser").
+		SetForgejoAccessToken("fj_clear_me").
+		SetForgejoURL("https://git.example.com").
+		Save(context.Background())
+	if err != nil {
+		t.Fatalf("failed to create user: %v", err)
+	}
+
+	c, w := newTokenTestContext(int64(u.ID), "provider=github")
+	handler.ClearProviderToken(c)
+	if w.Code != http.StatusOK || !strings.Contains(w.Body.String(), "GitHub token cleared") {
+		t.Fatalf("expected GitHub clear, got %d: %s", w.Code, w.Body.String())
+	}
+	updated, _ := client.User.Get(context.Background(), int(u.ID))
+	if updated.AccessToken != "" {
+		t.Fatalf("expected empty GitHub token, got %q", updated.AccessToken)
+	}
+
+	c, w = newTokenTestContext(int64(u.ID), "provider=forgejo")
+	handler.ClearProviderToken(c)
+	if w.Code != http.StatusOK || !strings.Contains(w.Body.String(), "Forgejo connection cleared") {
+		t.Fatalf("expected Forgejo clear, got %d: %s", w.Code, w.Body.String())
+	}
+	updated, _ = client.User.Get(context.Background(), int(u.ID))
+	if updated.ForgejoID != 0 || updated.ForgejoAccessToken != "" || updated.ForgejoURL != "" || updated.ForgejoLogin != "" {
+		t.Fatalf("expected Forgejo fields cleared, got %+v", updated)
+	}
+}

@@ -1,13 +1,17 @@
 package auth
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
 
+	"gitlens/ent/enttest"
+
 	"github.com/gin-gonic/gin"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func TestLoadConfigValid(t *testing.T) {
@@ -147,5 +151,51 @@ func TestCallbackRejectsBadState(t *testing.T) {
 	r.ServeHTTP(w2, req2)
 	if w2.Code != 400 {
 		t.Fatalf("expected 400 absent cookie got %d", w2.Code)
+	}
+}
+
+func TestLinkOrProvision_LinksLegacyUserByLogin(t *testing.T) {
+	ctx := context.Background()
+	client := enttest.Open(t, "sqlite3", "file:"+t.TempDir()+"/test.db?_fk=1")
+
+	legacy, err := client.User.Create().
+		SetGithubID(12345).
+		SetLogin("alice").
+		SetName("Alice Legacy").
+		SetAccessToken("gho_legacy_token").
+		Save(ctx)
+	if err != nil {
+		t.Fatalf("failed to create legacy user: %v", err)
+	}
+
+	claims := oidcClaims{
+		Sub:           "sub-1",
+		Email:         "alice@example.com",
+		EmailVerified: true,
+		Name:          "Alice SSO",
+		PreferredName: "alice",
+	}
+	sub := "https://issuer.example|sub-1"
+
+	u, err := linkOrProvision(ctx, client, sub, claims, nil, false)
+	if err != nil {
+		t.Fatalf("linkOrProvision failed: %v", err)
+	}
+	if u.ID != legacy.ID {
+		t.Fatalf("expected legacy user %d to be linked, got %d", legacy.ID, u.ID)
+	}
+	if u.OidcSub != sub {
+		t.Fatalf("expected oidc_sub %q, got %q", sub, u.OidcSub)
+	}
+	if u.OidcEmail != "alice@example.com" {
+		t.Fatalf("expected oidc_email set, got %q", u.OidcEmail)
+	}
+	if u.AccessToken != "gho_legacy_token" {
+		t.Fatalf("expected GitHub token preserved, got %q", u.AccessToken)
+	}
+
+	count, _ := client.User.Query().Count(ctx)
+	if count != 1 {
+		t.Fatalf("expected no duplicate user, got %d users", count)
 	}
 }

@@ -17,6 +17,8 @@ import (
 	"time"
 
 	"gitlens/ent/enttest"
+	"gitlens/ent/repository"
+	"gitlens/ent/user"
 	"gitlens/internal/deploy"
 	"gitlens/internal/github"
 	"gitlens/internal/provider"
@@ -1132,5 +1134,55 @@ func TestHandleWorkflowRun_InProgressIsIgnored(t *testing.T) {
 	case <-fake.done:
 		t.Fatal("in-progress runs must not notify")
 	case <-time.After(100 * time.Millisecond):
+	}
+}
+
+func TestAutoImportRepo_CreatesForMatchingOwner(t *testing.T) {
+	handler := newTestWebhookHandler(t, "")
+	client := handler.client
+	u, err := client.User.Create().
+		SetGithubID(710).SetLogin("alice").SetAccessToken("tok").
+		Save(context.Background())
+	if err != nil {
+		t.Fatalf("failed to create user: %v", err)
+	}
+
+	payload := &pushPayload{Ref: "refs/heads/develop"}
+	payload.Repository.ID = 4242
+	payload.Repository.Name = "newrepo"
+	payload.Repository.Owner.Login = "alice"
+
+	repo := handler.autoImportRepo(context.Background(), payload)
+	if repo == nil {
+		t.Fatal("expected auto-imported repo, got nil")
+	}
+	if repo.Owner != "alice" || repo.Name != "newrepo" {
+		t.Fatalf("unexpected owner/name: %s/%s", repo.Owner, repo.Name)
+	}
+	if repo.FullName != "alice/newrepo" {
+		t.Fatalf("expected derived full name alice/newrepo, got %q", repo.FullName)
+	}
+	if repo.DefaultBranch != "develop" {
+		t.Fatalf("expected default branch develop, got %q", repo.DefaultBranch)
+	}
+	if repo.HTMLURL != "https://github.com/alice/newrepo" {
+		t.Fatalf("expected derived HTML URL, got %q", repo.HTMLURL)
+	}
+	owned, err := client.Repository.Query().
+		Where(repository.HasUserWith(user.ID(u.ID)), repository.ID(repo.ID)).
+		Exist(context.Background())
+	if err != nil || !owned {
+		t.Fatalf("expected repo owned by user %d, err=%v owned=%v", u.ID, err, owned)
+	}
+
+	// A second call must reuse the existing row instead of failing on the
+	// (github_id, user) unique index.
+	again := handler.autoImportRepo(context.Background(), payload)
+	if again == nil || again.ID != repo.ID {
+		t.Fatalf("expected idempotent import, got %+v", again)
+	}
+	count, _ := client.Repository.Query().Count(context.Background())
+	if count != 1 {
+		t.Fatalf("expected one repo row, got %d", count)
 	}
 }

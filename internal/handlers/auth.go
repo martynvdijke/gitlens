@@ -9,6 +9,7 @@ import (
 
 	"gitlens/ent"
 	"gitlens/ent/user"
+	"gitlens/internal/auth"
 	"gitlens/internal/demo"
 	"gitlens/internal/github"
 	"gitlens/internal/middleware"
@@ -146,6 +147,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 		h.store.Delete(sessionID)
 	}
 	middleware.ClearSessionCookie(c)
+	auth.ClearSessionCookie(c)
 	c.Redirect(http.StatusFound, "/")
 }
 

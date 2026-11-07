@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -72,6 +73,23 @@ func (h *SettingsHandler) Index(c *gin.Context) {
 		"ApiTokens":      apiTokens,
 	}
 
+	// Token status for the settings UI. Never expose the raw tokens — only
+	// whether one is set and the last four characters as a hint.
+	hasGithubToken := u.AccessToken != "" && u.AccessToken != "oidc"
+	githubTokenHint := ""
+	if hasGithubToken && len(u.AccessToken) >= 8 {
+		githubTokenHint = u.AccessToken[len(u.AccessToken)-4:]
+	}
+	hasForgejoToken := u.ForgejoAccessToken != ""
+	forgejoTokenHint := ""
+	if hasForgejoToken && len(u.ForgejoAccessToken) >= 8 {
+		forgejoTokenHint = u.ForgejoAccessToken[len(u.ForgejoAccessToken)-4:]
+	}
+	data["HasGithubToken"] = hasGithubToken
+	data["GithubTokenHint"] = githubTokenHint
+	data["HasForgejoToken"] = hasForgejoToken
+	data["ForgejoTokenHint"] = forgejoTokenHint
+
 	// Admins also see the instance-wide settings (OTEL, Gotify, Users) on
 	// this page, so load the admin config and user list for them.
 	if u.IsAdmin {
@@ -94,6 +112,91 @@ func (h *SettingsHandler) Index(c *gin.Context) {
 	}
 
 	c.HTML(http.StatusOK, "settings", data)
+}
+
+// UpdateProviderTokens stores personal access tokens for GitHub and/or
+// Forgejo. OIDC users have no OAuth token of their own, so they set one here.
+// Empty fields leave the existing value untouched.
+func (h *SettingsHandler) UpdateProviderTokens(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	u, err := h.client.User.Get(c.Request.Context(), int(userID))
+	if err != nil {
+		c.String(http.StatusInternalServerError, "User not found")
+		return
+	}
+
+	githubToken := strings.TrimSpace(c.PostForm("github_token"))
+	forgejoToken := strings.TrimSpace(c.PostForm("forgejo_token"))
+	forgejoURL := strings.TrimSpace(c.PostForm("forgejo_url"))
+
+	upd := h.client.User.UpdateOneID(int(userID))
+	if githubToken != "" {
+		upd = upd.SetAccessToken(githubToken)
+	}
+	if forgejoToken != "" {
+		instanceURL := forgejoURL
+		if instanceURL == "" {
+			instanceURL = u.ForgejoURL
+		}
+		if instanceURL == "" {
+			instanceURL = os.Getenv("FORGEJO_DEFAULT_URL")
+		}
+		if instanceURL == "" {
+			c.String(http.StatusBadRequest, "Forgejo instance URL required")
+			return
+		}
+		parsed, err := url.ParseRequestURI(instanceURL)
+		if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") {
+			c.String(http.StatusBadRequest, "Invalid Forgejo instance URL")
+			return
+		}
+		upd = upd.
+			SetForgejoAccessToken(forgejoToken).
+			SetForgejoURL(strings.TrimSuffix(instanceURL, "/"))
+	}
+
+	if _, err := upd.Save(c.Request.Context()); err != nil {
+		log.Printf("Error saving provider tokens: %v", err)
+		c.String(http.StatusInternalServerError, "Failed to save provider tokens")
+		return
+	}
+
+	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte("Provider tokens saved"))
+}
+
+// ClearProviderToken removes a stored personal access token for one provider.
+func (h *SettingsHandler) ClearProviderToken(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	providerName := c.PostForm("provider")
+
+	ctx := c.Request.Context()
+	switch providerName {
+	case "github":
+		if _, err := h.client.User.UpdateOneID(int(userID)).
+			SetAccessToken("").
+			Save(ctx); err != nil {
+			log.Printf("Error clearing GitHub token: %v", err)
+			c.String(http.StatusInternalServerError, "Failed to clear GitHub token")
+			return
+		}
+		c.String(http.StatusOK, "GitHub token cleared")
+	case "forgejo":
+		if _, err := h.client.User.UpdateOneID(int(userID)).
+			ClearForgejoID().
+			ClearForgejoLogin().
+			ClearForgejoAvatarURL().
+			ClearForgejoName().
+			ClearForgejoAccessToken().
+			ClearForgejoURL().
+			Save(ctx); err != nil {
+			log.Printf("Error clearing Forgejo connection: %v", err)
+			c.String(http.StatusInternalServerError, "Failed to clear Forgejo connection")
+			return
+		}
+		c.String(http.StatusOK, "Forgejo connection cleared")
+	default:
+		c.String(http.StatusBadRequest, "Unknown provider")
+	}
 }
 
 func (h *SettingsHandler) UpdateInterval(c *gin.Context) {
@@ -164,6 +267,13 @@ func (h *SettingsHandler) AvailableRepos(c *gin.Context) {
 		return
 	}
 
+	if u.AccessToken == "" || u.AccessToken == "oidc" {
+		c.HTML(http.StatusOK, "available_repos", gin.H{
+			"Error": "Add a GitHub personal access token in Settings before listing repositories.",
+		})
+		return
+	}
+
 	ghRepos, err := h.gh.ListRepositories(u.AccessToken)
 	if err != nil {
 		log.Printf("Error listing GitHub repos: %v", err)
@@ -196,6 +306,11 @@ func (h *SettingsHandler) SelectRepos(c *gin.Context) {
 	u, err := h.client.User.Get(c.Request.Context(), int(userID))
 	if err != nil {
 		c.String(http.StatusInternalServerError, "User not found")
+		return
+	}
+
+	if u.AccessToken == "" || u.AccessToken == "oidc" {
+		c.String(http.StatusBadRequest, "Add a GitHub personal access token in Settings first")
 		return
 	}
 
@@ -329,7 +444,7 @@ type ForgejoWarningData struct {
 // have no counterpart on their connected Forgejo instance.
 func (h *SettingsHandler) computeForgejoWarning(ctx context.Context, u *ent.User, repos []*ent.Repository) *ForgejoWarningData {
 	w := &ForgejoWarningData{}
-	if u.ForgejoID == 0 {
+	if u.ForgejoAccessToken == "" || u.ForgejoURL == "" {
 		return w
 	}
 
@@ -435,7 +550,7 @@ func (h *SettingsHandler) AvailableForgejoRepos(c *gin.Context) {
 		c.String(http.StatusInternalServerError, "User not found")
 		return
 	}
-	if u.ForgejoID == 0 || u.ForgejoAccessToken == "" {
+	if u.ForgejoAccessToken == "" || u.ForgejoURL == "" {
 		c.HTML(http.StatusOK, "available_repos", gin.H{
 			"NoForgejo":  true,
 			"ForgejoURL": os.Getenv("FORGEJO_DEFAULT_URL"),

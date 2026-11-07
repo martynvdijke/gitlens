@@ -297,6 +297,36 @@ func linkOrProvision(ctx context.Context, client *ent.Client, sub string, claims
 		}
 		return u, nil
 	}
+	// by login (fallback for existing GitHub-OAuth accounts that have not
+	// linked OIDC yet). Try the preferred username first, then the local part
+	// of the email. Never touch AccessToken: the linked user keeps its GitHub
+	// token, repositories and history.
+	var loginCandidates []string
+	if pn := strings.TrimSpace(claims.PreferredName); pn != "" {
+		loginCandidates = append(loginCandidates, pn)
+	}
+	if i := strings.Index(claims.Email, "@"); i > 0 {
+		if local := strings.TrimSpace(claims.Email[:i]); local != "" {
+			loginCandidates = append(loginCandidates, local)
+		}
+	}
+	for _, candidate := range loginCandidates {
+		u, err := client.User.Query().Where(user.Login(candidate)).Only(ctx)
+		if err != nil || u.OidcSub != "" || u.GithubID == demo.GithubID {
+			continue
+		}
+		upd := client.User.UpdateOne(u).SetOidcSub(sub).SetOidcEmail(claims.Email)
+		if groupsPresent {
+			upd = upd.SetGroups(groupsJSON).SetIsAdmin(isAdminGroup(groups))
+		}
+		if claims.Name != "" {
+			upd = upd.SetName(claims.Name)
+		}
+		if uu, err := upd.Save(ctx); err == nil {
+			return uu, nil
+		}
+		return u, nil
+	}
 	// also try legacy? users without oidc_email but login matching email local part — fallback to none, provision
 	// Provision new user. Need github_id unique — use negative random or derive from sub hash? Ent requires github_id unique.
 	// Use a placeholder github_id based on existing max + random. Simplest: try incrementing from high value.

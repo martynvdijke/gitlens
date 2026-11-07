@@ -145,6 +145,55 @@
 
     <div class="card border-secondary mb-4">
         <div class="card-body">
+            <h5 class="card-title">Provider Access Tokens</h5>
+            <p class="card-text text-secondary small">GitLens normally receives a GitHub or Forgejo token when you sign in with OAuth. If you sign in with SSO, or want to use a personal access token instead, add one here. Tokens are stored server-side and are never shown again.</p>
+
+            <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                <h6 class="fw-semibold mb-0">GitHub</h6>
+                <span id="github-token-status" class="small text-end" aria-live="polite">{{if .HasGithubToken}}<span class="text-success">Configured{{if .GithubTokenHint}} (ends in <span class="font-monospace">{{.GithubTokenHint}}</span>){{end}}</span>{{else}}<span class="text-secondary">Not configured</span>{{end}}</span>
+            </div>
+            <form hx-post="/settings/tokens" hx-target="#github-token-status" hx-swap="innerHTML" class="d-flex flex-column gap-2">
+                <div>
+                    <label for="github-token" class="form-label small text-secondary mb-1">GitHub token</label>
+                    <input id="github-token" type="password" name="github_token" class="form-control form-control-sm bg-dark text-light border-secondary" placeholder="ghp_... or github_pat_..." autocomplete="off">
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="submit" class="btn btn-sm btn-success">Save</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger"
+                            hx-post="/settings/tokens/clear" hx-vals='{"provider":"github"}'
+                            hx-target="#github-token-status" hx-swap="innerHTML"
+                            hx-confirm="Remove the stored GitHub token?">Clear</button>
+                </div>
+            </form>
+
+            <hr class="border-secondary my-4">
+
+            <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                <h6 class="fw-semibold mb-0">Forgejo</h6>
+                <span id="forgejo-token-status" class="small text-end" aria-live="polite">{{if .HasForgejoToken}}<span class="text-success">Configured{{if .ForgejoTokenHint}} (ends in <span class="font-monospace">{{.ForgejoTokenHint}}</span>){{end}}</span>{{else}}<span class="text-secondary">Not configured</span>{{end}}</span>
+            </div>
+            <form hx-post="/settings/tokens" hx-target="#forgejo-token-status" hx-swap="innerHTML" class="d-flex flex-column gap-2">
+                <div>
+                    <label for="forgejo-token" class="form-label small text-secondary mb-1">Forgejo token</label>
+                    <input id="forgejo-token" type="password" name="forgejo_token" class="form-control form-control-sm bg-dark text-light border-secondary" autocomplete="off">
+                </div>
+                <div>
+                    <label for="forgejo-url" class="form-label small text-secondary mb-1">Forgejo URL</label>
+                    <input id="forgejo-url" type="url" name="forgejo_url" class="form-control form-control-sm bg-dark text-light border-secondary" value="{{.User.ForgejoURL}}" placeholder="https://codeberg.org" autocomplete="off">
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="submit" class="btn btn-sm btn-success">Save</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger"
+                            hx-post="/settings/tokens/clear" hx-vals='{"provider":"forgejo"}'
+                            hx-target="#forgejo-token-status" hx-swap="innerHTML"
+                            hx-confirm="Remove the stored Forgejo token and URL?">Clear</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-secondary mb-4">
+        <div class="card-body">
             <h5 class="card-title">API Tokens</h5>
             <p class="card-text text-secondary small">Personal bearer tokens for machine API access. The secret is shown once at creation — store it somewhere safe.</p>
             <form hx-post="/api/tokens" hx-target="#token-secret-result" hx-swap="innerHTML" class="d-flex align-items-center gap-2 mb-2">

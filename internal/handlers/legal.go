@@ -119,6 +119,7 @@ func (h *LegalHandler) base(c *gin.Context, title, description string) gin.H {
 		"MetaDescription": description,
 		"Legal":           h.legal(c),
 		"User":            h.currentUser(c),
+		"OIDCEnabled":     auth.LoadConfig().Valid(),
 	}
 }
 

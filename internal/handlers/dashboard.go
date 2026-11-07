@@ -19,6 +19,7 @@ import (
 	"gitlens/ent/event"
 	"gitlens/ent/repository"
 	"gitlens/ent/user"
+	"gitlens/internal/auth"
 	"gitlens/internal/github"
 	mw "gitlens/internal/middleware"
 	"gitlens/internal/provider"
@@ -629,13 +630,19 @@ func parseSortParam(sort string) (repository.OrderOption, bool) {
 func (h *DashboardHandler) Index(c *gin.Context) {
 	var u *ent.User
 
-	sessionID, err := c.Cookie("gitlens_session")
-	if err == nil {
-		userID, ok := h.store.Get(sessionID)
-		if ok {
-			u, _ = h.client.User.Get(c.Request.Context(), int(userID))
+	if uid, ok := auth.GetUserIDFromSession(c); ok {
+		u, _ = h.client.User.Get(c.Request.Context(), int(uid))
+	} else {
+		sessionID, err := c.Cookie("gitlens_session")
+		if err == nil {
+			userID, ok := h.store.Get(sessionID)
+			if ok {
+				u, _ = h.client.User.Get(c.Request.Context(), int(userID))
+			}
 		}
 	}
+
+	oidcEnabled := auth.LoadConfig().Valid()
 
 	if u != nil {
 		// Check if user needs setup (no tracked repos yet)
@@ -643,7 +650,7 @@ func (h *DashboardHandler) Index(c *gin.Context) {
 			Where(repository.HasUserWith(user.ID(u.ID))).
 			Count(c.Request.Context())
 
-		if countErr == nil && count == 0 {
+		if countErr == nil && count == 0 && u.AccessToken != "" && u.AccessToken != "oidc" {
 			ghRepos, err := h.gh.ListRepositories(u.AccessToken)
 			if err == nil {
 				available := make([]*github.Repository, len(ghRepos))
@@ -660,11 +667,12 @@ func (h *DashboardHandler) Index(c *gin.Context) {
 					}
 				}
 				c.HTML(http.StatusOK, "index.html", gin.H{
-					"User":      u,
-					"Repos":     available,
-					"Metrics":   computeMetrics(nil),
-					"ActiveTab": "repos",
-					"ShowSetup": true,
+					"User":        u,
+					"Repos":       available,
+					"Metrics":     computeMetrics(nil),
+					"ActiveTab":   "repos",
+					"ShowSetup":   true,
+					"OIDCEnabled": oidcEnabled,
 				})
 				return
 			}
@@ -672,10 +680,11 @@ func (h *DashboardHandler) Index(c *gin.Context) {
 
 		// Normal logged-in view — repos lazy-loaded via htmx on the client
 		c.HTML(http.StatusOK, "index.html", gin.H{
-			"User":      u,
-			"Repos":     []*ent.Repository{},
-			"Metrics":   computeMetrics(nil),
-			"ActiveTab": "repos",
+			"User":        u,
+			"Repos":       []*ent.Repository{},
+			"Metrics":     computeMetrics(nil),
+			"ActiveTab":   "repos",
+			"OIDCEnabled": oidcEnabled,
 		})
 		return
 	}
@@ -688,6 +697,7 @@ func (h *DashboardHandler) Index(c *gin.Context) {
 		"ForgejoDefaultURL": os.Getenv("FORGEJO_DEFAULT_URL"),
 		"DemoEnabled":       h.demoEnabled,
 		"DemoLogin":         h.demoLogin,
+		"OIDCEnabled":       oidcEnabled,
 	})
 }
 

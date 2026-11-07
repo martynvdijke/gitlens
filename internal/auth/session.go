@@ -16,7 +16,9 @@ import (
 
 const (
 	SessionCookieName = "gitlens_session_oidc"
-	sessionDuration   = 24 * time.Hour
+	// Match the legacy session lifetime so SSO users are not logged out
+	// noticeably sooner than GitHub/Forgejo OAuth users.
+	sessionDuration = 7 * 24 * time.Hour
 )
 
 func sessionSecret() string {

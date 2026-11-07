@@ -35,10 +35,13 @@
                 </button>
                 <img src="{{.User.AvatarURL}}" alt="" class="rounded-circle" width="28" height="28">
                 <span class="text-secondary small">{{.User.Login}}</span>
+                {{if .OIDCEnabled}}
+                <a href="/api/auth/oidc/logout" class="btn btn-sm btn-outline-danger">Logout</a>
+                {{else}}
                 <button class="btn btn-sm btn-outline-danger" hx-post="/auth/logout" hx-target="body">Logout</button>
+                {{end}}
             {{else}}
-                <a href="/auth/login" class="btn btn-sm btn-outline-primary">Login</a>
-                <a href="/api/auth/oidc/logout" class="btn btn-sm btn-outline-secondary">Logout</a>
+                <a href="{{if .OIDCEnabled}}/auth/login{{else}}/auth/github{{end}}" class="btn btn-sm btn-outline-primary">Login</a>
             {{end}}
             </div>
         </div>

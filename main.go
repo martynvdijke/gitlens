@@ -495,6 +495,8 @@ func main() {
 		authed.GET("/settings", middleware.HTMXOnly(), settingsHandler.Index)
 		authed.POST("/settings/interval", settingsHandler.UpdateInterval)
 		authed.POST("/settings/umami", settingsHandler.UpdateUmami)
+		authed.POST("/settings/tokens", settingsHandler.UpdateProviderTokens)
+		authed.POST("/settings/tokens/clear", settingsHandler.ClearProviderToken)
 		authed.GET("/settings/repos/available", settingsHandler.AvailableRepos)
 		authed.POST("/settings/repos/select", settingsHandler.SelectRepos)
 		authed.POST("/settings/forgejo/disconnect", settingsHandler.DisconnectForgejo)
