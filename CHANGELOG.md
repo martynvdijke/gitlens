@@ -1,3 +1,10 @@
+## [1.44.1](https://github.com/martynvdijke/gitlens/compare/v1.44.0...v1.44.1) (2026-11-07)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#85](https://github.com/martynvdijke/gitlens/issues/85)) ([c416e3b](https://github.com/martynvdijke/gitlens/commit/c416e3b8965403e8a9e0ccf18f3a4f4526a01ea0))
+
 # [1.44.0](https://github.com/martynvdijke/gitlens/compare/v1.43.0...v1.44.0) (2026-11-07)
 
 
