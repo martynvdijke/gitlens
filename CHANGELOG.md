@@ -1,3 +1,10 @@
+# [1.44.0](https://github.com/martynvdijke/gitlens/compare/v1.43.0...v1.44.0) (2026-11-07)
+
+
+### Features
+
+* add OIDC login, provider tokens, and webhook repo import ([5ab4930](https://github.com/martynvdijke/gitlens/commit/5ab493058d35447b833dd80535f28166a0f9e306))
+
 # [1.43.0](https://github.com/martynvdijke/gitlens/compare/v1.42.4...v1.43.0) (2026-11-05)
 
 
