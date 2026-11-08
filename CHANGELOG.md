@@ -1,3 +1,10 @@
+# [1.46.0](https://github.com/martynvdijke/gitlens/compare/v1.45.0...v1.46.0) (2026-11-08)
+
+
+### Features
+
+* **mobile:** add OpenTelemetry tracing with runtime endpoint from API ([926bf7c](https://github.com/martynvdijke/gitlens/commit/926bf7c6004a3fba77c847dee1f24a6d1d0ff475))
+
 # [1.45.0](https://github.com/martynvdijke/gitlens/compare/v1.44.1...v1.45.0) (2026-11-08)
 
 
