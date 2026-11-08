@@ -1,3 +1,10 @@
+# [1.45.0](https://github.com/martynvdijke/gitlens/compare/v1.44.1...v1.45.0) (2026-11-08)
+
+
+### Features
+
+* **otel:** bridge stdlib logs and support runtime provider reload ([f33774f](https://github.com/martynvdijke/gitlens/commit/f33774f449bec9582f8cc18e26743253329eeefa))
+
 ## [1.44.1](https://github.com/martynvdijke/gitlens/compare/v1.44.0...v1.44.1) (2026-11-07)
 
 
