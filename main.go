@@ -461,6 +461,10 @@ func main() {
 
 	r.GET("/badge/:owner/:repo", badgeHandler.Badge)
 	r.GET("/api/trmnl/summary", trmnlHandler.Summary)
+	// Public OTEL bootstrap for mobile clients. Contains no secrets and is
+	// deliberately outside the admin group so the app can configure tracing
+	// before the user signs in.
+	r.GET("/api/otel-settings", adminHandler.OtelSettings)
 	r.POST("/webhook/github", webhookHandler.HandlePush)
 	r.POST("/webhook/github-app", gitHubAppHandler.HandleInstallation)
 

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -547,6 +548,78 @@ func TestAdminHandler_ListSettings_Success(t *testing.T) {
 	}
 	if strings.Contains(body, "secret123") || strings.Contains(body, "gotify_token") {
 		t.Fatalf("settings API must not expose the gotify token, got: %s", body)
+	}
+}
+
+func TestAdminHandler_OtelSettings_Public(t *testing.T) {
+	h, client := newTestAdminHandler(t)
+
+	_, err := client.AdminConfig.Create().
+		SetID(1).
+		SetOtelEndpoint("collector:4318").
+		SetTracesEnabled(true).
+		SetMetricsEnabled(false).
+		SetLogsEnabled(true).
+		Save(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// No auth middleware and no session: this route must stay public.
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	engine := gin.New()
+	engine.GET("/api/otel-settings", h.OtelSettings)
+	req := httptest.NewRequest("GET", "/api/otel-settings", nil)
+	engine.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d, body: %s", w.Code, w.Body.String())
+	}
+
+	var body map[string]any
+	if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
+		t.Fatalf("invalid JSON response: %v", err)
+	}
+	for _, key := range []string{"endpoint", "enabled", "traces_enabled", "metrics_enabled", "logs_enabled"} {
+		if _, ok := body[key]; !ok {
+			t.Fatalf("expected key %q in response, got: %s", key, w.Body.String())
+		}
+	}
+	if body["endpoint"] != "collector:4318" {
+		t.Fatalf("expected endpoint in response, got: %s", w.Body.String())
+	}
+	if body["enabled"] != true || body["traces_enabled"] != true {
+		t.Fatalf("expected traces enabled, got: %s", w.Body.String())
+	}
+	if strings.Contains(w.Body.String(), "gotify") || strings.Contains(w.Body.String(), "log_severity") {
+		t.Fatalf("public settings must expose only OTEL bootstrap fields, got: %s", w.Body.String())
+	}
+}
+
+func TestAdminHandler_OtelSettings_NoConfig(t *testing.T) {
+	h, _ := newTestAdminHandler(t)
+
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	engine := gin.New()
+	engine.GET("/api/otel-settings", h.OtelSettings)
+	req := httptest.NewRequest("GET", "/api/otel-settings", nil)
+	engine.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d, body: %s", w.Code, w.Body.String())
+	}
+	for _, want := range []string{
+		`"endpoint":""`,
+		`"enabled":false`,
+		`"traces_enabled":false`,
+		`"metrics_enabled":false`,
+		`"logs_enabled":false`,
+	} {
+		if !strings.Contains(w.Body.String(), want) {
+			t.Fatalf("expected %s in body, got: %s", want, w.Body.String())
+		}
 	}
 }
 

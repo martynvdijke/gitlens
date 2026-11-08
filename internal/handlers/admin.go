@@ -271,6 +271,39 @@ func (h *AdminHandler) ListSettings(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// OtelSettings returns the public OTEL bootstrap settings for mobile clients.
+// It contains no secrets, so it is registered outside the admin-auth group and
+// is safe to serve unauthenticated. "enabled" is true only when an endpoint is
+// configured and at least one telemetry pipeline is switched on.
+func (h *AdminHandler) OtelSettings(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	cfg, err := h.client.AdminConfig.Get(ctx, 1)
+	if err != nil && !ent.IsNotFound(err) {
+		log.Printf("admin: error loading OTEL settings for API: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to load settings"})
+		return
+	}
+
+	resp := gin.H{
+		"endpoint":        "",
+		"enabled":         false,
+		"traces_enabled":  false,
+		"metrics_enabled": false,
+		"logs_enabled":    false,
+	}
+	if cfg != nil {
+		resp = gin.H{
+			"endpoint":        cfg.OtelEndpoint,
+			"enabled":         cfg.OtelEndpoint != "" && (cfg.TracesEnabled || cfg.MetricsEnabled || cfg.LogsEnabled),
+			"traces_enabled":  cfg.TracesEnabled,
+			"metrics_enabled": cfg.MetricsEnabled,
+			"logs_enabled":    cfg.LogsEnabled,
+		}
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
 // UpdateGotify saves the Gotify URL/token from the admin form, reloads the
 // runtime notifier, and re-renders the form. A blank token keeps the
 // previously saved token.
