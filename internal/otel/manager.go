@@ -13,7 +13,6 @@ import (
 
 	"gitlens/ent"
 
-	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
@@ -49,6 +48,10 @@ type Manager struct {
 	tracerProvider *sdktrace.TracerProvider
 	meterProvider  *sdkmetric.MeterProvider
 	loggerProvider *sdklog.LoggerProvider
+
+	// restoreStdLog restores the standard library logger output when the
+	// logging bridge is torn down.
+	restoreStdLog func()
 
 	res *resource.Resource
 }
@@ -176,9 +179,12 @@ func (m *Manager) reloadFromConfig(ctx context.Context, cfg Config) error {
 		log.Printf("otel: build logger provider (falling back to noop): %v", err)
 	} else if lp != nil {
 		m.loggerProvider = lp
-		// Wire the slog bridge so slog log records flow through OTel.
+		// Wire the OTel log bridge for both slog and the standard library
+		// logger, enforcing the configured minimum severity.
 		global.SetLoggerProvider(lp)
-		slog.SetDefault(otelslog.NewLogger("gitlens", otelslog.WithLoggerProvider(lp)))
+		logger := slog.New(NewHandler(lp, cfg.LogSeverity))
+		slog.SetDefault(logger)
+		m.restoreStdLog = BridgeStdLog(logger)
 	}
 
 	return nil
@@ -205,6 +211,16 @@ func (m *Manager) shutdownLocked(ctx context.Context) error {
 		}
 		m.loggerProvider = nil
 	}
+	if m.restoreStdLog != nil {
+		m.restoreStdLog()
+		m.restoreStdLog = nil
+		slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, nil)))
+	}
+
+	// Reset the globals so instrumentation falls back to noops and picks up
+	// the next provider configured from the admin panel.
+	otel.SetTracerProvider(otelTrace.NewNoopTracerProvider())
+	otel.SetMeterProvider(sdkmetric.NewMeterProvider())
 
 	return errors.Join(errs...)
 }

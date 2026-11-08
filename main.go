@@ -39,7 +39,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
-	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
 
 //go:embed views/*.html
@@ -382,10 +381,11 @@ func main() {
 
 	r := gin.New()
 	r.Use(gin.Recovery())
-	// otelgin middleware automatically creates spans for every HTTP request
-	// with method, path, and status code attributes. Placed after Recovery
-	// but before Logger so trace context is available in log records.
-	r.Use(otelgin.Middleware("gitlens"))
+	// otel.HTTPMiddleware creates spans for every HTTP request with method,
+	// path, and status code attributes, and rebinds when providers are
+	// reloaded from the admin panel. Placed after Recovery but before Logger
+	// so trace context is available in log records.
+	r.Use(otel.HTTPMiddleware("gitlens"))
 	r.Use(otel.MetricsMiddleware())
 	r.Use(gin.Logger())
 

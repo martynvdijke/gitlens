@@ -118,6 +118,9 @@ func startOTLPEndpoint(t *testing.T) string {
 	mux.HandleFunc("/v1/metrics", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
+	mux.HandleFunc("/v1/logs", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
 	srv := httptest.NewServer(mux)
 	t.Cleanup(srv.Close)
 	// Return host:port (strip scheme)

@@ -12,15 +12,25 @@ import (
 )
 
 var (
+	metricsMu         sync.Mutex
+	metricsProvider   metric.MeterProvider
 	httpRequestsTotal metric.Int64Counter
 	httpRequestDur    metric.Float64Histogram
-	metricsOnce       sync.Once
 )
 
-// initMetrics instruments creates the OTel metric instruments for HTTP
-// request count and duration, using the global meter provider.
-func initMetrics() {
-	meter := otel.Meter("gitlens")
+// instrumentsFor returns the HTTP metric instruments bound to p, rebuilding
+// them when the global meter provider changes (for example after an admin
+// reload enables metrics).
+func instrumentsFor(p metric.MeterProvider) (metric.Int64Counter, metric.Float64Histogram) {
+	metricsMu.Lock()
+	defer metricsMu.Unlock()
+
+	if p == metricsProvider && httpRequestsTotal != nil && httpRequestDur != nil {
+		return httpRequestsTotal, httpRequestDur
+	}
+	metricsProvider = p
+
+	meter := p.Meter("gitlens")
 
 	var err error
 	httpRequestsTotal, err = meter.Int64Counter(
@@ -40,16 +50,17 @@ func initMetrics() {
 	if err != nil {
 		otel.Handle(err)
 	}
+
+	return httpRequestsTotal, httpRequestDur
 }
 
 // MetricsMiddleware returns a Gin middleware that records HTTP request count
-// and duration as OTel metrics. It lazily initializes the instruments on the
-// first request.
+// and duration as OTel metrics. Instruments are resolved per request so they
+// follow the current meter provider.
 func MetricsMiddleware() gin.HandlerFunc {
-	metricsOnce.Do(initMetrics)
-
 	return func(c *gin.Context) {
-		if httpRequestsTotal == nil || httpRequestDur == nil {
+		total, dur := instrumentsFor(otel.GetMeterProvider())
+		if total == nil || dur == nil {
 			c.Next()
 			return
 		}
@@ -64,7 +75,7 @@ func MetricsMiddleware() gin.HandlerFunc {
 			attribute.String("http.status_code", strconv.Itoa(c.Writer.Status())),
 		)
 
-		httpRequestsTotal.Add(c.Request.Context(), 1, attrs)
-		httpRequestDur.Record(c.Request.Context(), elapsed, attrs)
+		total.Add(c.Request.Context(), 1, attrs)
+		dur.Record(c.Request.Context(), elapsed, attrs)
 	}
 }
