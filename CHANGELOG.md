@@ -1,3 +1,10 @@
+## [1.46.1](https://github.com/martynvdijke/gitlens/compare/v1.46.0...v1.46.1) (2026-11-10)
+
+
+### Bug Fixes
+
+* **renovate:** disable platform automerge so Renovate merges green PRs itself ([f3e6f6f](https://github.com/martynvdijke/gitlens/commit/f3e6f6ffebb8e8a69d3d2af25e9e851eab5091cd))
+
 # [1.46.0](https://github.com/martynvdijke/gitlens/compare/v1.45.0...v1.46.0) (2026-11-08)
 
 
