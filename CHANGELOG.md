@@ -1,3 +1,10 @@
+# [1.47.0](https://github.com/martynvdijke/gitlens/compare/v1.46.3...v1.47.0) (2026-11-12)
+
+
+### Features
+
+* **notifications:** add real-time web and FCM push notifications ([f08c5fa](https://github.com/martynvdijke/gitlens/commit/f08c5fa4a99e069df502341d44352241677796ca))
+
 ## [1.46.3](https://github.com/martynvdijke/gitlens/compare/v1.46.2...v1.46.3) (2026-11-12)
 
 ## [1.46.2](https://github.com/martynvdijke/gitlens/compare/v1.46.1...v1.46.2) (2026-11-10)
