@@ -53,12 +53,24 @@ func (User) Fields() []ent.Field {
 		field.String("oidc_email").Optional(),
 		// OIDC groups claim (JSON array string) for future RBAC.
 		field.String("groups").Optional(),
+
+		// Per-user notification preferences. The master switch gates every
+		// delivery channel; the per-type switches gate individual event
+		// kinds. Defaults are all on so existing users are not silently
+		// opted out.
+		field.Bool("notifications_enabled").Default(true),
+		field.Bool("notify_web").Default(true),
+		field.Bool("notify_android").Default(true),
+		field.Bool("notify_release").Default(true),
+		field.Bool("notify_pr_merge").Default(true),
+		field.Bool("notify_workflow_failure").Default(true),
 	}
 }
 
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("repositories", Repository.Type),
+		edge.To("device_tokens", DeviceToken.Type),
 	}
 }
 

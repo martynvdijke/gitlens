@@ -4,6 +4,7 @@ import { loadTrendsData } from './trends.js';
 import { loadYearOverviewData, refreshYearData } from './year-overview.js';
 import { forgejoLogin } from './forgejo.js';
 import { copyToClipboard } from './clipboard.js';
+import { connectNotifications, enableBrowserNotifications } from './notifications.js';
 
 // Expose functions globally for HTML onclick/onchange handlers
 (window as any).toggleTheme = toggleTheme;
@@ -13,10 +14,12 @@ import { copyToClipboard } from './clipboard.js';
 (window as any).loadTrendsData = loadTrendsData;
 (window as any).loadYearOverviewData = loadYearOverviewData;
 (window as any).refreshYearData = refreshYearData;
+(window as any).enableBrowserNotifications = enableBrowserNotifications;
 
 // Initialize theme and tooltips on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
+    connectNotifications();
     // Initialize Bootstrap tooltips
     const tooltipTriggerList = document.querySelectorAll<HTMLElement>('[data-bs-toggle="tooltip"]');
     if (tooltipTriggerList.length > 0 && (window as any).bootstrap?.Tooltip) {

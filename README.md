@@ -12,6 +12,7 @@ A Go-based web application for monitoring and visualizing GitHub repository acti
 - **DORA metrics** — Commit type breakdown (feat/fix/docs/chore), workflow pass rate, lead time, release frequency
 - **GitHub webhook** — Real-time updates on push events and workflow failures
 - **WebSocket live updates** — Repo cards refresh automatically when data changes
+- **Push notifications** — Real-time browser notifications and Android (FCM) pushes for new releases, merged PRs, and workflow failures, with per-user and global switches (see [docs/notifications.md](docs/notifications.md))
 - **GitHub OAuth** — Secure authentication via GitHub
 - **Forgejo support** — Connect your Forgejo/Gitea instance as an additional provider alongside GitHub
 
@@ -279,6 +280,15 @@ task test:e2e
 | `/webhook/github` | POST | GitHub webhook — push (sync), release/package (deploy), and workflow failure notifications |
 | `/api/trmnl/summary` | GET | Public TRMNL summary — latest releases + CI failures (JSON) |
 | `/ws` | GET | WebSocket endpoint |
+| `/ws/notifications` | GET | WebSocket endpoint for real-time browser notifications |
+| `/api/v1/notifications/config` | GET | Public Firebase client config for push notifications (JSON) |
+| `/api/v1/notifications/prefs` | GET | Get your notification preferences |
+| `/api/v1/notifications/prefs` | POST | Update your notification preferences |
+| `/api/v1/notifications/device` | POST | Register a device token for push notifications |
+| `/api/v1/notifications/device` | DELETE | Unregister a device token |
+| `/settings/notifications` | POST | Update notification preferences (HTMX) |
+| `/admin/notifications` | POST | Update global notification and FCM settings (admin) |
+| `/admin/notifications/test` | POST | Send a test notification (admin) |
 | `/api/tokens` | POST | Create a personal API token (secret shown once) |
 | `/api/tokens` | GET | List your API tokens (metadata only) |
 | `/api/tokens/{id}` | DELETE | Revoke an API token |

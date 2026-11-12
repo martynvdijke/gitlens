@@ -5,6 +5,7 @@ package ent
 import (
 	"gitlens/ent/adminconfig"
 	"gitlens/ent/apitoken"
+	"gitlens/ent/devicetoken"
 	"gitlens/ent/event"
 	"gitlens/ent/repository"
 	"gitlens/ent/schema"
@@ -34,8 +35,24 @@ func init() {
 	adminconfigDescLogSeverity := adminconfigFields[5].Descriptor()
 	// adminconfig.DefaultLogSeverity holds the default value on creation for the log_severity field.
 	adminconfig.DefaultLogSeverity = adminconfigDescLogSeverity.Default.(string)
+	// adminconfigDescNotificationsEnabled is the schema descriptor for notifications_enabled field.
+	adminconfigDescNotificationsEnabled := adminconfigFields[10].Descriptor()
+	// adminconfig.DefaultNotificationsEnabled holds the default value on creation for the notifications_enabled field.
+	adminconfig.DefaultNotificationsEnabled = adminconfigDescNotificationsEnabled.Default.(bool)
+	// adminconfigDescNotifyRelease is the schema descriptor for notify_release field.
+	adminconfigDescNotifyRelease := adminconfigFields[11].Descriptor()
+	// adminconfig.DefaultNotifyRelease holds the default value on creation for the notify_release field.
+	adminconfig.DefaultNotifyRelease = adminconfigDescNotifyRelease.Default.(bool)
+	// adminconfigDescNotifyPrMerge is the schema descriptor for notify_pr_merge field.
+	adminconfigDescNotifyPrMerge := adminconfigFields[12].Descriptor()
+	// adminconfig.DefaultNotifyPrMerge holds the default value on creation for the notify_pr_merge field.
+	adminconfig.DefaultNotifyPrMerge = adminconfigDescNotifyPrMerge.Default.(bool)
+	// adminconfigDescNotifyWorkflowFailure is the schema descriptor for notify_workflow_failure field.
+	adminconfigDescNotifyWorkflowFailure := adminconfigFields[13].Descriptor()
+	// adminconfig.DefaultNotifyWorkflowFailure holds the default value on creation for the notify_workflow_failure field.
+	adminconfig.DefaultNotifyWorkflowFailure = adminconfigDescNotifyWorkflowFailure.Default.(bool)
 	// adminconfigDescUpdatedAt is the schema descriptor for updated_at field.
-	adminconfigDescUpdatedAt := adminconfigFields[10].Descriptor()
+	adminconfigDescUpdatedAt := adminconfigFields[20].Descriptor()
 	// adminconfig.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	adminconfig.DefaultUpdatedAt = adminconfigDescUpdatedAt.Default.(func() time.Time)
 	// adminconfig.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -54,6 +71,16 @@ func init() {
 	apitokenDescCreatedAt := apitokenFields[3].Descriptor()
 	// apitoken.DefaultCreatedAt holds the default value on creation for the created_at field.
 	apitoken.DefaultCreatedAt = apitokenDescCreatedAt.Default.(func() time.Time)
+	devicetokenFields := schema.DeviceToken{}.Fields()
+	_ = devicetokenFields
+	// devicetokenDescCreatedAt is the schema descriptor for created_at field.
+	devicetokenDescCreatedAt := devicetokenFields[3].Descriptor()
+	// devicetoken.DefaultCreatedAt holds the default value on creation for the created_at field.
+	devicetoken.DefaultCreatedAt = devicetokenDescCreatedAt.Default.(func() time.Time)
+	// devicetokenDescLastSeenAt is the schema descriptor for last_seen_at field.
+	devicetokenDescLastSeenAt := devicetokenFields[4].Descriptor()
+	// devicetoken.DefaultLastSeenAt holds the default value on creation for the last_seen_at field.
+	devicetoken.DefaultLastSeenAt = devicetokenDescLastSeenAt.Default.(func() time.Time)
 	eventFields := schema.Event{}.Fields()
 	_ = eventFields
 	// eventDescCreatedAt is the schema descriptor for created_at field.
@@ -110,4 +137,28 @@ func init() {
 	userDescEinkMode := userFields[17].Descriptor()
 	// user.DefaultEinkMode holds the default value on creation for the eink_mode field.
 	user.DefaultEinkMode = userDescEinkMode.Default.(bool)
+	// userDescNotificationsEnabled is the schema descriptor for notifications_enabled field.
+	userDescNotificationsEnabled := userFields[22].Descriptor()
+	// user.DefaultNotificationsEnabled holds the default value on creation for the notifications_enabled field.
+	user.DefaultNotificationsEnabled = userDescNotificationsEnabled.Default.(bool)
+	// userDescNotifyWeb is the schema descriptor for notify_web field.
+	userDescNotifyWeb := userFields[23].Descriptor()
+	// user.DefaultNotifyWeb holds the default value on creation for the notify_web field.
+	user.DefaultNotifyWeb = userDescNotifyWeb.Default.(bool)
+	// userDescNotifyAndroid is the schema descriptor for notify_android field.
+	userDescNotifyAndroid := userFields[24].Descriptor()
+	// user.DefaultNotifyAndroid holds the default value on creation for the notify_android field.
+	user.DefaultNotifyAndroid = userDescNotifyAndroid.Default.(bool)
+	// userDescNotifyRelease is the schema descriptor for notify_release field.
+	userDescNotifyRelease := userFields[25].Descriptor()
+	// user.DefaultNotifyRelease holds the default value on creation for the notify_release field.
+	user.DefaultNotifyRelease = userDescNotifyRelease.Default.(bool)
+	// userDescNotifyPrMerge is the schema descriptor for notify_pr_merge field.
+	userDescNotifyPrMerge := userFields[26].Descriptor()
+	// user.DefaultNotifyPrMerge holds the default value on creation for the notify_pr_merge field.
+	user.DefaultNotifyPrMerge = userDescNotifyPrMerge.Default.(bool)
+	// userDescNotifyWorkflowFailure is the schema descriptor for notify_workflow_failure field.
+	userDescNotifyWorkflowFailure := userFields[27].Descriptor()
+	// user.DefaultNotifyWorkflowFailure holds the default value on creation for the notify_workflow_failure field.
+	user.DefaultNotifyWorkflowFailure = userDescNotifyWorkflowFailure.Default.(bool)
 }

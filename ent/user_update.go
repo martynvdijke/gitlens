@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"gitlens/ent/devicetoken"
 	"gitlens/ent/predicate"
 	"gitlens/ent/repository"
 	"gitlens/ent/user"
@@ -448,6 +449,90 @@ func (_u *UserUpdate) ClearGroups() *UserUpdate {
 	return _u
 }
 
+// SetNotificationsEnabled sets the "notifications_enabled" field.
+func (_u *UserUpdate) SetNotificationsEnabled(v bool) *UserUpdate {
+	_u.mutation.SetNotificationsEnabled(v)
+	return _u
+}
+
+// SetNillableNotificationsEnabled sets the "notifications_enabled" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableNotificationsEnabled(v *bool) *UserUpdate {
+	if v != nil {
+		_u.SetNotificationsEnabled(*v)
+	}
+	return _u
+}
+
+// SetNotifyWeb sets the "notify_web" field.
+func (_u *UserUpdate) SetNotifyWeb(v bool) *UserUpdate {
+	_u.mutation.SetNotifyWeb(v)
+	return _u
+}
+
+// SetNillableNotifyWeb sets the "notify_web" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableNotifyWeb(v *bool) *UserUpdate {
+	if v != nil {
+		_u.SetNotifyWeb(*v)
+	}
+	return _u
+}
+
+// SetNotifyAndroid sets the "notify_android" field.
+func (_u *UserUpdate) SetNotifyAndroid(v bool) *UserUpdate {
+	_u.mutation.SetNotifyAndroid(v)
+	return _u
+}
+
+// SetNillableNotifyAndroid sets the "notify_android" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableNotifyAndroid(v *bool) *UserUpdate {
+	if v != nil {
+		_u.SetNotifyAndroid(*v)
+	}
+	return _u
+}
+
+// SetNotifyRelease sets the "notify_release" field.
+func (_u *UserUpdate) SetNotifyRelease(v bool) *UserUpdate {
+	_u.mutation.SetNotifyRelease(v)
+	return _u
+}
+
+// SetNillableNotifyRelease sets the "notify_release" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableNotifyRelease(v *bool) *UserUpdate {
+	if v != nil {
+		_u.SetNotifyRelease(*v)
+	}
+	return _u
+}
+
+// SetNotifyPrMerge sets the "notify_pr_merge" field.
+func (_u *UserUpdate) SetNotifyPrMerge(v bool) *UserUpdate {
+	_u.mutation.SetNotifyPrMerge(v)
+	return _u
+}
+
+// SetNillableNotifyPrMerge sets the "notify_pr_merge" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableNotifyPrMerge(v *bool) *UserUpdate {
+	if v != nil {
+		_u.SetNotifyPrMerge(*v)
+	}
+	return _u
+}
+
+// SetNotifyWorkflowFailure sets the "notify_workflow_failure" field.
+func (_u *UserUpdate) SetNotifyWorkflowFailure(v bool) *UserUpdate {
+	_u.mutation.SetNotifyWorkflowFailure(v)
+	return _u
+}
+
+// SetNillableNotifyWorkflowFailure sets the "notify_workflow_failure" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableNotifyWorkflowFailure(v *bool) *UserUpdate {
+	if v != nil {
+		_u.SetNotifyWorkflowFailure(*v)
+	}
+	return _u
+}
+
 // AddRepositoryIDs adds the "repositories" edge to the Repository entity by IDs.
 func (_u *UserUpdate) AddRepositoryIDs(ids ...int) *UserUpdate {
 	_u.mutation.AddRepositoryIDs(ids...)
@@ -461,6 +546,21 @@ func (_u *UserUpdate) AddRepositories(v ...*Repository) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.AddRepositoryIDs(ids...)
+}
+
+// AddDeviceTokenIDs adds the "device_tokens" edge to the DeviceToken entity by IDs.
+func (_u *UserUpdate) AddDeviceTokenIDs(ids ...int) *UserUpdate {
+	_u.mutation.AddDeviceTokenIDs(ids...)
+	return _u
+}
+
+// AddDeviceTokens adds the "device_tokens" edges to the DeviceToken entity.
+func (_u *UserUpdate) AddDeviceTokens(v ...*DeviceToken) *UserUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddDeviceTokenIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -487,6 +587,27 @@ func (_u *UserUpdate) RemoveRepositories(v ...*Repository) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveRepositoryIDs(ids...)
+}
+
+// ClearDeviceTokens clears all "device_tokens" edges to the DeviceToken entity.
+func (_u *UserUpdate) ClearDeviceTokens() *UserUpdate {
+	_u.mutation.ClearDeviceTokens()
+	return _u
+}
+
+// RemoveDeviceTokenIDs removes the "device_tokens" edge to DeviceToken entities by IDs.
+func (_u *UserUpdate) RemoveDeviceTokenIDs(ids ...int) *UserUpdate {
+	_u.mutation.RemoveDeviceTokenIDs(ids...)
+	return _u
+}
+
+// RemoveDeviceTokens removes "device_tokens" edges to DeviceToken entities.
+func (_u *UserUpdate) RemoveDeviceTokens(v ...*DeviceToken) *UserUpdate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveDeviceTokenIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -645,6 +766,24 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.GroupsCleared() {
 		_spec.ClearField(user.FieldGroups, field.TypeString)
 	}
+	if value, ok := _u.mutation.NotificationsEnabled(); ok {
+		_spec.SetField(user.FieldNotificationsEnabled, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.NotifyWeb(); ok {
+		_spec.SetField(user.FieldNotifyWeb, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.NotifyAndroid(); ok {
+		_spec.SetField(user.FieldNotifyAndroid, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.NotifyRelease(); ok {
+		_spec.SetField(user.FieldNotifyRelease, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.NotifyPrMerge(); ok {
+		_spec.SetField(user.FieldNotifyPrMerge, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.NotifyWorkflowFailure(); ok {
+		_spec.SetField(user.FieldNotifyWorkflowFailure, field.TypeBool, value)
+	}
 	if _u.mutation.RepositoriesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -683,6 +822,51 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(repository.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.DeviceTokensCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.DeviceTokensTable,
+			Columns: []string{user.DeviceTokensColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(devicetoken.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedDeviceTokensIDs(); len(nodes) > 0 && !_u.mutation.DeviceTokensCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.DeviceTokensTable,
+			Columns: []string{user.DeviceTokensColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(devicetoken.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DeviceTokensIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.DeviceTokensTable,
+			Columns: []string{user.DeviceTokensColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(devicetoken.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -1129,6 +1313,90 @@ func (_u *UserUpdateOne) ClearGroups() *UserUpdateOne {
 	return _u
 }
 
+// SetNotificationsEnabled sets the "notifications_enabled" field.
+func (_u *UserUpdateOne) SetNotificationsEnabled(v bool) *UserUpdateOne {
+	_u.mutation.SetNotificationsEnabled(v)
+	return _u
+}
+
+// SetNillableNotificationsEnabled sets the "notifications_enabled" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableNotificationsEnabled(v *bool) *UserUpdateOne {
+	if v != nil {
+		_u.SetNotificationsEnabled(*v)
+	}
+	return _u
+}
+
+// SetNotifyWeb sets the "notify_web" field.
+func (_u *UserUpdateOne) SetNotifyWeb(v bool) *UserUpdateOne {
+	_u.mutation.SetNotifyWeb(v)
+	return _u
+}
+
+// SetNillableNotifyWeb sets the "notify_web" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableNotifyWeb(v *bool) *UserUpdateOne {
+	if v != nil {
+		_u.SetNotifyWeb(*v)
+	}
+	return _u
+}
+
+// SetNotifyAndroid sets the "notify_android" field.
+func (_u *UserUpdateOne) SetNotifyAndroid(v bool) *UserUpdateOne {
+	_u.mutation.SetNotifyAndroid(v)
+	return _u
+}
+
+// SetNillableNotifyAndroid sets the "notify_android" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableNotifyAndroid(v *bool) *UserUpdateOne {
+	if v != nil {
+		_u.SetNotifyAndroid(*v)
+	}
+	return _u
+}
+
+// SetNotifyRelease sets the "notify_release" field.
+func (_u *UserUpdateOne) SetNotifyRelease(v bool) *UserUpdateOne {
+	_u.mutation.SetNotifyRelease(v)
+	return _u
+}
+
+// SetNillableNotifyRelease sets the "notify_release" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableNotifyRelease(v *bool) *UserUpdateOne {
+	if v != nil {
+		_u.SetNotifyRelease(*v)
+	}
+	return _u
+}
+
+// SetNotifyPrMerge sets the "notify_pr_merge" field.
+func (_u *UserUpdateOne) SetNotifyPrMerge(v bool) *UserUpdateOne {
+	_u.mutation.SetNotifyPrMerge(v)
+	return _u
+}
+
+// SetNillableNotifyPrMerge sets the "notify_pr_merge" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableNotifyPrMerge(v *bool) *UserUpdateOne {
+	if v != nil {
+		_u.SetNotifyPrMerge(*v)
+	}
+	return _u
+}
+
+// SetNotifyWorkflowFailure sets the "notify_workflow_failure" field.
+func (_u *UserUpdateOne) SetNotifyWorkflowFailure(v bool) *UserUpdateOne {
+	_u.mutation.SetNotifyWorkflowFailure(v)
+	return _u
+}
+
+// SetNillableNotifyWorkflowFailure sets the "notify_workflow_failure" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableNotifyWorkflowFailure(v *bool) *UserUpdateOne {
+	if v != nil {
+		_u.SetNotifyWorkflowFailure(*v)
+	}
+	return _u
+}
+
 // AddRepositoryIDs adds the "repositories" edge to the Repository entity by IDs.
 func (_u *UserUpdateOne) AddRepositoryIDs(ids ...int) *UserUpdateOne {
 	_u.mutation.AddRepositoryIDs(ids...)
@@ -1142,6 +1410,21 @@ func (_u *UserUpdateOne) AddRepositories(v ...*Repository) *UserUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.AddRepositoryIDs(ids...)
+}
+
+// AddDeviceTokenIDs adds the "device_tokens" edge to the DeviceToken entity by IDs.
+func (_u *UserUpdateOne) AddDeviceTokenIDs(ids ...int) *UserUpdateOne {
+	_u.mutation.AddDeviceTokenIDs(ids...)
+	return _u
+}
+
+// AddDeviceTokens adds the "device_tokens" edges to the DeviceToken entity.
+func (_u *UserUpdateOne) AddDeviceTokens(v ...*DeviceToken) *UserUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddDeviceTokenIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -1168,6 +1451,27 @@ func (_u *UserUpdateOne) RemoveRepositories(v ...*Repository) *UserUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveRepositoryIDs(ids...)
+}
+
+// ClearDeviceTokens clears all "device_tokens" edges to the DeviceToken entity.
+func (_u *UserUpdateOne) ClearDeviceTokens() *UserUpdateOne {
+	_u.mutation.ClearDeviceTokens()
+	return _u
+}
+
+// RemoveDeviceTokenIDs removes the "device_tokens" edge to DeviceToken entities by IDs.
+func (_u *UserUpdateOne) RemoveDeviceTokenIDs(ids ...int) *UserUpdateOne {
+	_u.mutation.RemoveDeviceTokenIDs(ids...)
+	return _u
+}
+
+// RemoveDeviceTokens removes "device_tokens" edges to DeviceToken entities.
+func (_u *UserUpdateOne) RemoveDeviceTokens(v ...*DeviceToken) *UserUpdateOne {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveDeviceTokenIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -1356,6 +1660,24 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	if _u.mutation.GroupsCleared() {
 		_spec.ClearField(user.FieldGroups, field.TypeString)
 	}
+	if value, ok := _u.mutation.NotificationsEnabled(); ok {
+		_spec.SetField(user.FieldNotificationsEnabled, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.NotifyWeb(); ok {
+		_spec.SetField(user.FieldNotifyWeb, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.NotifyAndroid(); ok {
+		_spec.SetField(user.FieldNotifyAndroid, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.NotifyRelease(); ok {
+		_spec.SetField(user.FieldNotifyRelease, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.NotifyPrMerge(); ok {
+		_spec.SetField(user.FieldNotifyPrMerge, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.NotifyWorkflowFailure(); ok {
+		_spec.SetField(user.FieldNotifyWorkflowFailure, field.TypeBool, value)
+	}
 	if _u.mutation.RepositoriesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -1394,6 +1716,51 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(repository.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.DeviceTokensCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.DeviceTokensTable,
+			Columns: []string{user.DeviceTokensColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(devicetoken.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedDeviceTokensIDs(); len(nodes) > 0 && !_u.mutation.DeviceTokensCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.DeviceTokensTable,
+			Columns: []string{user.DeviceTokensColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(devicetoken.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DeviceTokensIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.DeviceTokensTable,
+			Columns: []string{user.DeviceTokensColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(devicetoken.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

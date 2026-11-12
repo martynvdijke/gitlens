@@ -100,6 +100,45 @@
 
     <div class="card border-secondary mb-4">
         <div class="card-body">
+            <h5 class="card-title">Notifications</h5>
+            <p class="card-text text-secondary small">Get notified when a tracked repo publishes a release, merges a pull request, or a workflow fails.</p>
+            <form hx-post="/settings/notifications" hx-target="#notification-settings-status" hx-swap="innerHTML">
+                <div class="form-check form-switch mb-2">
+                    <input type="checkbox" name="notifications_enabled" class="form-check-input" id="notifications-enabled" role="switch" {{if .User.NotificationsEnabled}}checked{{end}} onchange="this.form.requestSubmit()">
+                    <label class="form-check-label small fw-semibold" for="notifications-enabled">Enable notifications</label>
+                </div>
+                <div class="row row-cols-1 row-cols-sm-2 g-2 ms-1 mb-2">
+                    <div class="form-check form-switch">
+                        <input type="checkbox" name="notify_web" class="form-check-input" id="notify-web" role="switch" {{if .User.NotifyWeb}}checked{{end}} onchange="this.form.requestSubmit()">
+                        <label class="form-check-label small" for="notify-web">Browser notifications</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input type="checkbox" name="notify_android" class="form-check-input" id="notify-android" role="switch" {{if .User.NotifyAndroid}}checked{{end}} onchange="this.form.requestSubmit()">
+                        <label class="form-check-label small" for="notify-android">Android push</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input type="checkbox" name="notify_release" class="form-check-input" id="notify-release" role="switch" {{if .User.NotifyRelease}}checked{{end}} onchange="this.form.requestSubmit()">
+                        <label class="form-check-label small" for="notify-release">Releases</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input type="checkbox" name="notify_pr_merge" class="form-check-input" id="notify-pr-merge" role="switch" {{if .User.NotifyPrMerge}}checked{{end}} onchange="this.form.requestSubmit()">
+                        <label class="form-check-label small" for="notify-pr-merge">PR merges</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input type="checkbox" name="notify_workflow_failure" class="form-check-input" id="notify-workflow-failure" role="switch" {{if .User.NotifyWorkflowFailure}}checked{{end}} onchange="this.form.requestSubmit()">
+                        <label class="form-check-label small" for="notify-workflow-failure">Workflow failures</label>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-info" onclick="window.enableBrowserNotifications && window.enableBrowserNotifications()">Enable browser notifications</button>
+                    <span id="notification-settings-status" class="small" role="status"></span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-secondary mb-4">
+        <div class="card-body">
             <h5 class="card-title">GitHub Webhook</h5>
             <p class="card-text text-secondary small">Set up this URL as a GitHub webhook to automatically sync on every push.</p>
             <div class="d-flex align-items-center gap-2 mb-2">
@@ -231,6 +270,7 @@
     <div id="otel-panel">{{template "admin_otel_form" .}}</div>
     <div id="gotify-panel">{{template "admin_gotify_form" .}}</div>
     <div id="telegram-panel">{{template "admin_telegram_form" .}}</div>
+    <div id="fcm-panel">{{template "admin_notifications_form" .}}</div>
     <div id="admin-repos-panel">{{template "admin_repos_tab" .}}</div>
     <div id="users-panel">{{template "admin_users_tab" .}}</div>
     {{end}}
@@ -264,4 +304,8 @@
     <strong>{{.Name}}</strong> created. Copy your token now — it will not be shown again:<br>
     <code class="user-select-all">{{.Secret}}</code>
 </div>
+{{end}}
+
+{{define "notification_settings_status"}}
+{{if .Saved}}<span class="text-success">Notification settings saved.</span>{{else}}<span class="text-secondary">No changes saved.</span>{{end}}
 {{end}}

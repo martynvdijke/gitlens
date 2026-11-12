@@ -146,6 +146,146 @@ func (_c *AdminConfigCreate) SetNillableTelegramChatID(v *string) *AdminConfigCr
 	return _c
 }
 
+// SetNotificationsEnabled sets the "notifications_enabled" field.
+func (_c *AdminConfigCreate) SetNotificationsEnabled(v bool) *AdminConfigCreate {
+	_c.mutation.SetNotificationsEnabled(v)
+	return _c
+}
+
+// SetNillableNotificationsEnabled sets the "notifications_enabled" field if the given value is not nil.
+func (_c *AdminConfigCreate) SetNillableNotificationsEnabled(v *bool) *AdminConfigCreate {
+	if v != nil {
+		_c.SetNotificationsEnabled(*v)
+	}
+	return _c
+}
+
+// SetNotifyRelease sets the "notify_release" field.
+func (_c *AdminConfigCreate) SetNotifyRelease(v bool) *AdminConfigCreate {
+	_c.mutation.SetNotifyRelease(v)
+	return _c
+}
+
+// SetNillableNotifyRelease sets the "notify_release" field if the given value is not nil.
+func (_c *AdminConfigCreate) SetNillableNotifyRelease(v *bool) *AdminConfigCreate {
+	if v != nil {
+		_c.SetNotifyRelease(*v)
+	}
+	return _c
+}
+
+// SetNotifyPrMerge sets the "notify_pr_merge" field.
+func (_c *AdminConfigCreate) SetNotifyPrMerge(v bool) *AdminConfigCreate {
+	_c.mutation.SetNotifyPrMerge(v)
+	return _c
+}
+
+// SetNillableNotifyPrMerge sets the "notify_pr_merge" field if the given value is not nil.
+func (_c *AdminConfigCreate) SetNillableNotifyPrMerge(v *bool) *AdminConfigCreate {
+	if v != nil {
+		_c.SetNotifyPrMerge(*v)
+	}
+	return _c
+}
+
+// SetNotifyWorkflowFailure sets the "notify_workflow_failure" field.
+func (_c *AdminConfigCreate) SetNotifyWorkflowFailure(v bool) *AdminConfigCreate {
+	_c.mutation.SetNotifyWorkflowFailure(v)
+	return _c
+}
+
+// SetNillableNotifyWorkflowFailure sets the "notify_workflow_failure" field if the given value is not nil.
+func (_c *AdminConfigCreate) SetNillableNotifyWorkflowFailure(v *bool) *AdminConfigCreate {
+	if v != nil {
+		_c.SetNotifyWorkflowFailure(*v)
+	}
+	return _c
+}
+
+// SetFcmProjectID sets the "fcm_project_id" field.
+func (_c *AdminConfigCreate) SetFcmProjectID(v string) *AdminConfigCreate {
+	_c.mutation.SetFcmProjectID(v)
+	return _c
+}
+
+// SetNillableFcmProjectID sets the "fcm_project_id" field if the given value is not nil.
+func (_c *AdminConfigCreate) SetNillableFcmProjectID(v *string) *AdminConfigCreate {
+	if v != nil {
+		_c.SetFcmProjectID(*v)
+	}
+	return _c
+}
+
+// SetFcmServiceAccountJSON sets the "fcm_service_account_json" field.
+func (_c *AdminConfigCreate) SetFcmServiceAccountJSON(v string) *AdminConfigCreate {
+	_c.mutation.SetFcmServiceAccountJSON(v)
+	return _c
+}
+
+// SetNillableFcmServiceAccountJSON sets the "fcm_service_account_json" field if the given value is not nil.
+func (_c *AdminConfigCreate) SetNillableFcmServiceAccountJSON(v *string) *AdminConfigCreate {
+	if v != nil {
+		_c.SetFcmServiceAccountJSON(*v)
+	}
+	return _c
+}
+
+// SetFcmAPIKey sets the "fcm_api_key" field.
+func (_c *AdminConfigCreate) SetFcmAPIKey(v string) *AdminConfigCreate {
+	_c.mutation.SetFcmAPIKey(v)
+	return _c
+}
+
+// SetNillableFcmAPIKey sets the "fcm_api_key" field if the given value is not nil.
+func (_c *AdminConfigCreate) SetNillableFcmAPIKey(v *string) *AdminConfigCreate {
+	if v != nil {
+		_c.SetFcmAPIKey(*v)
+	}
+	return _c
+}
+
+// SetFcmAppID sets the "fcm_app_id" field.
+func (_c *AdminConfigCreate) SetFcmAppID(v string) *AdminConfigCreate {
+	_c.mutation.SetFcmAppID(v)
+	return _c
+}
+
+// SetNillableFcmAppID sets the "fcm_app_id" field if the given value is not nil.
+func (_c *AdminConfigCreate) SetNillableFcmAppID(v *string) *AdminConfigCreate {
+	if v != nil {
+		_c.SetFcmAppID(*v)
+	}
+	return _c
+}
+
+// SetFcmSenderID sets the "fcm_sender_id" field.
+func (_c *AdminConfigCreate) SetFcmSenderID(v string) *AdminConfigCreate {
+	_c.mutation.SetFcmSenderID(v)
+	return _c
+}
+
+// SetNillableFcmSenderID sets the "fcm_sender_id" field if the given value is not nil.
+func (_c *AdminConfigCreate) SetNillableFcmSenderID(v *string) *AdminConfigCreate {
+	if v != nil {
+		_c.SetFcmSenderID(*v)
+	}
+	return _c
+}
+
+// SetFcmStorageBucket sets the "fcm_storage_bucket" field.
+func (_c *AdminConfigCreate) SetFcmStorageBucket(v string) *AdminConfigCreate {
+	_c.mutation.SetFcmStorageBucket(v)
+	return _c
+}
+
+// SetNillableFcmStorageBucket sets the "fcm_storage_bucket" field if the given value is not nil.
+func (_c *AdminConfigCreate) SetNillableFcmStorageBucket(v *string) *AdminConfigCreate {
+	if v != nil {
+		_c.SetFcmStorageBucket(*v)
+	}
+	return _c
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_c *AdminConfigCreate) SetUpdatedAt(v time.Time) *AdminConfigCreate {
 	_c.mutation.SetUpdatedAt(v)
@@ -225,6 +365,22 @@ func (_c *AdminConfigCreate) defaults() {
 		v := adminconfig.DefaultLogSeverity
 		_c.mutation.SetLogSeverity(v)
 	}
+	if _, ok := _c.mutation.NotificationsEnabled(); !ok {
+		v := adminconfig.DefaultNotificationsEnabled
+		_c.mutation.SetNotificationsEnabled(v)
+	}
+	if _, ok := _c.mutation.NotifyRelease(); !ok {
+		v := adminconfig.DefaultNotifyRelease
+		_c.mutation.SetNotifyRelease(v)
+	}
+	if _, ok := _c.mutation.NotifyPrMerge(); !ok {
+		v := adminconfig.DefaultNotifyPrMerge
+		_c.mutation.SetNotifyPrMerge(v)
+	}
+	if _, ok := _c.mutation.NotifyWorkflowFailure(); !ok {
+		v := adminconfig.DefaultNotifyWorkflowFailure
+		_c.mutation.SetNotifyWorkflowFailure(v)
+	}
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		v := adminconfig.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
@@ -248,6 +404,18 @@ func (_c *AdminConfigCreate) check() error {
 	}
 	if _, ok := _c.mutation.LogSeverity(); !ok {
 		return &ValidationError{Name: "log_severity", err: errors.New(`ent: missing required field "AdminConfig.log_severity"`)}
+	}
+	if _, ok := _c.mutation.NotificationsEnabled(); !ok {
+		return &ValidationError{Name: "notifications_enabled", err: errors.New(`ent: missing required field "AdminConfig.notifications_enabled"`)}
+	}
+	if _, ok := _c.mutation.NotifyRelease(); !ok {
+		return &ValidationError{Name: "notify_release", err: errors.New(`ent: missing required field "AdminConfig.notify_release"`)}
+	}
+	if _, ok := _c.mutation.NotifyPrMerge(); !ok {
+		return &ValidationError{Name: "notify_pr_merge", err: errors.New(`ent: missing required field "AdminConfig.notify_pr_merge"`)}
+	}
+	if _, ok := _c.mutation.NotifyWorkflowFailure(); !ok {
+		return &ValidationError{Name: "notify_workflow_failure", err: errors.New(`ent: missing required field "AdminConfig.notify_workflow_failure"`)}
 	}
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "AdminConfig.updated_at"`)}
@@ -319,6 +487,46 @@ func (_c *AdminConfigCreate) createSpec() (*AdminConfig, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.TelegramChatID(); ok {
 		_spec.SetField(adminconfig.FieldTelegramChatID, field.TypeString, value)
 		_node.TelegramChatID = value
+	}
+	if value, ok := _c.mutation.NotificationsEnabled(); ok {
+		_spec.SetField(adminconfig.FieldNotificationsEnabled, field.TypeBool, value)
+		_node.NotificationsEnabled = value
+	}
+	if value, ok := _c.mutation.NotifyRelease(); ok {
+		_spec.SetField(adminconfig.FieldNotifyRelease, field.TypeBool, value)
+		_node.NotifyRelease = value
+	}
+	if value, ok := _c.mutation.NotifyPrMerge(); ok {
+		_spec.SetField(adminconfig.FieldNotifyPrMerge, field.TypeBool, value)
+		_node.NotifyPrMerge = value
+	}
+	if value, ok := _c.mutation.NotifyWorkflowFailure(); ok {
+		_spec.SetField(adminconfig.FieldNotifyWorkflowFailure, field.TypeBool, value)
+		_node.NotifyWorkflowFailure = value
+	}
+	if value, ok := _c.mutation.FcmProjectID(); ok {
+		_spec.SetField(adminconfig.FieldFcmProjectID, field.TypeString, value)
+		_node.FcmProjectID = value
+	}
+	if value, ok := _c.mutation.FcmServiceAccountJSON(); ok {
+		_spec.SetField(adminconfig.FieldFcmServiceAccountJSON, field.TypeString, value)
+		_node.FcmServiceAccountJSON = value
+	}
+	if value, ok := _c.mutation.FcmAPIKey(); ok {
+		_spec.SetField(adminconfig.FieldFcmAPIKey, field.TypeString, value)
+		_node.FcmAPIKey = value
+	}
+	if value, ok := _c.mutation.FcmAppID(); ok {
+		_spec.SetField(adminconfig.FieldFcmAppID, field.TypeString, value)
+		_node.FcmAppID = value
+	}
+	if value, ok := _c.mutation.FcmSenderID(); ok {
+		_spec.SetField(adminconfig.FieldFcmSenderID, field.TypeString, value)
+		_node.FcmSenderID = value
+	}
+	if value, ok := _c.mutation.FcmStorageBucket(); ok {
+		_spec.SetField(adminconfig.FieldFcmStorageBucket, field.TypeString, value)
+		_node.FcmStorageBucket = value
 	}
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(adminconfig.FieldUpdatedAt, field.TypeTime, value)

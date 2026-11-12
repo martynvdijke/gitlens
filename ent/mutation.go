@@ -9,6 +9,7 @@ import (
 	"gitlens/ent/adminconfig"
 	"gitlens/ent/apitoken"
 	"gitlens/ent/commitactivity"
+	"gitlens/ent/devicetoken"
 	"gitlens/ent/event"
 	"gitlens/ent/metricsnapshot"
 	"gitlens/ent/predicate"
@@ -33,6 +34,7 @@ const (
 	TypeAdminConfig    = "AdminConfig"
 	TypeApiToken       = "ApiToken"
 	TypeCommitActivity = "CommitActivity"
+	TypeDeviceToken    = "DeviceToken"
 	TypeEvent          = "Event"
 	TypeMetricSnapshot = "MetricSnapshot"
 	TypeRepository     = "Repository"
@@ -42,23 +44,33 @@ const (
 // AdminConfigMutation represents an operation that mutates the AdminConfig nodes in the graph.
 type AdminConfigMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *int
-	otel_endpoint      *string
-	traces_enabled     *bool
-	metrics_enabled    *bool
-	logs_enabled       *bool
-	log_severity       *string
-	gotify_url         *string
-	gotify_token       *string
-	telegram_bot_token *string
-	telegram_chat_id   *string
-	updated_at         *time.Time
-	clearedFields      map[string]struct{}
-	done               bool
-	oldValue           func(context.Context) (*AdminConfig, error)
-	predicates         []predicate.AdminConfig
+	op                       Op
+	typ                      string
+	id                       *int
+	otel_endpoint            *string
+	traces_enabled           *bool
+	metrics_enabled          *bool
+	logs_enabled             *bool
+	log_severity             *string
+	gotify_url               *string
+	gotify_token             *string
+	telegram_bot_token       *string
+	telegram_chat_id         *string
+	notifications_enabled    *bool
+	notify_release           *bool
+	notify_pr_merge          *bool
+	notify_workflow_failure  *bool
+	fcm_project_id           *string
+	fcm_service_account_json *string
+	fcm_api_key              *string
+	fcm_app_id               *string
+	fcm_sender_id            *string
+	fcm_storage_bucket       *string
+	updated_at               *time.Time
+	clearedFields            map[string]struct{}
+	done                     bool
+	oldValue                 func(context.Context) (*AdminConfig, error)
+	predicates               []predicate.AdminConfig
 }
 
 var _ ent.Mutation = (*AdminConfigMutation)(nil)
@@ -554,6 +566,444 @@ func (m *AdminConfigMutation) ResetTelegramChatID() {
 	delete(m.clearedFields, adminconfig.FieldTelegramChatID)
 }
 
+// SetNotificationsEnabled sets the "notifications_enabled" field.
+func (m *AdminConfigMutation) SetNotificationsEnabled(b bool) {
+	m.notifications_enabled = &b
+}
+
+// NotificationsEnabled returns the value of the "notifications_enabled" field in the mutation.
+func (m *AdminConfigMutation) NotificationsEnabled() (r bool, exists bool) {
+	v := m.notifications_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotificationsEnabled returns the old "notifications_enabled" field's value of the AdminConfig entity.
+// If the AdminConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AdminConfigMutation) OldNotificationsEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotificationsEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotificationsEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotificationsEnabled: %w", err)
+	}
+	return oldValue.NotificationsEnabled, nil
+}
+
+// ResetNotificationsEnabled resets all changes to the "notifications_enabled" field.
+func (m *AdminConfigMutation) ResetNotificationsEnabled() {
+	m.notifications_enabled = nil
+}
+
+// SetNotifyRelease sets the "notify_release" field.
+func (m *AdminConfigMutation) SetNotifyRelease(b bool) {
+	m.notify_release = &b
+}
+
+// NotifyRelease returns the value of the "notify_release" field in the mutation.
+func (m *AdminConfigMutation) NotifyRelease() (r bool, exists bool) {
+	v := m.notify_release
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotifyRelease returns the old "notify_release" field's value of the AdminConfig entity.
+// If the AdminConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AdminConfigMutation) OldNotifyRelease(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotifyRelease is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotifyRelease requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotifyRelease: %w", err)
+	}
+	return oldValue.NotifyRelease, nil
+}
+
+// ResetNotifyRelease resets all changes to the "notify_release" field.
+func (m *AdminConfigMutation) ResetNotifyRelease() {
+	m.notify_release = nil
+}
+
+// SetNotifyPrMerge sets the "notify_pr_merge" field.
+func (m *AdminConfigMutation) SetNotifyPrMerge(b bool) {
+	m.notify_pr_merge = &b
+}
+
+// NotifyPrMerge returns the value of the "notify_pr_merge" field in the mutation.
+func (m *AdminConfigMutation) NotifyPrMerge() (r bool, exists bool) {
+	v := m.notify_pr_merge
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotifyPrMerge returns the old "notify_pr_merge" field's value of the AdminConfig entity.
+// If the AdminConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AdminConfigMutation) OldNotifyPrMerge(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotifyPrMerge is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotifyPrMerge requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotifyPrMerge: %w", err)
+	}
+	return oldValue.NotifyPrMerge, nil
+}
+
+// ResetNotifyPrMerge resets all changes to the "notify_pr_merge" field.
+func (m *AdminConfigMutation) ResetNotifyPrMerge() {
+	m.notify_pr_merge = nil
+}
+
+// SetNotifyWorkflowFailure sets the "notify_workflow_failure" field.
+func (m *AdminConfigMutation) SetNotifyWorkflowFailure(b bool) {
+	m.notify_workflow_failure = &b
+}
+
+// NotifyWorkflowFailure returns the value of the "notify_workflow_failure" field in the mutation.
+func (m *AdminConfigMutation) NotifyWorkflowFailure() (r bool, exists bool) {
+	v := m.notify_workflow_failure
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotifyWorkflowFailure returns the old "notify_workflow_failure" field's value of the AdminConfig entity.
+// If the AdminConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AdminConfigMutation) OldNotifyWorkflowFailure(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotifyWorkflowFailure is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotifyWorkflowFailure requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotifyWorkflowFailure: %w", err)
+	}
+	return oldValue.NotifyWorkflowFailure, nil
+}
+
+// ResetNotifyWorkflowFailure resets all changes to the "notify_workflow_failure" field.
+func (m *AdminConfigMutation) ResetNotifyWorkflowFailure() {
+	m.notify_workflow_failure = nil
+}
+
+// SetFcmProjectID sets the "fcm_project_id" field.
+func (m *AdminConfigMutation) SetFcmProjectID(s string) {
+	m.fcm_project_id = &s
+}
+
+// FcmProjectID returns the value of the "fcm_project_id" field in the mutation.
+func (m *AdminConfigMutation) FcmProjectID() (r string, exists bool) {
+	v := m.fcm_project_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFcmProjectID returns the old "fcm_project_id" field's value of the AdminConfig entity.
+// If the AdminConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AdminConfigMutation) OldFcmProjectID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFcmProjectID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFcmProjectID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFcmProjectID: %w", err)
+	}
+	return oldValue.FcmProjectID, nil
+}
+
+// ClearFcmProjectID clears the value of the "fcm_project_id" field.
+func (m *AdminConfigMutation) ClearFcmProjectID() {
+	m.fcm_project_id = nil
+	m.clearedFields[adminconfig.FieldFcmProjectID] = struct{}{}
+}
+
+// FcmProjectIDCleared returns if the "fcm_project_id" field was cleared in this mutation.
+func (m *AdminConfigMutation) FcmProjectIDCleared() bool {
+	_, ok := m.clearedFields[adminconfig.FieldFcmProjectID]
+	return ok
+}
+
+// ResetFcmProjectID resets all changes to the "fcm_project_id" field.
+func (m *AdminConfigMutation) ResetFcmProjectID() {
+	m.fcm_project_id = nil
+	delete(m.clearedFields, adminconfig.FieldFcmProjectID)
+}
+
+// SetFcmServiceAccountJSON sets the "fcm_service_account_json" field.
+func (m *AdminConfigMutation) SetFcmServiceAccountJSON(s string) {
+	m.fcm_service_account_json = &s
+}
+
+// FcmServiceAccountJSON returns the value of the "fcm_service_account_json" field in the mutation.
+func (m *AdminConfigMutation) FcmServiceAccountJSON() (r string, exists bool) {
+	v := m.fcm_service_account_json
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFcmServiceAccountJSON returns the old "fcm_service_account_json" field's value of the AdminConfig entity.
+// If the AdminConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AdminConfigMutation) OldFcmServiceAccountJSON(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFcmServiceAccountJSON is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFcmServiceAccountJSON requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFcmServiceAccountJSON: %w", err)
+	}
+	return oldValue.FcmServiceAccountJSON, nil
+}
+
+// ClearFcmServiceAccountJSON clears the value of the "fcm_service_account_json" field.
+func (m *AdminConfigMutation) ClearFcmServiceAccountJSON() {
+	m.fcm_service_account_json = nil
+	m.clearedFields[adminconfig.FieldFcmServiceAccountJSON] = struct{}{}
+}
+
+// FcmServiceAccountJSONCleared returns if the "fcm_service_account_json" field was cleared in this mutation.
+func (m *AdminConfigMutation) FcmServiceAccountJSONCleared() bool {
+	_, ok := m.clearedFields[adminconfig.FieldFcmServiceAccountJSON]
+	return ok
+}
+
+// ResetFcmServiceAccountJSON resets all changes to the "fcm_service_account_json" field.
+func (m *AdminConfigMutation) ResetFcmServiceAccountJSON() {
+	m.fcm_service_account_json = nil
+	delete(m.clearedFields, adminconfig.FieldFcmServiceAccountJSON)
+}
+
+// SetFcmAPIKey sets the "fcm_api_key" field.
+func (m *AdminConfigMutation) SetFcmAPIKey(s string) {
+	m.fcm_api_key = &s
+}
+
+// FcmAPIKey returns the value of the "fcm_api_key" field in the mutation.
+func (m *AdminConfigMutation) FcmAPIKey() (r string, exists bool) {
+	v := m.fcm_api_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFcmAPIKey returns the old "fcm_api_key" field's value of the AdminConfig entity.
+// If the AdminConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AdminConfigMutation) OldFcmAPIKey(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFcmAPIKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFcmAPIKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFcmAPIKey: %w", err)
+	}
+	return oldValue.FcmAPIKey, nil
+}
+
+// ClearFcmAPIKey clears the value of the "fcm_api_key" field.
+func (m *AdminConfigMutation) ClearFcmAPIKey() {
+	m.fcm_api_key = nil
+	m.clearedFields[adminconfig.FieldFcmAPIKey] = struct{}{}
+}
+
+// FcmAPIKeyCleared returns if the "fcm_api_key" field was cleared in this mutation.
+func (m *AdminConfigMutation) FcmAPIKeyCleared() bool {
+	_, ok := m.clearedFields[adminconfig.FieldFcmAPIKey]
+	return ok
+}
+
+// ResetFcmAPIKey resets all changes to the "fcm_api_key" field.
+func (m *AdminConfigMutation) ResetFcmAPIKey() {
+	m.fcm_api_key = nil
+	delete(m.clearedFields, adminconfig.FieldFcmAPIKey)
+}
+
+// SetFcmAppID sets the "fcm_app_id" field.
+func (m *AdminConfigMutation) SetFcmAppID(s string) {
+	m.fcm_app_id = &s
+}
+
+// FcmAppID returns the value of the "fcm_app_id" field in the mutation.
+func (m *AdminConfigMutation) FcmAppID() (r string, exists bool) {
+	v := m.fcm_app_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFcmAppID returns the old "fcm_app_id" field's value of the AdminConfig entity.
+// If the AdminConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AdminConfigMutation) OldFcmAppID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFcmAppID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFcmAppID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFcmAppID: %w", err)
+	}
+	return oldValue.FcmAppID, nil
+}
+
+// ClearFcmAppID clears the value of the "fcm_app_id" field.
+func (m *AdminConfigMutation) ClearFcmAppID() {
+	m.fcm_app_id = nil
+	m.clearedFields[adminconfig.FieldFcmAppID] = struct{}{}
+}
+
+// FcmAppIDCleared returns if the "fcm_app_id" field was cleared in this mutation.
+func (m *AdminConfigMutation) FcmAppIDCleared() bool {
+	_, ok := m.clearedFields[adminconfig.FieldFcmAppID]
+	return ok
+}
+
+// ResetFcmAppID resets all changes to the "fcm_app_id" field.
+func (m *AdminConfigMutation) ResetFcmAppID() {
+	m.fcm_app_id = nil
+	delete(m.clearedFields, adminconfig.FieldFcmAppID)
+}
+
+// SetFcmSenderID sets the "fcm_sender_id" field.
+func (m *AdminConfigMutation) SetFcmSenderID(s string) {
+	m.fcm_sender_id = &s
+}
+
+// FcmSenderID returns the value of the "fcm_sender_id" field in the mutation.
+func (m *AdminConfigMutation) FcmSenderID() (r string, exists bool) {
+	v := m.fcm_sender_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFcmSenderID returns the old "fcm_sender_id" field's value of the AdminConfig entity.
+// If the AdminConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AdminConfigMutation) OldFcmSenderID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFcmSenderID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFcmSenderID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFcmSenderID: %w", err)
+	}
+	return oldValue.FcmSenderID, nil
+}
+
+// ClearFcmSenderID clears the value of the "fcm_sender_id" field.
+func (m *AdminConfigMutation) ClearFcmSenderID() {
+	m.fcm_sender_id = nil
+	m.clearedFields[adminconfig.FieldFcmSenderID] = struct{}{}
+}
+
+// FcmSenderIDCleared returns if the "fcm_sender_id" field was cleared in this mutation.
+func (m *AdminConfigMutation) FcmSenderIDCleared() bool {
+	_, ok := m.clearedFields[adminconfig.FieldFcmSenderID]
+	return ok
+}
+
+// ResetFcmSenderID resets all changes to the "fcm_sender_id" field.
+func (m *AdminConfigMutation) ResetFcmSenderID() {
+	m.fcm_sender_id = nil
+	delete(m.clearedFields, adminconfig.FieldFcmSenderID)
+}
+
+// SetFcmStorageBucket sets the "fcm_storage_bucket" field.
+func (m *AdminConfigMutation) SetFcmStorageBucket(s string) {
+	m.fcm_storage_bucket = &s
+}
+
+// FcmStorageBucket returns the value of the "fcm_storage_bucket" field in the mutation.
+func (m *AdminConfigMutation) FcmStorageBucket() (r string, exists bool) {
+	v := m.fcm_storage_bucket
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFcmStorageBucket returns the old "fcm_storage_bucket" field's value of the AdminConfig entity.
+// If the AdminConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AdminConfigMutation) OldFcmStorageBucket(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFcmStorageBucket is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFcmStorageBucket requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFcmStorageBucket: %w", err)
+	}
+	return oldValue.FcmStorageBucket, nil
+}
+
+// ClearFcmStorageBucket clears the value of the "fcm_storage_bucket" field.
+func (m *AdminConfigMutation) ClearFcmStorageBucket() {
+	m.fcm_storage_bucket = nil
+	m.clearedFields[adminconfig.FieldFcmStorageBucket] = struct{}{}
+}
+
+// FcmStorageBucketCleared returns if the "fcm_storage_bucket" field was cleared in this mutation.
+func (m *AdminConfigMutation) FcmStorageBucketCleared() bool {
+	_, ok := m.clearedFields[adminconfig.FieldFcmStorageBucket]
+	return ok
+}
+
+// ResetFcmStorageBucket resets all changes to the "fcm_storage_bucket" field.
+func (m *AdminConfigMutation) ResetFcmStorageBucket() {
+	m.fcm_storage_bucket = nil
+	delete(m.clearedFields, adminconfig.FieldFcmStorageBucket)
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (m *AdminConfigMutation) SetUpdatedAt(t time.Time) {
 	m.updated_at = &t
@@ -624,7 +1074,7 @@ func (m *AdminConfigMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AdminConfigMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 20)
 	if m.otel_endpoint != nil {
 		fields = append(fields, adminconfig.FieldOtelEndpoint)
 	}
@@ -651,6 +1101,36 @@ func (m *AdminConfigMutation) Fields() []string {
 	}
 	if m.telegram_chat_id != nil {
 		fields = append(fields, adminconfig.FieldTelegramChatID)
+	}
+	if m.notifications_enabled != nil {
+		fields = append(fields, adminconfig.FieldNotificationsEnabled)
+	}
+	if m.notify_release != nil {
+		fields = append(fields, adminconfig.FieldNotifyRelease)
+	}
+	if m.notify_pr_merge != nil {
+		fields = append(fields, adminconfig.FieldNotifyPrMerge)
+	}
+	if m.notify_workflow_failure != nil {
+		fields = append(fields, adminconfig.FieldNotifyWorkflowFailure)
+	}
+	if m.fcm_project_id != nil {
+		fields = append(fields, adminconfig.FieldFcmProjectID)
+	}
+	if m.fcm_service_account_json != nil {
+		fields = append(fields, adminconfig.FieldFcmServiceAccountJSON)
+	}
+	if m.fcm_api_key != nil {
+		fields = append(fields, adminconfig.FieldFcmAPIKey)
+	}
+	if m.fcm_app_id != nil {
+		fields = append(fields, adminconfig.FieldFcmAppID)
+	}
+	if m.fcm_sender_id != nil {
+		fields = append(fields, adminconfig.FieldFcmSenderID)
+	}
+	if m.fcm_storage_bucket != nil {
+		fields = append(fields, adminconfig.FieldFcmStorageBucket)
 	}
 	if m.updated_at != nil {
 		fields = append(fields, adminconfig.FieldUpdatedAt)
@@ -681,6 +1161,26 @@ func (m *AdminConfigMutation) Field(name string) (ent.Value, bool) {
 		return m.TelegramBotToken()
 	case adminconfig.FieldTelegramChatID:
 		return m.TelegramChatID()
+	case adminconfig.FieldNotificationsEnabled:
+		return m.NotificationsEnabled()
+	case adminconfig.FieldNotifyRelease:
+		return m.NotifyRelease()
+	case adminconfig.FieldNotifyPrMerge:
+		return m.NotifyPrMerge()
+	case adminconfig.FieldNotifyWorkflowFailure:
+		return m.NotifyWorkflowFailure()
+	case adminconfig.FieldFcmProjectID:
+		return m.FcmProjectID()
+	case adminconfig.FieldFcmServiceAccountJSON:
+		return m.FcmServiceAccountJSON()
+	case adminconfig.FieldFcmAPIKey:
+		return m.FcmAPIKey()
+	case adminconfig.FieldFcmAppID:
+		return m.FcmAppID()
+	case adminconfig.FieldFcmSenderID:
+		return m.FcmSenderID()
+	case adminconfig.FieldFcmStorageBucket:
+		return m.FcmStorageBucket()
 	case adminconfig.FieldUpdatedAt:
 		return m.UpdatedAt()
 	}
@@ -710,6 +1210,26 @@ func (m *AdminConfigMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldTelegramBotToken(ctx)
 	case adminconfig.FieldTelegramChatID:
 		return m.OldTelegramChatID(ctx)
+	case adminconfig.FieldNotificationsEnabled:
+		return m.OldNotificationsEnabled(ctx)
+	case adminconfig.FieldNotifyRelease:
+		return m.OldNotifyRelease(ctx)
+	case adminconfig.FieldNotifyPrMerge:
+		return m.OldNotifyPrMerge(ctx)
+	case adminconfig.FieldNotifyWorkflowFailure:
+		return m.OldNotifyWorkflowFailure(ctx)
+	case adminconfig.FieldFcmProjectID:
+		return m.OldFcmProjectID(ctx)
+	case adminconfig.FieldFcmServiceAccountJSON:
+		return m.OldFcmServiceAccountJSON(ctx)
+	case adminconfig.FieldFcmAPIKey:
+		return m.OldFcmAPIKey(ctx)
+	case adminconfig.FieldFcmAppID:
+		return m.OldFcmAppID(ctx)
+	case adminconfig.FieldFcmSenderID:
+		return m.OldFcmSenderID(ctx)
+	case adminconfig.FieldFcmStorageBucket:
+		return m.OldFcmStorageBucket(ctx)
 	case adminconfig.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
 	}
@@ -784,6 +1304,76 @@ func (m *AdminConfigMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTelegramChatID(v)
 		return nil
+	case adminconfig.FieldNotificationsEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotificationsEnabled(v)
+		return nil
+	case adminconfig.FieldNotifyRelease:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotifyRelease(v)
+		return nil
+	case adminconfig.FieldNotifyPrMerge:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotifyPrMerge(v)
+		return nil
+	case adminconfig.FieldNotifyWorkflowFailure:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotifyWorkflowFailure(v)
+		return nil
+	case adminconfig.FieldFcmProjectID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFcmProjectID(v)
+		return nil
+	case adminconfig.FieldFcmServiceAccountJSON:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFcmServiceAccountJSON(v)
+		return nil
+	case adminconfig.FieldFcmAPIKey:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFcmAPIKey(v)
+		return nil
+	case adminconfig.FieldFcmAppID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFcmAppID(v)
+		return nil
+	case adminconfig.FieldFcmSenderID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFcmSenderID(v)
+		return nil
+	case adminconfig.FieldFcmStorageBucket:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFcmStorageBucket(v)
+		return nil
 	case adminconfig.FieldUpdatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -836,6 +1426,24 @@ func (m *AdminConfigMutation) ClearedFields() []string {
 	if m.FieldCleared(adminconfig.FieldTelegramChatID) {
 		fields = append(fields, adminconfig.FieldTelegramChatID)
 	}
+	if m.FieldCleared(adminconfig.FieldFcmProjectID) {
+		fields = append(fields, adminconfig.FieldFcmProjectID)
+	}
+	if m.FieldCleared(adminconfig.FieldFcmServiceAccountJSON) {
+		fields = append(fields, adminconfig.FieldFcmServiceAccountJSON)
+	}
+	if m.FieldCleared(adminconfig.FieldFcmAPIKey) {
+		fields = append(fields, adminconfig.FieldFcmAPIKey)
+	}
+	if m.FieldCleared(adminconfig.FieldFcmAppID) {
+		fields = append(fields, adminconfig.FieldFcmAppID)
+	}
+	if m.FieldCleared(adminconfig.FieldFcmSenderID) {
+		fields = append(fields, adminconfig.FieldFcmSenderID)
+	}
+	if m.FieldCleared(adminconfig.FieldFcmStorageBucket) {
+		fields = append(fields, adminconfig.FieldFcmStorageBucket)
+	}
 	return fields
 }
 
@@ -864,6 +1472,24 @@ func (m *AdminConfigMutation) ClearField(name string) error {
 		return nil
 	case adminconfig.FieldTelegramChatID:
 		m.ClearTelegramChatID()
+		return nil
+	case adminconfig.FieldFcmProjectID:
+		m.ClearFcmProjectID()
+		return nil
+	case adminconfig.FieldFcmServiceAccountJSON:
+		m.ClearFcmServiceAccountJSON()
+		return nil
+	case adminconfig.FieldFcmAPIKey:
+		m.ClearFcmAPIKey()
+		return nil
+	case adminconfig.FieldFcmAppID:
+		m.ClearFcmAppID()
+		return nil
+	case adminconfig.FieldFcmSenderID:
+		m.ClearFcmSenderID()
+		return nil
+	case adminconfig.FieldFcmStorageBucket:
+		m.ClearFcmStorageBucket()
 		return nil
 	}
 	return fmt.Errorf("unknown AdminConfig nullable field %s", name)
@@ -899,6 +1525,36 @@ func (m *AdminConfigMutation) ResetField(name string) error {
 		return nil
 	case adminconfig.FieldTelegramChatID:
 		m.ResetTelegramChatID()
+		return nil
+	case adminconfig.FieldNotificationsEnabled:
+		m.ResetNotificationsEnabled()
+		return nil
+	case adminconfig.FieldNotifyRelease:
+		m.ResetNotifyRelease()
+		return nil
+	case adminconfig.FieldNotifyPrMerge:
+		m.ResetNotifyPrMerge()
+		return nil
+	case adminconfig.FieldNotifyWorkflowFailure:
+		m.ResetNotifyWorkflowFailure()
+		return nil
+	case adminconfig.FieldFcmProjectID:
+		m.ResetFcmProjectID()
+		return nil
+	case adminconfig.FieldFcmServiceAccountJSON:
+		m.ResetFcmServiceAccountJSON()
+		return nil
+	case adminconfig.FieldFcmAPIKey:
+		m.ResetFcmAPIKey()
+		return nil
+	case adminconfig.FieldFcmAppID:
+		m.ResetFcmAppID()
+		return nil
+	case adminconfig.FieldFcmSenderID:
+		m.ResetFcmSenderID()
+		return nil
+	case adminconfig.FieldFcmStorageBucket:
+		m.ResetFcmStorageBucket()
 		return nil
 	case adminconfig.FieldUpdatedAt:
 		m.ResetUpdatedAt()
@@ -2202,6 +2858,605 @@ func (m *CommitActivityMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *CommitActivityMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown CommitActivity edge %s", name)
+}
+
+// DeviceTokenMutation represents an operation that mutates the DeviceToken nodes in the graph.
+type DeviceTokenMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	token         *string
+	platform      *devicetoken.Platform
+	created_at    *time.Time
+	last_seen_at  *time.Time
+	clearedFields map[string]struct{}
+	user          *int
+	cleareduser   bool
+	done          bool
+	oldValue      func(context.Context) (*DeviceToken, error)
+	predicates    []predicate.DeviceToken
+}
+
+var _ ent.Mutation = (*DeviceTokenMutation)(nil)
+
+// devicetokenOption allows management of the mutation configuration using functional options.
+type devicetokenOption func(*DeviceTokenMutation)
+
+// newDeviceTokenMutation creates new mutation for the DeviceToken entity.
+func newDeviceTokenMutation(c config, op Op, opts ...devicetokenOption) *DeviceTokenMutation {
+	m := &DeviceTokenMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeDeviceToken,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withDeviceTokenID sets the ID field of the mutation.
+func withDeviceTokenID(id int) devicetokenOption {
+	return func(m *DeviceTokenMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *DeviceToken
+		)
+		m.oldValue = func(ctx context.Context) (*DeviceToken, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().DeviceToken.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withDeviceToken sets the old DeviceToken of the mutation.
+func withDeviceToken(node *DeviceToken) devicetokenOption {
+	return func(m *DeviceTokenMutation) {
+		m.oldValue = func(context.Context) (*DeviceToken, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m DeviceTokenMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m DeviceTokenMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *DeviceTokenMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *DeviceTokenMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().DeviceToken.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetUserID sets the "user_id" field.
+func (m *DeviceTokenMutation) SetUserID(i int) {
+	m.user = &i
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *DeviceTokenMutation) UserID() (r int, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the DeviceToken entity.
+// If the DeviceToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceTokenMutation) OldUserID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *DeviceTokenMutation) ResetUserID() {
+	m.user = nil
+}
+
+// SetToken sets the "token" field.
+func (m *DeviceTokenMutation) SetToken(s string) {
+	m.token = &s
+}
+
+// Token returns the value of the "token" field in the mutation.
+func (m *DeviceTokenMutation) Token() (r string, exists bool) {
+	v := m.token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldToken returns the old "token" field's value of the DeviceToken entity.
+// If the DeviceToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceTokenMutation) OldToken(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldToken: %w", err)
+	}
+	return oldValue.Token, nil
+}
+
+// ResetToken resets all changes to the "token" field.
+func (m *DeviceTokenMutation) ResetToken() {
+	m.token = nil
+}
+
+// SetPlatform sets the "platform" field.
+func (m *DeviceTokenMutation) SetPlatform(d devicetoken.Platform) {
+	m.platform = &d
+}
+
+// Platform returns the value of the "platform" field in the mutation.
+func (m *DeviceTokenMutation) Platform() (r devicetoken.Platform, exists bool) {
+	v := m.platform
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPlatform returns the old "platform" field's value of the DeviceToken entity.
+// If the DeviceToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceTokenMutation) OldPlatform(ctx context.Context) (v devicetoken.Platform, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPlatform is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPlatform requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPlatform: %w", err)
+	}
+	return oldValue.Platform, nil
+}
+
+// ResetPlatform resets all changes to the "platform" field.
+func (m *DeviceTokenMutation) ResetPlatform() {
+	m.platform = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *DeviceTokenMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *DeviceTokenMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the DeviceToken entity.
+// If the DeviceToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceTokenMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *DeviceTokenMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetLastSeenAt sets the "last_seen_at" field.
+func (m *DeviceTokenMutation) SetLastSeenAt(t time.Time) {
+	m.last_seen_at = &t
+}
+
+// LastSeenAt returns the value of the "last_seen_at" field in the mutation.
+func (m *DeviceTokenMutation) LastSeenAt() (r time.Time, exists bool) {
+	v := m.last_seen_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastSeenAt returns the old "last_seen_at" field's value of the DeviceToken entity.
+// If the DeviceToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceTokenMutation) OldLastSeenAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastSeenAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastSeenAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastSeenAt: %w", err)
+	}
+	return oldValue.LastSeenAt, nil
+}
+
+// ResetLastSeenAt resets all changes to the "last_seen_at" field.
+func (m *DeviceTokenMutation) ResetLastSeenAt() {
+	m.last_seen_at = nil
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *DeviceTokenMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[devicetoken.FieldUserID] = struct{}{}
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *DeviceTokenMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *DeviceTokenMutation) UserIDs() (ids []int) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *DeviceTokenMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// Where appends a list predicates to the DeviceTokenMutation builder.
+func (m *DeviceTokenMutation) Where(ps ...predicate.DeviceToken) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the DeviceTokenMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *DeviceTokenMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.DeviceToken, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *DeviceTokenMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *DeviceTokenMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (DeviceToken).
+func (m *DeviceTokenMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *DeviceTokenMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.user != nil {
+		fields = append(fields, devicetoken.FieldUserID)
+	}
+	if m.token != nil {
+		fields = append(fields, devicetoken.FieldToken)
+	}
+	if m.platform != nil {
+		fields = append(fields, devicetoken.FieldPlatform)
+	}
+	if m.created_at != nil {
+		fields = append(fields, devicetoken.FieldCreatedAt)
+	}
+	if m.last_seen_at != nil {
+		fields = append(fields, devicetoken.FieldLastSeenAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *DeviceTokenMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case devicetoken.FieldUserID:
+		return m.UserID()
+	case devicetoken.FieldToken:
+		return m.Token()
+	case devicetoken.FieldPlatform:
+		return m.Platform()
+	case devicetoken.FieldCreatedAt:
+		return m.CreatedAt()
+	case devicetoken.FieldLastSeenAt:
+		return m.LastSeenAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *DeviceTokenMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case devicetoken.FieldUserID:
+		return m.OldUserID(ctx)
+	case devicetoken.FieldToken:
+		return m.OldToken(ctx)
+	case devicetoken.FieldPlatform:
+		return m.OldPlatform(ctx)
+	case devicetoken.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case devicetoken.FieldLastSeenAt:
+		return m.OldLastSeenAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown DeviceToken field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DeviceTokenMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case devicetoken.FieldUserID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case devicetoken.FieldToken:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetToken(v)
+		return nil
+	case devicetoken.FieldPlatform:
+		v, ok := value.(devicetoken.Platform)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPlatform(v)
+		return nil
+	case devicetoken.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case devicetoken.FieldLastSeenAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastSeenAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown DeviceToken field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *DeviceTokenMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *DeviceTokenMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DeviceTokenMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown DeviceToken numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *DeviceTokenMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *DeviceTokenMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *DeviceTokenMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown DeviceToken nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *DeviceTokenMutation) ResetField(name string) error {
+	switch name {
+	case devicetoken.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case devicetoken.FieldToken:
+		m.ResetToken()
+		return nil
+	case devicetoken.FieldPlatform:
+		m.ResetPlatform()
+		return nil
+	case devicetoken.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case devicetoken.FieldLastSeenAt:
+		m.ResetLastSeenAt()
+		return nil
+	}
+	return fmt.Errorf("unknown DeviceToken field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *DeviceTokenMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.user != nil {
+		edges = append(edges, devicetoken.EdgeUser)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *DeviceTokenMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case devicetoken.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *DeviceTokenMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *DeviceTokenMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *DeviceTokenMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.cleareduser {
+		edges = append(edges, devicetoken.EdgeUser)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *DeviceTokenMutation) EdgeCleared(name string) bool {
+	switch name {
+	case devicetoken.EdgeUser:
+		return m.cleareduser
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *DeviceTokenMutation) ClearEdge(name string) error {
+	switch name {
+	case devicetoken.EdgeUser:
+		m.ClearUser()
+		return nil
+	}
+	return fmt.Errorf("unknown DeviceToken unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *DeviceTokenMutation) ResetEdge(name string) error {
+	switch name {
+	case devicetoken.EdgeUser:
+		m.ResetUser()
+		return nil
+	}
+	return fmt.Errorf("unknown DeviceToken edge %s", name)
 }
 
 // EventMutation represents an operation that mutates the Event nodes in the graph.
@@ -8400,10 +9655,19 @@ type UserMutation struct {
 	oidc_sub                      *string
 	oidc_email                    *string
 	groups                        *string
+	notifications_enabled         *bool
+	notify_web                    *bool
+	notify_android                *bool
+	notify_release                *bool
+	notify_pr_merge               *bool
+	notify_workflow_failure       *bool
 	clearedFields                 map[string]struct{}
 	repositories                  map[int]struct{}
 	removedrepositories           map[int]struct{}
 	clearedrepositories           bool
+	device_tokens                 map[int]struct{}
+	removeddevice_tokens          map[int]struct{}
+	cleareddevice_tokens          bool
 	done                          bool
 	oldValue                      func(context.Context) (*User, error)
 	predicates                    []predicate.User
@@ -9555,6 +10819,222 @@ func (m *UserMutation) ResetGroups() {
 	delete(m.clearedFields, user.FieldGroups)
 }
 
+// SetNotificationsEnabled sets the "notifications_enabled" field.
+func (m *UserMutation) SetNotificationsEnabled(b bool) {
+	m.notifications_enabled = &b
+}
+
+// NotificationsEnabled returns the value of the "notifications_enabled" field in the mutation.
+func (m *UserMutation) NotificationsEnabled() (r bool, exists bool) {
+	v := m.notifications_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotificationsEnabled returns the old "notifications_enabled" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldNotificationsEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotificationsEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotificationsEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotificationsEnabled: %w", err)
+	}
+	return oldValue.NotificationsEnabled, nil
+}
+
+// ResetNotificationsEnabled resets all changes to the "notifications_enabled" field.
+func (m *UserMutation) ResetNotificationsEnabled() {
+	m.notifications_enabled = nil
+}
+
+// SetNotifyWeb sets the "notify_web" field.
+func (m *UserMutation) SetNotifyWeb(b bool) {
+	m.notify_web = &b
+}
+
+// NotifyWeb returns the value of the "notify_web" field in the mutation.
+func (m *UserMutation) NotifyWeb() (r bool, exists bool) {
+	v := m.notify_web
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotifyWeb returns the old "notify_web" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldNotifyWeb(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotifyWeb is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotifyWeb requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotifyWeb: %w", err)
+	}
+	return oldValue.NotifyWeb, nil
+}
+
+// ResetNotifyWeb resets all changes to the "notify_web" field.
+func (m *UserMutation) ResetNotifyWeb() {
+	m.notify_web = nil
+}
+
+// SetNotifyAndroid sets the "notify_android" field.
+func (m *UserMutation) SetNotifyAndroid(b bool) {
+	m.notify_android = &b
+}
+
+// NotifyAndroid returns the value of the "notify_android" field in the mutation.
+func (m *UserMutation) NotifyAndroid() (r bool, exists bool) {
+	v := m.notify_android
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotifyAndroid returns the old "notify_android" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldNotifyAndroid(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotifyAndroid is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotifyAndroid requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotifyAndroid: %w", err)
+	}
+	return oldValue.NotifyAndroid, nil
+}
+
+// ResetNotifyAndroid resets all changes to the "notify_android" field.
+func (m *UserMutation) ResetNotifyAndroid() {
+	m.notify_android = nil
+}
+
+// SetNotifyRelease sets the "notify_release" field.
+func (m *UserMutation) SetNotifyRelease(b bool) {
+	m.notify_release = &b
+}
+
+// NotifyRelease returns the value of the "notify_release" field in the mutation.
+func (m *UserMutation) NotifyRelease() (r bool, exists bool) {
+	v := m.notify_release
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotifyRelease returns the old "notify_release" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldNotifyRelease(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotifyRelease is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotifyRelease requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotifyRelease: %w", err)
+	}
+	return oldValue.NotifyRelease, nil
+}
+
+// ResetNotifyRelease resets all changes to the "notify_release" field.
+func (m *UserMutation) ResetNotifyRelease() {
+	m.notify_release = nil
+}
+
+// SetNotifyPrMerge sets the "notify_pr_merge" field.
+func (m *UserMutation) SetNotifyPrMerge(b bool) {
+	m.notify_pr_merge = &b
+}
+
+// NotifyPrMerge returns the value of the "notify_pr_merge" field in the mutation.
+func (m *UserMutation) NotifyPrMerge() (r bool, exists bool) {
+	v := m.notify_pr_merge
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotifyPrMerge returns the old "notify_pr_merge" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldNotifyPrMerge(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotifyPrMerge is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotifyPrMerge requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotifyPrMerge: %w", err)
+	}
+	return oldValue.NotifyPrMerge, nil
+}
+
+// ResetNotifyPrMerge resets all changes to the "notify_pr_merge" field.
+func (m *UserMutation) ResetNotifyPrMerge() {
+	m.notify_pr_merge = nil
+}
+
+// SetNotifyWorkflowFailure sets the "notify_workflow_failure" field.
+func (m *UserMutation) SetNotifyWorkflowFailure(b bool) {
+	m.notify_workflow_failure = &b
+}
+
+// NotifyWorkflowFailure returns the value of the "notify_workflow_failure" field in the mutation.
+func (m *UserMutation) NotifyWorkflowFailure() (r bool, exists bool) {
+	v := m.notify_workflow_failure
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotifyWorkflowFailure returns the old "notify_workflow_failure" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldNotifyWorkflowFailure(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotifyWorkflowFailure is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotifyWorkflowFailure requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotifyWorkflowFailure: %w", err)
+	}
+	return oldValue.NotifyWorkflowFailure, nil
+}
+
+// ResetNotifyWorkflowFailure resets all changes to the "notify_workflow_failure" field.
+func (m *UserMutation) ResetNotifyWorkflowFailure() {
+	m.notify_workflow_failure = nil
+}
+
 // AddRepositoryIDs adds the "repositories" edge to the Repository entity by ids.
 func (m *UserMutation) AddRepositoryIDs(ids ...int) {
 	if m.repositories == nil {
@@ -9609,6 +11089,60 @@ func (m *UserMutation) ResetRepositories() {
 	m.removedrepositories = nil
 }
 
+// AddDeviceTokenIDs adds the "device_tokens" edge to the DeviceToken entity by ids.
+func (m *UserMutation) AddDeviceTokenIDs(ids ...int) {
+	if m.device_tokens == nil {
+		m.device_tokens = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.device_tokens[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDeviceTokens clears the "device_tokens" edge to the DeviceToken entity.
+func (m *UserMutation) ClearDeviceTokens() {
+	m.cleareddevice_tokens = true
+}
+
+// DeviceTokensCleared reports if the "device_tokens" edge to the DeviceToken entity was cleared.
+func (m *UserMutation) DeviceTokensCleared() bool {
+	return m.cleareddevice_tokens
+}
+
+// RemoveDeviceTokenIDs removes the "device_tokens" edge to the DeviceToken entity by IDs.
+func (m *UserMutation) RemoveDeviceTokenIDs(ids ...int) {
+	if m.removeddevice_tokens == nil {
+		m.removeddevice_tokens = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.device_tokens, ids[i])
+		m.removeddevice_tokens[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDeviceTokens returns the removed IDs of the "device_tokens" edge to the DeviceToken entity.
+func (m *UserMutation) RemovedDeviceTokensIDs() (ids []int) {
+	for id := range m.removeddevice_tokens {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DeviceTokensIDs returns the "device_tokens" edge IDs in the mutation.
+func (m *UserMutation) DeviceTokensIDs() (ids []int) {
+	for id := range m.device_tokens {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDeviceTokens resets all changes to the "device_tokens" edge.
+func (m *UserMutation) ResetDeviceTokens() {
+	m.device_tokens = nil
+	m.cleareddevice_tokens = false
+	m.removeddevice_tokens = nil
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -9643,7 +11177,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 22)
+	fields := make([]string, 0, 28)
 	if m.github_id != nil {
 		fields = append(fields, user.FieldGithubID)
 	}
@@ -9710,6 +11244,24 @@ func (m *UserMutation) Fields() []string {
 	if m.groups != nil {
 		fields = append(fields, user.FieldGroups)
 	}
+	if m.notifications_enabled != nil {
+		fields = append(fields, user.FieldNotificationsEnabled)
+	}
+	if m.notify_web != nil {
+		fields = append(fields, user.FieldNotifyWeb)
+	}
+	if m.notify_android != nil {
+		fields = append(fields, user.FieldNotifyAndroid)
+	}
+	if m.notify_release != nil {
+		fields = append(fields, user.FieldNotifyRelease)
+	}
+	if m.notify_pr_merge != nil {
+		fields = append(fields, user.FieldNotifyPrMerge)
+	}
+	if m.notify_workflow_failure != nil {
+		fields = append(fields, user.FieldNotifyWorkflowFailure)
+	}
 	return fields
 }
 
@@ -9762,6 +11314,18 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.OidcEmail()
 	case user.FieldGroups:
 		return m.Groups()
+	case user.FieldNotificationsEnabled:
+		return m.NotificationsEnabled()
+	case user.FieldNotifyWeb:
+		return m.NotifyWeb()
+	case user.FieldNotifyAndroid:
+		return m.NotifyAndroid()
+	case user.FieldNotifyRelease:
+		return m.NotifyRelease()
+	case user.FieldNotifyPrMerge:
+		return m.NotifyPrMerge()
+	case user.FieldNotifyWorkflowFailure:
+		return m.NotifyWorkflowFailure()
 	}
 	return nil, false
 }
@@ -9815,6 +11379,18 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldOidcEmail(ctx)
 	case user.FieldGroups:
 		return m.OldGroups(ctx)
+	case user.FieldNotificationsEnabled:
+		return m.OldNotificationsEnabled(ctx)
+	case user.FieldNotifyWeb:
+		return m.OldNotifyWeb(ctx)
+	case user.FieldNotifyAndroid:
+		return m.OldNotifyAndroid(ctx)
+	case user.FieldNotifyRelease:
+		return m.OldNotifyRelease(ctx)
+	case user.FieldNotifyPrMerge:
+		return m.OldNotifyPrMerge(ctx)
+	case user.FieldNotifyWorkflowFailure:
+		return m.OldNotifyWorkflowFailure(ctx)
 	}
 	return nil, fmt.Errorf("unknown User field %s", name)
 }
@@ -9977,6 +11553,48 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetGroups(v)
+		return nil
+	case user.FieldNotificationsEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotificationsEnabled(v)
+		return nil
+	case user.FieldNotifyWeb:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotifyWeb(v)
+		return nil
+	case user.FieldNotifyAndroid:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotifyAndroid(v)
+		return nil
+	case user.FieldNotifyRelease:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotifyRelease(v)
+		return nil
+	case user.FieldNotifyPrMerge:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotifyPrMerge(v)
+		return nil
+	case user.FieldNotifyWorkflowFailure:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotifyWorkflowFailure(v)
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
@@ -10225,15 +11843,36 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldGroups:
 		m.ResetGroups()
 		return nil
+	case user.FieldNotificationsEnabled:
+		m.ResetNotificationsEnabled()
+		return nil
+	case user.FieldNotifyWeb:
+		m.ResetNotifyWeb()
+		return nil
+	case user.FieldNotifyAndroid:
+		m.ResetNotifyAndroid()
+		return nil
+	case user.FieldNotifyRelease:
+		m.ResetNotifyRelease()
+		return nil
+	case user.FieldNotifyPrMerge:
+		m.ResetNotifyPrMerge()
+		return nil
+	case user.FieldNotifyWorkflowFailure:
+		m.ResetNotifyWorkflowFailure()
+		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.repositories != nil {
 		edges = append(edges, user.EdgeRepositories)
+	}
+	if m.device_tokens != nil {
+		edges = append(edges, user.EdgeDeviceTokens)
 	}
 	return edges
 }
@@ -10248,15 +11887,24 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeDeviceTokens:
+		ids := make([]ent.Value, 0, len(m.device_tokens))
+		for id := range m.device_tokens {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.removedrepositories != nil {
 		edges = append(edges, user.EdgeRepositories)
+	}
+	if m.removeddevice_tokens != nil {
+		edges = append(edges, user.EdgeDeviceTokens)
 	}
 	return edges
 }
@@ -10271,15 +11919,24 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeDeviceTokens:
+		ids := make([]ent.Value, 0, len(m.removeddevice_tokens))
+		for id := range m.removeddevice_tokens {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedrepositories {
 		edges = append(edges, user.EdgeRepositories)
+	}
+	if m.cleareddevice_tokens {
+		edges = append(edges, user.EdgeDeviceTokens)
 	}
 	return edges
 }
@@ -10290,6 +11947,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 	switch name {
 	case user.EdgeRepositories:
 		return m.clearedrepositories
+	case user.EdgeDeviceTokens:
+		return m.cleareddevice_tokens
 	}
 	return false
 }
@@ -10308,6 +11967,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 	switch name {
 	case user.EdgeRepositories:
 		m.ResetRepositories()
+		return nil
+	case user.EdgeDeviceTokens:
+		m.ResetDeviceTokens()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)

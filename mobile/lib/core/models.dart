@@ -386,6 +386,110 @@ class YearStats {
       );
 }
 
+/// Runtime Firebase configuration advertised by the server.
+///
+/// The app ships without `google-services.json`, so Firebase is initialized
+/// from these options at runtime. An instance is only usable when [enabled] is
+/// true and every credential field is non-empty (see [isUsable]).
+class NotificationConfig {
+  const NotificationConfig({
+    this.enabled = false,
+    this.projectId = '',
+    this.apiKey = '',
+    this.appId = '',
+    this.senderId = '',
+    this.storageBucket = '',
+  });
+
+  final bool enabled;
+  final String projectId;
+  final String apiKey;
+  final String appId;
+  final String senderId;
+  final String storageBucket;
+
+  bool get isUsable =>
+      enabled &&
+      projectId.isNotEmpty &&
+      apiKey.isNotEmpty &&
+      appId.isNotEmpty &&
+      senderId.isNotEmpty;
+
+  factory NotificationConfig.fromJson(Map<String, dynamic> json) => NotificationConfig(
+        enabled: json['enabled'] == true,
+        projectId: json['project_id'] as String? ?? '',
+        apiKey: json['api_key'] as String? ?? '',
+        appId: json['app_id'] as String? ?? '',
+        senderId: json['sender_id'] as String? ?? '',
+        storageBucket: json['storage_bucket'] as String? ?? '',
+      );
+
+  Map<String, dynamic> toJson() => {
+        'enabled': enabled,
+        'project_id': projectId,
+        'api_key': apiKey,
+        'app_id': appId,
+        'sender_id': senderId,
+        'storage_bucket': storageBucket,
+      };
+
+  static const disabled = NotificationConfig();
+}
+
+/// Per-user push notification preferences.
+class NotificationPrefs {
+  const NotificationPrefs({
+    this.notificationsEnabled = false,
+    this.notifyWeb = false,
+    this.notifyAndroid = true,
+    this.notifyRelease = true,
+    this.notifyPrMerge = true,
+    this.notifyWorkflowFailure = true,
+  });
+
+  final bool notificationsEnabled;
+  final bool notifyWeb;
+  final bool notifyAndroid;
+  final bool notifyRelease;
+  final bool notifyPrMerge;
+  final bool notifyWorkflowFailure;
+
+  factory NotificationPrefs.fromJson(Map<String, dynamic> json) => NotificationPrefs(
+        notificationsEnabled: json['notifications_enabled'] == true,
+        notifyWeb: json['notify_web'] == true,
+        notifyAndroid: json['notify_android'] != false,
+        notifyRelease: json['notify_release'] != false,
+        notifyPrMerge: json['notify_pr_merge'] != false,
+        notifyWorkflowFailure: json['notify_workflow_failure'] != false,
+      );
+
+  Map<String, dynamic> toJson() => {
+        'notifications_enabled': notificationsEnabled,
+        'notify_web': notifyWeb,
+        'notify_android': notifyAndroid,
+        'notify_release': notifyRelease,
+        'notify_pr_merge': notifyPrMerge,
+        'notify_workflow_failure': notifyWorkflowFailure,
+      };
+
+  NotificationPrefs copyWith({
+    bool? notificationsEnabled,
+    bool? notifyWeb,
+    bool? notifyAndroid,
+    bool? notifyRelease,
+    bool? notifyPrMerge,
+    bool? notifyWorkflowFailure,
+  }) =>
+      NotificationPrefs(
+        notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+        notifyWeb: notifyWeb ?? this.notifyWeb,
+        notifyAndroid: notifyAndroid ?? this.notifyAndroid,
+        notifyRelease: notifyRelease ?? this.notifyRelease,
+        notifyPrMerge: notifyPrMerge ?? this.notifyPrMerge,
+        notifyWorkflowFailure: notifyWorkflowFailure ?? this.notifyWorkflowFailure,
+      );
+}
+
 class ActionMessage {
   const ActionMessage({required this.ok, required this.message, this.details, this.failed});
 

@@ -31,6 +31,9 @@ type AdminHandler struct {
 	// Telegram channel. Set by main; nil in tests.
 	telegramReload func()
 	telegramTest   func(context.Context) error
+	// fcmTest validates the saved Google FCM service-account credentials.
+	// Set by main; nil in tests.
+	fcmTest func(context.Context) error
 }
 
 func NewAdminHandler(client *ent.Client, otelManager *otel.Manager) *AdminHandler {
@@ -249,23 +252,33 @@ func (h *AdminHandler) ListSettings(c *gin.Context) {
 	}
 
 	resp := gin.H{
-		"otel_endpoint":     "",
-		"traces_enabled":    false,
-		"metrics_enabled":   false,
-		"logs_enabled":      false,
-		"log_severity":      "warning",
-		"gotify_url":        "",
-		"gotify_configured": false,
+		"otel_endpoint":           "",
+		"traces_enabled":          false,
+		"metrics_enabled":         false,
+		"logs_enabled":            false,
+		"log_severity":            "warning",
+		"gotify_url":              "",
+		"gotify_configured":       false,
+		"notifications_enabled":   true,
+		"notify_release":          true,
+		"notify_pr_merge":         true,
+		"notify_workflow_failure": true,
+		"fcm_configured":          false,
 	}
 	if cfg != nil {
 		resp = gin.H{
-			"otel_endpoint":     cfg.OtelEndpoint,
-			"traces_enabled":    cfg.TracesEnabled,
-			"metrics_enabled":   cfg.MetricsEnabled,
-			"logs_enabled":      cfg.LogsEnabled,
-			"log_severity":      cfg.LogSeverity,
-			"gotify_url":        cfg.GotifyURL,
-			"gotify_configured": cfg.GotifyToken != "",
+			"otel_endpoint":           cfg.OtelEndpoint,
+			"traces_enabled":          cfg.TracesEnabled,
+			"metrics_enabled":         cfg.MetricsEnabled,
+			"logs_enabled":            cfg.LogsEnabled,
+			"log_severity":            cfg.LogSeverity,
+			"gotify_url":              cfg.GotifyURL,
+			"gotify_configured":       cfg.GotifyToken != "",
+			"notifications_enabled":   cfg.NotificationsEnabled,
+			"notify_release":          cfg.NotifyRelease,
+			"notify_pr_merge":         cfg.NotifyPrMerge,
+			"notify_workflow_failure": cfg.NotifyWorkflowFailure,
+			"fcm_configured":          cfg.FcmProjectID != "" && cfg.FcmServiceAccountJSON != "",
 		}
 	}
 	c.JSON(http.StatusOK, resp)
@@ -452,6 +465,11 @@ func (h *AdminHandler) TestTelegram(c *gin.Context) {
 // ErrTelegramNotConfigured allows the runtime wiring to distinguish a missing
 // client from a configured client that failed to deliver.
 var ErrTelegramNotConfigured = errors.New("telegram not configured")
+
+// SetFCMTest registers the operation used by the admin FCM diagnostic action.
+func (h *AdminHandler) SetFCMTest(fn func(context.Context) error) {
+	h.fcmTest = fn
+}
 
 // ---- partial render helpers ----
 

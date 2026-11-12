@@ -165,6 +165,36 @@ func Groups(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldGroups, v))
 }
 
+// NotificationsEnabled applies equality check predicate on the "notifications_enabled" field. It's identical to NotificationsEnabledEQ.
+func NotificationsEnabled(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldNotificationsEnabled, v))
+}
+
+// NotifyWeb applies equality check predicate on the "notify_web" field. It's identical to NotifyWebEQ.
+func NotifyWeb(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldNotifyWeb, v))
+}
+
+// NotifyAndroid applies equality check predicate on the "notify_android" field. It's identical to NotifyAndroidEQ.
+func NotifyAndroid(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldNotifyAndroid, v))
+}
+
+// NotifyRelease applies equality check predicate on the "notify_release" field. It's identical to NotifyReleaseEQ.
+func NotifyRelease(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldNotifyRelease, v))
+}
+
+// NotifyPrMerge applies equality check predicate on the "notify_pr_merge" field. It's identical to NotifyPrMergeEQ.
+func NotifyPrMerge(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldNotifyPrMerge, v))
+}
+
+// NotifyWorkflowFailure applies equality check predicate on the "notify_workflow_failure" field. It's identical to NotifyWorkflowFailureEQ.
+func NotifyWorkflowFailure(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldNotifyWorkflowFailure, v))
+}
+
 // GithubIDEQ applies the EQ predicate on the "github_id" field.
 func GithubIDEQ(v int64) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldGithubID, v))
@@ -1510,6 +1540,66 @@ func GroupsContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldGroups, v))
 }
 
+// NotificationsEnabledEQ applies the EQ predicate on the "notifications_enabled" field.
+func NotificationsEnabledEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldNotificationsEnabled, v))
+}
+
+// NotificationsEnabledNEQ applies the NEQ predicate on the "notifications_enabled" field.
+func NotificationsEnabledNEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldNotificationsEnabled, v))
+}
+
+// NotifyWebEQ applies the EQ predicate on the "notify_web" field.
+func NotifyWebEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldNotifyWeb, v))
+}
+
+// NotifyWebNEQ applies the NEQ predicate on the "notify_web" field.
+func NotifyWebNEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldNotifyWeb, v))
+}
+
+// NotifyAndroidEQ applies the EQ predicate on the "notify_android" field.
+func NotifyAndroidEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldNotifyAndroid, v))
+}
+
+// NotifyAndroidNEQ applies the NEQ predicate on the "notify_android" field.
+func NotifyAndroidNEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldNotifyAndroid, v))
+}
+
+// NotifyReleaseEQ applies the EQ predicate on the "notify_release" field.
+func NotifyReleaseEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldNotifyRelease, v))
+}
+
+// NotifyReleaseNEQ applies the NEQ predicate on the "notify_release" field.
+func NotifyReleaseNEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldNotifyRelease, v))
+}
+
+// NotifyPrMergeEQ applies the EQ predicate on the "notify_pr_merge" field.
+func NotifyPrMergeEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldNotifyPrMerge, v))
+}
+
+// NotifyPrMergeNEQ applies the NEQ predicate on the "notify_pr_merge" field.
+func NotifyPrMergeNEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldNotifyPrMerge, v))
+}
+
+// NotifyWorkflowFailureEQ applies the EQ predicate on the "notify_workflow_failure" field.
+func NotifyWorkflowFailureEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldNotifyWorkflowFailure, v))
+}
+
+// NotifyWorkflowFailureNEQ applies the NEQ predicate on the "notify_workflow_failure" field.
+func NotifyWorkflowFailureNEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldNotifyWorkflowFailure, v))
+}
+
 // HasRepositories applies the HasEdge predicate on the "repositories" edge.
 func HasRepositories() predicate.User {
 	return predicate.User(func(s *sql.Selector) {
@@ -1525,6 +1615,29 @@ func HasRepositories() predicate.User {
 func HasRepositoriesWith(preds ...predicate.Repository) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := newRepositoriesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasDeviceTokens applies the HasEdge predicate on the "device_tokens" edge.
+func HasDeviceTokens() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, DeviceTokensTable, DeviceTokensColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDeviceTokensWith applies the HasEdge predicate on the "device_tokens" edge with a given conditions (other predicates).
+func HasDeviceTokensWith(preds ...predicate.DeviceToken) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newDeviceTokensStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

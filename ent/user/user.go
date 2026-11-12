@@ -58,8 +58,22 @@ const (
 	FieldOidcEmail = "oidc_email"
 	// FieldGroups holds the string denoting the groups field in the database.
 	FieldGroups = "groups"
+	// FieldNotificationsEnabled holds the string denoting the notifications_enabled field in the database.
+	FieldNotificationsEnabled = "notifications_enabled"
+	// FieldNotifyWeb holds the string denoting the notify_web field in the database.
+	FieldNotifyWeb = "notify_web"
+	// FieldNotifyAndroid holds the string denoting the notify_android field in the database.
+	FieldNotifyAndroid = "notify_android"
+	// FieldNotifyRelease holds the string denoting the notify_release field in the database.
+	FieldNotifyRelease = "notify_release"
+	// FieldNotifyPrMerge holds the string denoting the notify_pr_merge field in the database.
+	FieldNotifyPrMerge = "notify_pr_merge"
+	// FieldNotifyWorkflowFailure holds the string denoting the notify_workflow_failure field in the database.
+	FieldNotifyWorkflowFailure = "notify_workflow_failure"
 	// EdgeRepositories holds the string denoting the repositories edge name in mutations.
 	EdgeRepositories = "repositories"
+	// EdgeDeviceTokens holds the string denoting the device_tokens edge name in mutations.
+	EdgeDeviceTokens = "device_tokens"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// RepositoriesTable is the table that holds the repositories relation/edge.
@@ -69,6 +83,13 @@ const (
 	RepositoriesInverseTable = "repositories"
 	// RepositoriesColumn is the table column denoting the repositories relation/edge.
 	RepositoriesColumn = "user_repositories"
+	// DeviceTokensTable is the table that holds the device_tokens relation/edge.
+	DeviceTokensTable = "device_tokens"
+	// DeviceTokensInverseTable is the table name for the DeviceToken entity.
+	// It exists in this package in order to avoid circular dependency with the "devicetoken" package.
+	DeviceTokensInverseTable = "device_tokens"
+	// DeviceTokensColumn is the table column denoting the device_tokens relation/edge.
+	DeviceTokensColumn = "user_id"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -96,6 +117,12 @@ var Columns = []string{
 	FieldOidcSub,
 	FieldOidcEmail,
 	FieldGroups,
+	FieldNotificationsEnabled,
+	FieldNotifyWeb,
+	FieldNotifyAndroid,
+	FieldNotifyRelease,
+	FieldNotifyPrMerge,
+	FieldNotifyWorkflowFailure,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -117,6 +144,18 @@ var (
 	DefaultCreatedAt func() time.Time
 	// DefaultEinkMode holds the default value on creation for the "eink_mode" field.
 	DefaultEinkMode bool
+	// DefaultNotificationsEnabled holds the default value on creation for the "notifications_enabled" field.
+	DefaultNotificationsEnabled bool
+	// DefaultNotifyWeb holds the default value on creation for the "notify_web" field.
+	DefaultNotifyWeb bool
+	// DefaultNotifyAndroid holds the default value on creation for the "notify_android" field.
+	DefaultNotifyAndroid bool
+	// DefaultNotifyRelease holds the default value on creation for the "notify_release" field.
+	DefaultNotifyRelease bool
+	// DefaultNotifyPrMerge holds the default value on creation for the "notify_pr_merge" field.
+	DefaultNotifyPrMerge bool
+	// DefaultNotifyWorkflowFailure holds the default value on creation for the "notify_workflow_failure" field.
+	DefaultNotifyWorkflowFailure bool
 )
 
 // OrderOption defines the ordering options for the User queries.
@@ -237,6 +276,36 @@ func ByGroups(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldGroups, opts...).ToFunc()
 }
 
+// ByNotificationsEnabled orders the results by the notifications_enabled field.
+func ByNotificationsEnabled(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNotificationsEnabled, opts...).ToFunc()
+}
+
+// ByNotifyWeb orders the results by the notify_web field.
+func ByNotifyWeb(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNotifyWeb, opts...).ToFunc()
+}
+
+// ByNotifyAndroid orders the results by the notify_android field.
+func ByNotifyAndroid(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNotifyAndroid, opts...).ToFunc()
+}
+
+// ByNotifyRelease orders the results by the notify_release field.
+func ByNotifyRelease(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNotifyRelease, opts...).ToFunc()
+}
+
+// ByNotifyPrMerge orders the results by the notify_pr_merge field.
+func ByNotifyPrMerge(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNotifyPrMerge, opts...).ToFunc()
+}
+
+// ByNotifyWorkflowFailure orders the results by the notify_workflow_failure field.
+func ByNotifyWorkflowFailure(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNotifyWorkflowFailure, opts...).ToFunc()
+}
+
 // ByRepositoriesCount orders the results by repositories count.
 func ByRepositoriesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -250,10 +319,31 @@ func ByRepositories(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newRepositoriesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByDeviceTokensCount orders the results by device_tokens count.
+func ByDeviceTokensCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newDeviceTokensStep(), opts...)
+	}
+}
+
+// ByDeviceTokens orders the results by device_tokens terms.
+func ByDeviceTokens(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDeviceTokensStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newRepositoriesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RepositoriesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, RepositoriesTable, RepositoriesColumn),
+	)
+}
+func newDeviceTokensStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DeviceTokensInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, DeviceTokensTable, DeviceTokensColumn),
 	)
 }

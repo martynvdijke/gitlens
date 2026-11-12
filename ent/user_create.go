@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"gitlens/ent/devicetoken"
 	"gitlens/ent/repository"
 	"gitlens/ent/user"
 	"time"
@@ -305,6 +306,90 @@ func (_c *UserCreate) SetNillableGroups(v *string) *UserCreate {
 	return _c
 }
 
+// SetNotificationsEnabled sets the "notifications_enabled" field.
+func (_c *UserCreate) SetNotificationsEnabled(v bool) *UserCreate {
+	_c.mutation.SetNotificationsEnabled(v)
+	return _c
+}
+
+// SetNillableNotificationsEnabled sets the "notifications_enabled" field if the given value is not nil.
+func (_c *UserCreate) SetNillableNotificationsEnabled(v *bool) *UserCreate {
+	if v != nil {
+		_c.SetNotificationsEnabled(*v)
+	}
+	return _c
+}
+
+// SetNotifyWeb sets the "notify_web" field.
+func (_c *UserCreate) SetNotifyWeb(v bool) *UserCreate {
+	_c.mutation.SetNotifyWeb(v)
+	return _c
+}
+
+// SetNillableNotifyWeb sets the "notify_web" field if the given value is not nil.
+func (_c *UserCreate) SetNillableNotifyWeb(v *bool) *UserCreate {
+	if v != nil {
+		_c.SetNotifyWeb(*v)
+	}
+	return _c
+}
+
+// SetNotifyAndroid sets the "notify_android" field.
+func (_c *UserCreate) SetNotifyAndroid(v bool) *UserCreate {
+	_c.mutation.SetNotifyAndroid(v)
+	return _c
+}
+
+// SetNillableNotifyAndroid sets the "notify_android" field if the given value is not nil.
+func (_c *UserCreate) SetNillableNotifyAndroid(v *bool) *UserCreate {
+	if v != nil {
+		_c.SetNotifyAndroid(*v)
+	}
+	return _c
+}
+
+// SetNotifyRelease sets the "notify_release" field.
+func (_c *UserCreate) SetNotifyRelease(v bool) *UserCreate {
+	_c.mutation.SetNotifyRelease(v)
+	return _c
+}
+
+// SetNillableNotifyRelease sets the "notify_release" field if the given value is not nil.
+func (_c *UserCreate) SetNillableNotifyRelease(v *bool) *UserCreate {
+	if v != nil {
+		_c.SetNotifyRelease(*v)
+	}
+	return _c
+}
+
+// SetNotifyPrMerge sets the "notify_pr_merge" field.
+func (_c *UserCreate) SetNotifyPrMerge(v bool) *UserCreate {
+	_c.mutation.SetNotifyPrMerge(v)
+	return _c
+}
+
+// SetNillableNotifyPrMerge sets the "notify_pr_merge" field if the given value is not nil.
+func (_c *UserCreate) SetNillableNotifyPrMerge(v *bool) *UserCreate {
+	if v != nil {
+		_c.SetNotifyPrMerge(*v)
+	}
+	return _c
+}
+
+// SetNotifyWorkflowFailure sets the "notify_workflow_failure" field.
+func (_c *UserCreate) SetNotifyWorkflowFailure(v bool) *UserCreate {
+	_c.mutation.SetNotifyWorkflowFailure(v)
+	return _c
+}
+
+// SetNillableNotifyWorkflowFailure sets the "notify_workflow_failure" field if the given value is not nil.
+func (_c *UserCreate) SetNillableNotifyWorkflowFailure(v *bool) *UserCreate {
+	if v != nil {
+		_c.SetNotifyWorkflowFailure(*v)
+	}
+	return _c
+}
+
 // AddRepositoryIDs adds the "repositories" edge to the Repository entity by IDs.
 func (_c *UserCreate) AddRepositoryIDs(ids ...int) *UserCreate {
 	_c.mutation.AddRepositoryIDs(ids...)
@@ -318,6 +403,21 @@ func (_c *UserCreate) AddRepositories(v ...*Repository) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddRepositoryIDs(ids...)
+}
+
+// AddDeviceTokenIDs adds the "device_tokens" edge to the DeviceToken entity by IDs.
+func (_c *UserCreate) AddDeviceTokenIDs(ids ...int) *UserCreate {
+	_c.mutation.AddDeviceTokenIDs(ids...)
+	return _c
+}
+
+// AddDeviceTokens adds the "device_tokens" edges to the DeviceToken entity.
+func (_c *UserCreate) AddDeviceTokens(v ...*DeviceToken) *UserCreate {
+	ids := make([]int, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddDeviceTokenIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -371,6 +471,30 @@ func (_c *UserCreate) defaults() {
 		v := user.DefaultEinkMode
 		_c.mutation.SetEinkMode(v)
 	}
+	if _, ok := _c.mutation.NotificationsEnabled(); !ok {
+		v := user.DefaultNotificationsEnabled
+		_c.mutation.SetNotificationsEnabled(v)
+	}
+	if _, ok := _c.mutation.NotifyWeb(); !ok {
+		v := user.DefaultNotifyWeb
+		_c.mutation.SetNotifyWeb(v)
+	}
+	if _, ok := _c.mutation.NotifyAndroid(); !ok {
+		v := user.DefaultNotifyAndroid
+		_c.mutation.SetNotifyAndroid(v)
+	}
+	if _, ok := _c.mutation.NotifyRelease(); !ok {
+		v := user.DefaultNotifyRelease
+		_c.mutation.SetNotifyRelease(v)
+	}
+	if _, ok := _c.mutation.NotifyPrMerge(); !ok {
+		v := user.DefaultNotifyPrMerge
+		_c.mutation.SetNotifyPrMerge(v)
+	}
+	if _, ok := _c.mutation.NotifyWorkflowFailure(); !ok {
+		v := user.DefaultNotifyWorkflowFailure
+		_c.mutation.SetNotifyWorkflowFailure(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -395,6 +519,24 @@ func (_c *UserCreate) check() error {
 	}
 	if _, ok := _c.mutation.EinkMode(); !ok {
 		return &ValidationError{Name: "eink_mode", err: errors.New(`ent: missing required field "User.eink_mode"`)}
+	}
+	if _, ok := _c.mutation.NotificationsEnabled(); !ok {
+		return &ValidationError{Name: "notifications_enabled", err: errors.New(`ent: missing required field "User.notifications_enabled"`)}
+	}
+	if _, ok := _c.mutation.NotifyWeb(); !ok {
+		return &ValidationError{Name: "notify_web", err: errors.New(`ent: missing required field "User.notify_web"`)}
+	}
+	if _, ok := _c.mutation.NotifyAndroid(); !ok {
+		return &ValidationError{Name: "notify_android", err: errors.New(`ent: missing required field "User.notify_android"`)}
+	}
+	if _, ok := _c.mutation.NotifyRelease(); !ok {
+		return &ValidationError{Name: "notify_release", err: errors.New(`ent: missing required field "User.notify_release"`)}
+	}
+	if _, ok := _c.mutation.NotifyPrMerge(); !ok {
+		return &ValidationError{Name: "notify_pr_merge", err: errors.New(`ent: missing required field "User.notify_pr_merge"`)}
+	}
+	if _, ok := _c.mutation.NotifyWorkflowFailure(); !ok {
+		return &ValidationError{Name: "notify_workflow_failure", err: errors.New(`ent: missing required field "User.notify_workflow_failure"`)}
 	}
 	return nil
 }
@@ -510,6 +652,30 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldGroups, field.TypeString, value)
 		_node.Groups = value
 	}
+	if value, ok := _c.mutation.NotificationsEnabled(); ok {
+		_spec.SetField(user.FieldNotificationsEnabled, field.TypeBool, value)
+		_node.NotificationsEnabled = value
+	}
+	if value, ok := _c.mutation.NotifyWeb(); ok {
+		_spec.SetField(user.FieldNotifyWeb, field.TypeBool, value)
+		_node.NotifyWeb = value
+	}
+	if value, ok := _c.mutation.NotifyAndroid(); ok {
+		_spec.SetField(user.FieldNotifyAndroid, field.TypeBool, value)
+		_node.NotifyAndroid = value
+	}
+	if value, ok := _c.mutation.NotifyRelease(); ok {
+		_spec.SetField(user.FieldNotifyRelease, field.TypeBool, value)
+		_node.NotifyRelease = value
+	}
+	if value, ok := _c.mutation.NotifyPrMerge(); ok {
+		_spec.SetField(user.FieldNotifyPrMerge, field.TypeBool, value)
+		_node.NotifyPrMerge = value
+	}
+	if value, ok := _c.mutation.NotifyWorkflowFailure(); ok {
+		_spec.SetField(user.FieldNotifyWorkflowFailure, field.TypeBool, value)
+		_node.NotifyWorkflowFailure = value
+	}
 	if nodes := _c.mutation.RepositoriesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -519,6 +685,22 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(repository.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.DeviceTokensIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.DeviceTokensTable,
+			Columns: []string{user.DeviceTokensColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(devicetoken.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

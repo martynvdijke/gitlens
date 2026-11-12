@@ -16,6 +16,7 @@ import (
 	"gitlens/ent/repository"
 	"gitlens/ent/user"
 	"gitlens/internal/github"
+	"gitlens/internal/notify"
 	"gitlens/internal/otel"
 	"gitlens/internal/provider"
 	"gitlens/internal/ws"
@@ -27,6 +28,7 @@ type Syncer struct {
 	providers map[string]provider.Provider
 	hub       *ws.Hub
 	tmpl      *template.Template
+	notifier  *notify.Notifier
 
 	// repoLocks serializes CommitActivity writes (incremental upserts
 	// vs. backfill absolute sets) per repository.
@@ -53,6 +55,12 @@ func (s *Syncer) repoLock(repoID int) *sync.Mutex {
 
 func (s *Syncer) SetTemplate(tmpl *template.Template) {
 	s.tmpl = tmpl
+}
+
+// SetNotifier installs the activity notification notifier. It is safe to
+// leave unset; event recording then skips delivery.
+func (s *Syncer) SetNotifier(n *notify.Notifier) {
+	s.notifier = n
 }
 
 func (s *Syncer) StartPeriodicSync(ctx context.Context) {
@@ -468,14 +476,28 @@ func (s *Syncer) SyncOneByGithubID(ctx context.Context, githubID int64) {
 
 func (s *Syncer) recordEvents(ctx context.Context, u *ent.User, repo *ent.Repository, beforeReleaseTag, beforeWorkflowStatus, beforeReleaseConclusion string) {
 	otel.TraceDBQuery(ctx, "event_record", func(ctx context.Context) (struct{}, error) {
-		s.recordReleaseEvent(ctx, repo, beforeReleaseTag, beforeReleaseConclusion)
-		s.recordWorkflowFailureEvent(ctx, repo, beforeWorkflowStatus)
+		s.recordReleaseEvent(ctx, u, repo, beforeReleaseTag, beforeReleaseConclusion)
+		s.recordWorkflowFailureEvent(ctx, u, repo, beforeWorkflowStatus)
 		s.recordPRMergeEvents(ctx, u, repo)
 		return struct{}{}, nil
 	})
 }
 
-func (s *Syncer) recordReleaseEvent(ctx context.Context, repo *ent.Repository, beforeTag, beforeConclusion string) {
+// notifyEvent delivers a newly created event through the notifier. It is a
+// no-op when no notifier is configured and never breaks the sync loop.
+func (s *Syncer) notifyEvent(ctx context.Context, u *ent.User, repo *ent.Repository, ev *ent.Event) {
+	if s.notifier == nil || u == nil || ev == nil {
+		return
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("notify: recovered from panic delivering event %d: %v", ev.ID, r)
+		}
+	}()
+	s.notifier.NotifyEvent(ctx, u, repo.FullName, ev)
+}
+
+func (s *Syncer) recordReleaseEvent(ctx context.Context, u *ent.User, repo *ent.Repository, beforeTag, beforeConclusion string) {
 	if repo.LatestReleaseTag == "" || repo.LatestReleaseTag == beforeTag {
 		return
 	}
@@ -492,7 +514,7 @@ func (s *Syncer) recordReleaseEvent(ctx context.Context, repo *ent.Repository, b
 	meta, _ := json.Marshal(map[string]string{
 		"conclusion": repo.LatestReleaseConclusion,
 	})
-	s.client.Event.Create().
+	created, err := s.client.Event.Create().
 		SetRepoID(repo.ID).
 		SetType(event.TypeRelease).
 		SetTitle(repo.LatestReleaseTag).
@@ -500,9 +522,13 @@ func (s *Syncer) recordReleaseEvent(ctx context.Context, repo *ent.Repository, b
 		SetMetadata(string(meta)).
 		SetTimestamp(repo.LatestReleaseDate).
 		Save(ctx)
+	if err != nil {
+		return
+	}
+	s.notifyEvent(ctx, u, repo, created)
 }
 
-func (s *Syncer) recordWorkflowFailureEvent(ctx context.Context, repo *ent.Repository, beforeStatus string) {
+func (s *Syncer) recordWorkflowFailureEvent(ctx context.Context, u *ent.User, repo *ent.Repository, beforeStatus string) {
 	status := repo.WorkflowStatus
 	if status != "failure" && status != "cancelled" {
 		return
@@ -521,7 +547,7 @@ func (s *Syncer) recordWorkflowFailureEvent(ctx context.Context, repo *ent.Repos
 			"run_id": repo.WorkflowRunID,
 			"status": status,
 		})
-		s.client.Event.Create().
+		created, err := s.client.Event.Create().
 			SetRepoID(repo.ID).
 			SetType(event.TypeWorkflowFailure).
 			SetTitle(fmt.Sprintf("CI %s — build #%d", status, repo.WorkflowRunID)).
@@ -529,6 +555,10 @@ func (s *Syncer) recordWorkflowFailureEvent(ctx context.Context, repo *ent.Repos
 			SetMetadata(string(meta)).
 			SetTimestamp(time.Now()).
 			Save(ctx)
+		if err != nil {
+			return
+		}
+		s.notifyEvent(ctx, u, repo, created)
 	}
 }
 
@@ -554,7 +584,7 @@ func (s *Syncer) recordPRMergeEvents(ctx context.Context, u *ent.User, repo *ent
 			"number":   pr.Number,
 			"base_ref": pr.BaseRef,
 		})
-		s.client.Event.Create().
+		created, err := s.client.Event.Create().
 			SetRepoID(repo.ID).
 			SetType(event.TypePrMerge).
 			SetTitle(title).
@@ -562,6 +592,10 @@ func (s *Syncer) recordPRMergeEvents(ctx context.Context, u *ent.User, repo *ent
 			SetMetadata(string(meta)).
 			SetTimestamp(pr.CreatedAt).
 			Save(ctx)
+		if err != nil {
+			continue
+		}
+		s.notifyEvent(ctx, u, repo, created)
 	}
 }
 

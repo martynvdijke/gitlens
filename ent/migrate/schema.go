@@ -20,6 +20,16 @@ var (
 		{Name: "gotify_token", Type: field.TypeString, Nullable: true},
 		{Name: "telegram_bot_token", Type: field.TypeString, Nullable: true},
 		{Name: "telegram_chat_id", Type: field.TypeString, Nullable: true},
+		{Name: "notifications_enabled", Type: field.TypeBool, Default: true},
+		{Name: "notify_release", Type: field.TypeBool, Default: true},
+		{Name: "notify_pr_merge", Type: field.TypeBool, Default: true},
+		{Name: "notify_workflow_failure", Type: field.TypeBool, Default: true},
+		{Name: "fcm_project_id", Type: field.TypeString, Nullable: true},
+		{Name: "fcm_service_account_json", Type: field.TypeString, Nullable: true},
+		{Name: "fcm_api_key", Type: field.TypeString, Nullable: true},
+		{Name: "fcm_app_id", Type: field.TypeString, Nullable: true},
+		{Name: "fcm_sender_id", Type: field.TypeString, Nullable: true},
+		{Name: "fcm_storage_bucket", Type: field.TypeString, Nullable: true},
 		{Name: "updated_at", Type: field.TypeTime},
 	}
 	// AdminConfigsTable holds the schema information for the "admin_configs" table.
@@ -79,6 +89,36 @@ var (
 				Name:    "commitactivity_date",
 				Unique:  false,
 				Columns: []*schema.Column{CommitActivitiesColumns[2]},
+			},
+		},
+	}
+	// DeviceTokensColumns holds the columns for the "device_tokens" table.
+	DeviceTokensColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "token", Type: field.TypeString, Unique: true},
+		{Name: "platform", Type: field.TypeEnum, Enums: []string{"android", "web"}},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "last_seen_at", Type: field.TypeTime},
+		{Name: "user_id", Type: field.TypeInt},
+	}
+	// DeviceTokensTable holds the schema information for the "device_tokens" table.
+	DeviceTokensTable = &schema.Table{
+		Name:       "device_tokens",
+		Columns:    DeviceTokensColumns,
+		PrimaryKey: []*schema.Column{DeviceTokensColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "device_tokens_users_device_tokens",
+				Columns:    []*schema.Column{DeviceTokensColumns[5]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "devicetoken_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{DeviceTokensColumns[5]},
 			},
 		},
 	}
@@ -251,6 +291,12 @@ var (
 		{Name: "oidc_sub", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "oidc_email", Type: field.TypeString, Nullable: true},
 		{Name: "groups", Type: field.TypeString, Nullable: true},
+		{Name: "notifications_enabled", Type: field.TypeBool, Default: true},
+		{Name: "notify_web", Type: field.TypeBool, Default: true},
+		{Name: "notify_android", Type: field.TypeBool, Default: true},
+		{Name: "notify_release", Type: field.TypeBool, Default: true},
+		{Name: "notify_pr_merge", Type: field.TypeBool, Default: true},
+		{Name: "notify_workflow_failure", Type: field.TypeBool, Default: true},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
@@ -270,6 +316,7 @@ var (
 		AdminConfigsTable,
 		APITokensTable,
 		CommitActivitiesTable,
+		DeviceTokensTable,
 		EventsTable,
 		MetricSnapshotsTable,
 		RepositoriesTable,
@@ -278,5 +325,6 @@ var (
 )
 
 func init() {
+	DeviceTokensTable.ForeignKeys[0].RefTable = UsersTable
 	RepositoriesTable.ForeignKeys[0].RefTable = UsersTable
 }

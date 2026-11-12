@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql/driver"
 	"fmt"
+	"gitlens/ent/devicetoken"
 	"gitlens/ent/predicate"
 	"gitlens/ent/repository"
 	"gitlens/ent/user"
@@ -25,6 +26,7 @@ type UserQuery struct {
 	inters           []Interceptor
 	predicates       []predicate.User
 	withRepositories *RepositoryQuery
+	withDeviceTokens *DeviceTokenQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -76,6 +78,28 @@ func (_q *UserQuery) QueryRepositories() *RepositoryQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(repository.Table, repository.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.RepositoriesTable, user.RepositoriesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDeviceTokens chains the current query on the "device_tokens" edge.
+func (_q *UserQuery) QueryDeviceTokens() *DeviceTokenQuery {
+	query := (&DeviceTokenClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(devicetoken.Table, devicetoken.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.DeviceTokensTable, user.DeviceTokensColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -276,6 +300,7 @@ func (_q *UserQuery) Clone() *UserQuery {
 		inters:           append([]Interceptor{}, _q.inters...),
 		predicates:       append([]predicate.User{}, _q.predicates...),
 		withRepositories: _q.withRepositories.Clone(),
+		withDeviceTokens: _q.withDeviceTokens.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -290,6 +315,17 @@ func (_q *UserQuery) WithRepositories(opts ...func(*RepositoryQuery)) *UserQuery
 		opt(query)
 	}
 	_q.withRepositories = query
+	return _q
+}
+
+// WithDeviceTokens tells the query-builder to eager-load the nodes that are connected to
+// the "device_tokens" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithDeviceTokens(opts ...func(*DeviceTokenQuery)) *UserQuery {
+	query := (&DeviceTokenClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withDeviceTokens = query
 	return _q
 }
 
@@ -371,8 +407,9 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = _q.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			_q.withRepositories != nil,
+			_q.withDeviceTokens != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -397,6 +434,13 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := _q.loadRepositories(ctx, query, nodes,
 			func(n *User) { n.Edges.Repositories = []*Repository{} },
 			func(n *User, e *Repository) { n.Edges.Repositories = append(n.Edges.Repositories, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withDeviceTokens; query != nil {
+		if err := _q.loadDeviceTokens(ctx, query, nodes,
+			func(n *User) { n.Edges.DeviceTokens = []*DeviceToken{} },
+			func(n *User, e *DeviceToken) { n.Edges.DeviceTokens = append(n.Edges.DeviceTokens, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -429,6 +473,36 @@ func (_q *UserQuery) loadRepositories(ctx context.Context, query *RepositoryQuer
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "user_repositories" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadDeviceTokens(ctx context.Context, query *DeviceTokenQuery, nodes []*User, init func(*User), assign func(*User, *DeviceToken)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(devicetoken.FieldUserID)
+	}
+	query.Where(predicate.DeviceToken(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.DeviceTokensColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UserID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

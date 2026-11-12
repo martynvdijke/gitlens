@@ -35,6 +35,26 @@ type AdminConfig struct {
 	TelegramBotToken string `json:"telegram_bot_token,omitempty"`
 	// TelegramChatID holds the value of the "telegram_chat_id" field.
 	TelegramChatID string `json:"telegram_chat_id,omitempty"`
+	// NotificationsEnabled holds the value of the "notifications_enabled" field.
+	NotificationsEnabled bool `json:"notifications_enabled,omitempty"`
+	// NotifyRelease holds the value of the "notify_release" field.
+	NotifyRelease bool `json:"notify_release,omitempty"`
+	// NotifyPrMerge holds the value of the "notify_pr_merge" field.
+	NotifyPrMerge bool `json:"notify_pr_merge,omitempty"`
+	// NotifyWorkflowFailure holds the value of the "notify_workflow_failure" field.
+	NotifyWorkflowFailure bool `json:"notify_workflow_failure,omitempty"`
+	// FcmProjectID holds the value of the "fcm_project_id" field.
+	FcmProjectID string `json:"fcm_project_id,omitempty"`
+	// FcmServiceAccountJSON holds the value of the "fcm_service_account_json" field.
+	FcmServiceAccountJSON string `json:"fcm_service_account_json,omitempty"`
+	// FcmAPIKey holds the value of the "fcm_api_key" field.
+	FcmAPIKey string `json:"fcm_api_key,omitempty"`
+	// FcmAppID holds the value of the "fcm_app_id" field.
+	FcmAppID string `json:"fcm_app_id,omitempty"`
+	// FcmSenderID holds the value of the "fcm_sender_id" field.
+	FcmSenderID string `json:"fcm_sender_id,omitempty"`
+	// FcmStorageBucket holds the value of the "fcm_storage_bucket" field.
+	FcmStorageBucket string `json:"fcm_storage_bucket,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt    time.Time `json:"updated_at,omitempty"`
 	selectValues sql.SelectValues
@@ -45,11 +65,11 @@ func (*AdminConfig) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case adminconfig.FieldTracesEnabled, adminconfig.FieldMetricsEnabled, adminconfig.FieldLogsEnabled:
+		case adminconfig.FieldTracesEnabled, adminconfig.FieldMetricsEnabled, adminconfig.FieldLogsEnabled, adminconfig.FieldNotificationsEnabled, adminconfig.FieldNotifyRelease, adminconfig.FieldNotifyPrMerge, adminconfig.FieldNotifyWorkflowFailure:
 			values[i] = new(sql.NullBool)
 		case adminconfig.FieldID:
 			values[i] = new(sql.NullInt64)
-		case adminconfig.FieldOtelEndpoint, adminconfig.FieldLogSeverity, adminconfig.FieldGotifyURL, adminconfig.FieldGotifyToken, adminconfig.FieldTelegramBotToken, adminconfig.FieldTelegramChatID:
+		case adminconfig.FieldOtelEndpoint, adminconfig.FieldLogSeverity, adminconfig.FieldGotifyURL, adminconfig.FieldGotifyToken, adminconfig.FieldTelegramBotToken, adminconfig.FieldTelegramChatID, adminconfig.FieldFcmProjectID, adminconfig.FieldFcmServiceAccountJSON, adminconfig.FieldFcmAPIKey, adminconfig.FieldFcmAppID, adminconfig.FieldFcmSenderID, adminconfig.FieldFcmStorageBucket:
 			values[i] = new(sql.NullString)
 		case adminconfig.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -128,6 +148,66 @@ func (_m *AdminConfig) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TelegramChatID = value.String
 			}
+		case adminconfig.FieldNotificationsEnabled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field notifications_enabled", values[i])
+			} else if value.Valid {
+				_m.NotificationsEnabled = value.Bool
+			}
+		case adminconfig.FieldNotifyRelease:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field notify_release", values[i])
+			} else if value.Valid {
+				_m.NotifyRelease = value.Bool
+			}
+		case adminconfig.FieldNotifyPrMerge:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field notify_pr_merge", values[i])
+			} else if value.Valid {
+				_m.NotifyPrMerge = value.Bool
+			}
+		case adminconfig.FieldNotifyWorkflowFailure:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field notify_workflow_failure", values[i])
+			} else if value.Valid {
+				_m.NotifyWorkflowFailure = value.Bool
+			}
+		case adminconfig.FieldFcmProjectID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field fcm_project_id", values[i])
+			} else if value.Valid {
+				_m.FcmProjectID = value.String
+			}
+		case adminconfig.FieldFcmServiceAccountJSON:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field fcm_service_account_json", values[i])
+			} else if value.Valid {
+				_m.FcmServiceAccountJSON = value.String
+			}
+		case adminconfig.FieldFcmAPIKey:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field fcm_api_key", values[i])
+			} else if value.Valid {
+				_m.FcmAPIKey = value.String
+			}
+		case adminconfig.FieldFcmAppID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field fcm_app_id", values[i])
+			} else if value.Valid {
+				_m.FcmAppID = value.String
+			}
+		case adminconfig.FieldFcmSenderID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field fcm_sender_id", values[i])
+			} else if value.Valid {
+				_m.FcmSenderID = value.String
+			}
+		case adminconfig.FieldFcmStorageBucket:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field fcm_storage_bucket", values[i])
+			} else if value.Valid {
+				_m.FcmStorageBucket = value.String
+			}
 		case adminconfig.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
@@ -196,6 +276,36 @@ func (_m *AdminConfig) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("telegram_chat_id=")
 	builder.WriteString(_m.TelegramChatID)
+	builder.WriteString(", ")
+	builder.WriteString("notifications_enabled=")
+	builder.WriteString(fmt.Sprintf("%v", _m.NotificationsEnabled))
+	builder.WriteString(", ")
+	builder.WriteString("notify_release=")
+	builder.WriteString(fmt.Sprintf("%v", _m.NotifyRelease))
+	builder.WriteString(", ")
+	builder.WriteString("notify_pr_merge=")
+	builder.WriteString(fmt.Sprintf("%v", _m.NotifyPrMerge))
+	builder.WriteString(", ")
+	builder.WriteString("notify_workflow_failure=")
+	builder.WriteString(fmt.Sprintf("%v", _m.NotifyWorkflowFailure))
+	builder.WriteString(", ")
+	builder.WriteString("fcm_project_id=")
+	builder.WriteString(_m.FcmProjectID)
+	builder.WriteString(", ")
+	builder.WriteString("fcm_service_account_json=")
+	builder.WriteString(_m.FcmServiceAccountJSON)
+	builder.WriteString(", ")
+	builder.WriteString("fcm_api_key=")
+	builder.WriteString(_m.FcmAPIKey)
+	builder.WriteString(", ")
+	builder.WriteString("fcm_app_id=")
+	builder.WriteString(_m.FcmAppID)
+	builder.WriteString(", ")
+	builder.WriteString("fcm_sender_id=")
+	builder.WriteString(_m.FcmSenderID)
+	builder.WriteString(", ")
+	builder.WriteString("fcm_storage_bucket=")
+	builder.WriteString(_m.FcmStorageBucket)
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))

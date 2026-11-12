@@ -15,6 +15,9 @@ type ApiToken func(*sql.Selector)
 // CommitActivity is the predicate function for commitactivity builders.
 type CommitActivity func(*sql.Selector)
 
+// DeviceToken is the predicate function for devicetoken builders.
+type DeviceToken func(*sql.Selector)
+
 // Event is the predicate function for event builders.
 type Event func(*sql.Selector)
 

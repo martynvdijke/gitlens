@@ -340,6 +340,36 @@ class ApiClient {
     await _delete('/api/v1/me', body: {'confirm': confirm});
   }
 
+  /// Reads the public Firebase runtime configuration for push notifications.
+  ///
+  /// Older servers may not expose this endpoint at all; callers treat any
+  /// failure as "push is unavailable".
+  Future<NotificationConfig> notificationConfig() async {
+    final data = await _get('/api/v1/notifications/config');
+    if (data is! Map) return NotificationConfig.disabled;
+    return NotificationConfig.fromJson(data.cast<String, dynamic>());
+  }
+
+  Future<NotificationPrefs> getNotificationPrefs() async {
+    final data = await _get('/api/v1/notifications/prefs');
+    return NotificationPrefs.fromJson((data as Map).cast<String, dynamic>());
+  }
+
+  Future<NotificationPrefs> updateNotificationPrefs(NotificationPrefs prefs) async {
+    final data = await _post('/api/v1/notifications/prefs', body: prefs.toJson());
+    return NotificationPrefs.fromJson((data as Map).cast<String, dynamic>());
+  }
+
+  /// Associates an FCM registration token with the signed-in user.
+  Future<void> registerDeviceToken(String token) async {
+    await _post('/api/v1/notifications/device', body: {'token': token, 'platform': 'android'});
+  }
+
+  /// Detaches an FCM registration token, e.g. on sign-out or token rotation.
+  Future<void> unregisterDeviceToken(String token) async {
+    await _delete('/api/v1/notifications/device', body: {'token': token});
+  }
+
   static Map<String, dynamic> decodeJson(String raw) =>
       jsonDecode(raw) as Map<String, dynamic>;
 }

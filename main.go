@@ -25,11 +25,13 @@ import (
 	"gitlens/internal/config"
 	"gitlens/internal/demo"
 	"gitlens/internal/deploy"
+	"gitlens/internal/fcm"
 	"gitlens/internal/forgejo"
 	"gitlens/internal/github"
 	"gitlens/internal/gotify"
 	"gitlens/internal/handlers"
 	"gitlens/internal/middleware"
+	"gitlens/internal/notify"
 	"gitlens/internal/otel"
 	"gitlens/internal/provider"
 	"gitlens/internal/secrets"
@@ -135,7 +137,13 @@ func main() {
 	hub := ws.NewHub()
 	go hub.Run()
 
+	// Second hub for JSON activity notifications. The original hub keeps
+	// carrying HTMX OOB HTML fragments.
+	notifyHub := ws.NewHub()
+	go notifyHub.Run()
+
 	syncer := sync.NewSyncer(client, ghClient, providers, hub)
+	syncer.SetNotifier(notify.New(client, notifyHub))
 
 	tmpl := template.Must(template.New("").Funcs(template.FuncMap{
 		"appVersion": func() string { return Version },
@@ -341,6 +349,7 @@ func main() {
 	trendsHandler := handlers.NewTrendsHandler(client)
 	yearOverviewHandler := handlers.NewYearOverviewHandler(client, syncer)
 	adminHandler := handlers.NewAdminHandler(client, otelManager)
+	notificationHandler := handlers.NewNotificationHandler(client)
 
 	// Push notifications: admin-panel settings take precedence over env vars
 	// (Gotify only). reloadChannels re-reads the DB so an admin save applies
@@ -376,6 +385,21 @@ func main() {
 			return handlers.ErrTelegramNotConfigured
 		}
 		return t.Send(ctx, "[GitLens test]", "This is a GitLens Telegram test notification.", 1)
+	})
+	adminHandler.SetFCMTest(func(ctx context.Context) error {
+		cfg, err := client.AdminConfig.Get(ctx, 1)
+		if err != nil || cfg.FcmProjectID == "" || cfg.FcmServiceAccountJSON == "" {
+			return handlers.ErrFCMNotConfigured
+		}
+		serviceAccount, err := secrets.Decrypt(cfg.FcmServiceAccountJSON)
+		if err != nil {
+			return handlers.ErrFCMNotConfigured
+		}
+		fc := fcm.New(cfg.FcmProjectID, serviceAccount)
+		if fc == nil {
+			return handlers.ErrFCMNotConfigured
+		}
+		return fc.Validate(ctx)
 	})
 	reloadChannels()
 
@@ -465,6 +489,9 @@ func main() {
 	// deliberately outside the admin group so the app can configure tracing
 	// before the user signs in.
 	r.GET("/api/otel-settings", adminHandler.OtelSettings)
+	// Public Firebase client configuration for browser/Android clients. It
+	// contains no credentials, so it is safe to serve unauthenticated.
+	r.GET("/api/v1/notifications/config", notificationHandler.Config)
 	r.POST("/webhook/github", webhookHandler.HandlePush)
 	r.POST("/webhook/github-app", gitHubAppHandler.HandleInstallation)
 
@@ -507,6 +534,11 @@ func main() {
 		authed.GET("/settings/forgejo/available", settingsHandler.AvailableForgejoRepos)
 		authed.POST("/settings/forgejo/select", settingsHandler.SelectForgejoRepos)
 		authed.POST("/settings/eink", settingsHandler.UpdateEinkMode)
+		authed.POST("/settings/notifications", notificationHandler.UpdatePrefsForm)
+		authed.GET("/api/v1/notifications/prefs", notificationHandler.GetPrefs)
+		authed.POST("/api/v1/notifications/prefs", notificationHandler.UpdatePrefs)
+		authed.POST("/api/v1/notifications/device", notificationHandler.RegisterDevice)
+		authed.DELETE("/api/v1/notifications/device", notificationHandler.UnregisterDevice)
 		authed.POST("/settings/forgejo/warning/dismiss", settingsHandler.DismissForgejoWarning)
 		authed.POST("/settings/account/delete", accountHandler.DeleteSelf)
 		authed.DELETE("/repos/:id", settingsHandler.RemoveRepo)
@@ -539,6 +571,8 @@ func main() {
 			admin.POST("/gotify/test", adminHandler.TestGotify)
 			admin.POST("/telegram", adminHandler.UpdateTelegram)
 			admin.POST("/telegram/test", adminHandler.TestTelegram)
+			admin.POST("/notifications", adminHandler.UpdateNotificationConfig)
+			admin.POST("/notifications/test", adminHandler.TestNotificationFCM)
 			admin.GET("/users", adminHandler.ListUsers)
 			admin.POST("/users/:id/toggle-admin", adminHandler.ToggleAdmin)
 			admin.GET("/repos", adminHandler.ListRepositories)
@@ -564,7 +598,9 @@ func main() {
 		}
 	}
 
-	r.GET("/ws", func(c *gin.Context) {
+	// authenticateWS resolves the user for a WebSocket upgrade from either a
+	// Bearer API token or the session cookie/store.
+	authenticateWS := func(c *gin.Context) int64 {
 		var userID int64
 		if authHeader := c.GetHeader("Authorization"); strings.HasPrefix(authHeader, "Bearer ") {
 			raw := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
@@ -581,11 +617,25 @@ func main() {
 				userID, _ = sessionStore.Get(cookie)
 			}
 		}
+		return userID
+	}
+
+	r.GET("/ws", func(c *gin.Context) {
+		userID := authenticateWS(c)
 		if userID == 0 {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 			return
 		}
 		hub.HandleWebSocket(c.Writer, c.Request, userID)
+	})
+
+	r.GET("/ws/notifications", func(c *gin.Context) {
+		userID := authenticateWS(c)
+		if userID == 0 {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			return
+		}
+		notifyHub.HandleWebSocket(c.Writer, c.Request, userID)
 	})
 
 	_ = repository.FieldName

@@ -31,6 +31,26 @@ const (
 	FieldTelegramBotToken = "telegram_bot_token"
 	// FieldTelegramChatID holds the string denoting the telegram_chat_id field in the database.
 	FieldTelegramChatID = "telegram_chat_id"
+	// FieldNotificationsEnabled holds the string denoting the notifications_enabled field in the database.
+	FieldNotificationsEnabled = "notifications_enabled"
+	// FieldNotifyRelease holds the string denoting the notify_release field in the database.
+	FieldNotifyRelease = "notify_release"
+	// FieldNotifyPrMerge holds the string denoting the notify_pr_merge field in the database.
+	FieldNotifyPrMerge = "notify_pr_merge"
+	// FieldNotifyWorkflowFailure holds the string denoting the notify_workflow_failure field in the database.
+	FieldNotifyWorkflowFailure = "notify_workflow_failure"
+	// FieldFcmProjectID holds the string denoting the fcm_project_id field in the database.
+	FieldFcmProjectID = "fcm_project_id"
+	// FieldFcmServiceAccountJSON holds the string denoting the fcm_service_account_json field in the database.
+	FieldFcmServiceAccountJSON = "fcm_service_account_json"
+	// FieldFcmAPIKey holds the string denoting the fcm_api_key field in the database.
+	FieldFcmAPIKey = "fcm_api_key"
+	// FieldFcmAppID holds the string denoting the fcm_app_id field in the database.
+	FieldFcmAppID = "fcm_app_id"
+	// FieldFcmSenderID holds the string denoting the fcm_sender_id field in the database.
+	FieldFcmSenderID = "fcm_sender_id"
+	// FieldFcmStorageBucket holds the string denoting the fcm_storage_bucket field in the database.
+	FieldFcmStorageBucket = "fcm_storage_bucket"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
 	// Table holds the table name of the adminconfig in the database.
@@ -49,6 +69,16 @@ var Columns = []string{
 	FieldGotifyToken,
 	FieldTelegramBotToken,
 	FieldTelegramChatID,
+	FieldNotificationsEnabled,
+	FieldNotifyRelease,
+	FieldNotifyPrMerge,
+	FieldNotifyWorkflowFailure,
+	FieldFcmProjectID,
+	FieldFcmServiceAccountJSON,
+	FieldFcmAPIKey,
+	FieldFcmAppID,
+	FieldFcmSenderID,
+	FieldFcmStorageBucket,
 	FieldUpdatedAt,
 }
 
@@ -71,6 +101,14 @@ var (
 	DefaultLogsEnabled bool
 	// DefaultLogSeverity holds the default value on creation for the "log_severity" field.
 	DefaultLogSeverity string
+	// DefaultNotificationsEnabled holds the default value on creation for the "notifications_enabled" field.
+	DefaultNotificationsEnabled bool
+	// DefaultNotifyRelease holds the default value on creation for the "notify_release" field.
+	DefaultNotifyRelease bool
+	// DefaultNotifyPrMerge holds the default value on creation for the "notify_pr_merge" field.
+	DefaultNotifyPrMerge bool
+	// DefaultNotifyWorkflowFailure holds the default value on creation for the "notify_workflow_failure" field.
+	DefaultNotifyWorkflowFailure bool
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
@@ -130,6 +168,56 @@ func ByTelegramBotToken(opts ...sql.OrderTermOption) OrderOption {
 // ByTelegramChatID orders the results by the telegram_chat_id field.
 func ByTelegramChatID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTelegramChatID, opts...).ToFunc()
+}
+
+// ByNotificationsEnabled orders the results by the notifications_enabled field.
+func ByNotificationsEnabled(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNotificationsEnabled, opts...).ToFunc()
+}
+
+// ByNotifyRelease orders the results by the notify_release field.
+func ByNotifyRelease(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNotifyRelease, opts...).ToFunc()
+}
+
+// ByNotifyPrMerge orders the results by the notify_pr_merge field.
+func ByNotifyPrMerge(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNotifyPrMerge, opts...).ToFunc()
+}
+
+// ByNotifyWorkflowFailure orders the results by the notify_workflow_failure field.
+func ByNotifyWorkflowFailure(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNotifyWorkflowFailure, opts...).ToFunc()
+}
+
+// ByFcmProjectID orders the results by the fcm_project_id field.
+func ByFcmProjectID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFcmProjectID, opts...).ToFunc()
+}
+
+// ByFcmServiceAccountJSON orders the results by the fcm_service_account_json field.
+func ByFcmServiceAccountJSON(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFcmServiceAccountJSON, opts...).ToFunc()
+}
+
+// ByFcmAPIKey orders the results by the fcm_api_key field.
+func ByFcmAPIKey(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFcmAPIKey, opts...).ToFunc()
+}
+
+// ByFcmAppID orders the results by the fcm_app_id field.
+func ByFcmAppID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFcmAppID, opts...).ToFunc()
+}
+
+// ByFcmSenderID orders the results by the fcm_sender_id field.
+func ByFcmSenderID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFcmSenderID, opts...).ToFunc()
+}
+
+// ByFcmStorageBucket orders the results by the fcm_storage_bucket field.
+func ByFcmStorageBucket(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFcmStorageBucket, opts...).ToFunc()
 }
 
 // ByUpdatedAt orders the results by the updated_at field.

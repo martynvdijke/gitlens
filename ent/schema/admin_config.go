@@ -29,6 +29,19 @@ func (AdminConfig) Fields() []ent.Field {
 		// admin panel; no env fallback.
 		field.String("telegram_bot_token").Optional(),
 		field.String("telegram_chat_id").Optional(),
+		// Activity-feed notification settings. The global switch and the
+		// per-type defaults gate delivery; FCM credentials enable Android
+		// push. The service-account JSON is stored encrypted.
+		field.Bool("notifications_enabled").Default(true),
+		field.Bool("notify_release").Default(true),
+		field.Bool("notify_pr_merge").Default(true),
+		field.Bool("notify_workflow_failure").Default(true),
+		field.String("fcm_project_id").Optional(),
+		field.String("fcm_service_account_json").Optional(),
+		field.String("fcm_api_key").Optional(),
+		field.String("fcm_app_id").Optional(),
+		field.String("fcm_sender_id").Optional(),
+		field.String("fcm_storage_bucket").Optional(),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}
 }

@@ -9,6 +9,7 @@ import (
 	"gitlens/ent/adminconfig"
 	"gitlens/ent/apitoken"
 	"gitlens/ent/commitactivity"
+	"gitlens/ent/devicetoken"
 	"gitlens/ent/event"
 	"gitlens/ent/metricsnapshot"
 	"gitlens/ent/repository"
@@ -82,6 +83,7 @@ func checkColumn(t, c string) error {
 			adminconfig.Table:    adminconfig.ValidColumn,
 			apitoken.Table:       apitoken.ValidColumn,
 			commitactivity.Table: commitactivity.ValidColumn,
+			devicetoken.Table:    devicetoken.ValidColumn,
 			event.Table:          event.ValidColumn,
 			metricsnapshot.Table: metricsnapshot.ValidColumn,
 			repository.Table:     repository.ValidColumn,

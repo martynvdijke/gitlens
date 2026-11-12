@@ -100,6 +100,77 @@
 </div>
 {{end}}
 
+{{define "admin_notifications_form"}}
+<div class="card border-secondary mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Notifications &amp; Google FCM</h5>
+        <p class="card-text text-secondary small">Control the activity-feed notifications and configure Firebase Cloud Messaging for Android push. The service-account JSON is stored encrypted and is never displayed.</p>
+        <form hx-post="/admin/notifications" hx-target="#fcm-panel" hx-swap="innerHTML">
+            <div class="form-check form-switch mb-3">
+                <input type="checkbox" name="notifications_enabled" class="form-check-input" id="admin-notifications-enabled" role="switch" {{if not .Config}}checked{{else}}{{if .Config.NotificationsEnabled}}checked{{end}}{{end}}>
+                <label class="form-check-label small fw-semibold" for="admin-notifications-enabled">Enable notifications instance-wide</label>
+            </div>
+
+            <div class="mb-3 d-flex gap-4 flex-wrap">
+                <div class="form-check">
+                    <input type="checkbox" name="notify_release" class="form-check-input" id="admin-notify-release" {{if not .Config}}checked{{else}}{{if .Config.NotifyRelease}}checked{{end}}{{end}}>
+                    <label class="form-check-label small" for="admin-notify-release">Releases</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" name="notify_pr_merge" class="form-check-input" id="admin-notify-pr-merge" {{if not .Config}}checked{{else}}{{if .Config.NotifyPrMerge}}checked{{end}}{{end}}>
+                    <label class="form-check-label small" for="admin-notify-pr-merge">PR merges</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" name="notify_workflow_failure" class="form-check-input" id="admin-notify-workflow-failure" {{if not .Config}}checked{{else}}{{if .Config.NotifyWorkflowFailure}}checked{{end}}{{end}}>
+                    <label class="form-check-label small" for="admin-notify-workflow-failure">Workflow failures</label>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label small text-secondary">FCM Project ID</label>
+                <input type="text" name="fcm_project_id" class="form-control form-control-sm bg-dark text-light border-secondary" placeholder="my-firebase-project" value="{{if .Config}}{{.Config.FcmProjectID}}{{end}}">
+            </div>
+            <div class="mb-3">
+                <label class="form-label small text-secondary">Service Account JSON</label>
+                <textarea name="fcm_service_account_json" rows="3" class="form-control form-control-sm bg-dark text-light border-secondary" placeholder="{{if and .Config .Config.FcmServiceAccountJSON}}Saved — leave blank to keep{{else}}Paste the service-account JSON{{end}}" autocomplete="off"></textarea>
+                <div class="form-text text-secondary small">Stored encrypted. Leave blank to keep the existing service account.</div>
+            </div>
+            <div class="row row-cols-1 row-cols-sm-2 g-2 mb-3">
+                <div>
+                    <label class="form-label small text-secondary">Web API Key</label>
+                    <input type="text" name="fcm_api_key" class="form-control form-control-sm bg-dark text-light border-secondary" value="{{if .Config}}{{.Config.FcmAPIKey}}{{end}}">
+                </div>
+                <div>
+                    <label class="form-label small text-secondary">App ID</label>
+                    <input type="text" name="fcm_app_id" class="form-control form-control-sm bg-dark text-light border-secondary" value="{{if .Config}}{{.Config.FcmAppID}}{{end}}">
+                </div>
+                <div>
+                    <label class="form-label small text-secondary">Sender ID</label>
+                    <input type="text" name="fcm_sender_id" class="form-control form-control-sm bg-dark text-light border-secondary" value="{{if .Config}}{{.Config.FcmSenderID}}{{end}}">
+                </div>
+                <div>
+                    <label class="form-label small text-secondary">Storage Bucket</label>
+                    <input type="text" name="fcm_storage_bucket" class="form-control form-control-sm bg-dark text-light border-secondary" value="{{if .Config}}{{.Config.FcmStorageBucket}}{{end}}">
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <button type="submit" class="btn btn-sm btn-success">Save</button>
+                <button type="button" class="btn btn-sm btn-outline-info"
+                        hx-post="/admin/notifications/test" hx-target="#fcm-test-status" hx-swap="innerHTML">
+                    Test FCM credentials
+                </button>
+                <span id="fcm-test-status" class="small" role="status"></span>
+            </div>
+        </form>
+    </div>
+</div>
+{{end}}
+
+{{define "fcm_test_status"}}
+{{if .OK}}<span class="text-success">{{.Message}}</span>{{else}}<span class="text-danger">{{.Message}}</span>{{end}}
+{{end}}
+
 {{define "admin_users_tab"}}
 <div class="card border-secondary mb-4">
     <div class="card-body p-0">

@@ -99,6 +99,56 @@ func TelegramChatID(v string) predicate.AdminConfig {
 	return predicate.AdminConfig(sql.FieldEQ(FieldTelegramChatID, v))
 }
 
+// NotificationsEnabled applies equality check predicate on the "notifications_enabled" field. It's identical to NotificationsEnabledEQ.
+func NotificationsEnabled(v bool) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEQ(FieldNotificationsEnabled, v))
+}
+
+// NotifyRelease applies equality check predicate on the "notify_release" field. It's identical to NotifyReleaseEQ.
+func NotifyRelease(v bool) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEQ(FieldNotifyRelease, v))
+}
+
+// NotifyPrMerge applies equality check predicate on the "notify_pr_merge" field. It's identical to NotifyPrMergeEQ.
+func NotifyPrMerge(v bool) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEQ(FieldNotifyPrMerge, v))
+}
+
+// NotifyWorkflowFailure applies equality check predicate on the "notify_workflow_failure" field. It's identical to NotifyWorkflowFailureEQ.
+func NotifyWorkflowFailure(v bool) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEQ(FieldNotifyWorkflowFailure, v))
+}
+
+// FcmProjectID applies equality check predicate on the "fcm_project_id" field. It's identical to FcmProjectIDEQ.
+func FcmProjectID(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEQ(FieldFcmProjectID, v))
+}
+
+// FcmServiceAccountJSON applies equality check predicate on the "fcm_service_account_json" field. It's identical to FcmServiceAccountJSONEQ.
+func FcmServiceAccountJSON(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEQ(FieldFcmServiceAccountJSON, v))
+}
+
+// FcmAPIKey applies equality check predicate on the "fcm_api_key" field. It's identical to FcmAPIKeyEQ.
+func FcmAPIKey(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEQ(FieldFcmAPIKey, v))
+}
+
+// FcmAppID applies equality check predicate on the "fcm_app_id" field. It's identical to FcmAppIDEQ.
+func FcmAppID(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEQ(FieldFcmAppID, v))
+}
+
+// FcmSenderID applies equality check predicate on the "fcm_sender_id" field. It's identical to FcmSenderIDEQ.
+func FcmSenderID(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEQ(FieldFcmSenderID, v))
+}
+
+// FcmStorageBucket applies equality check predicate on the "fcm_storage_bucket" field. It's identical to FcmStorageBucketEQ.
+func FcmStorageBucket(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEQ(FieldFcmStorageBucket, v))
+}
+
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.AdminConfig {
 	return predicate.AdminConfig(sql.FieldEQ(FieldUpdatedAt, v))
@@ -572,6 +622,496 @@ func TelegramChatIDEqualFold(v string) predicate.AdminConfig {
 // TelegramChatIDContainsFold applies the ContainsFold predicate on the "telegram_chat_id" field.
 func TelegramChatIDContainsFold(v string) predicate.AdminConfig {
 	return predicate.AdminConfig(sql.FieldContainsFold(FieldTelegramChatID, v))
+}
+
+// NotificationsEnabledEQ applies the EQ predicate on the "notifications_enabled" field.
+func NotificationsEnabledEQ(v bool) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEQ(FieldNotificationsEnabled, v))
+}
+
+// NotificationsEnabledNEQ applies the NEQ predicate on the "notifications_enabled" field.
+func NotificationsEnabledNEQ(v bool) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldNEQ(FieldNotificationsEnabled, v))
+}
+
+// NotifyReleaseEQ applies the EQ predicate on the "notify_release" field.
+func NotifyReleaseEQ(v bool) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEQ(FieldNotifyRelease, v))
+}
+
+// NotifyReleaseNEQ applies the NEQ predicate on the "notify_release" field.
+func NotifyReleaseNEQ(v bool) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldNEQ(FieldNotifyRelease, v))
+}
+
+// NotifyPrMergeEQ applies the EQ predicate on the "notify_pr_merge" field.
+func NotifyPrMergeEQ(v bool) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEQ(FieldNotifyPrMerge, v))
+}
+
+// NotifyPrMergeNEQ applies the NEQ predicate on the "notify_pr_merge" field.
+func NotifyPrMergeNEQ(v bool) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldNEQ(FieldNotifyPrMerge, v))
+}
+
+// NotifyWorkflowFailureEQ applies the EQ predicate on the "notify_workflow_failure" field.
+func NotifyWorkflowFailureEQ(v bool) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEQ(FieldNotifyWorkflowFailure, v))
+}
+
+// NotifyWorkflowFailureNEQ applies the NEQ predicate on the "notify_workflow_failure" field.
+func NotifyWorkflowFailureNEQ(v bool) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldNEQ(FieldNotifyWorkflowFailure, v))
+}
+
+// FcmProjectIDEQ applies the EQ predicate on the "fcm_project_id" field.
+func FcmProjectIDEQ(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEQ(FieldFcmProjectID, v))
+}
+
+// FcmProjectIDNEQ applies the NEQ predicate on the "fcm_project_id" field.
+func FcmProjectIDNEQ(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldNEQ(FieldFcmProjectID, v))
+}
+
+// FcmProjectIDIn applies the In predicate on the "fcm_project_id" field.
+func FcmProjectIDIn(vs ...string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldIn(FieldFcmProjectID, vs...))
+}
+
+// FcmProjectIDNotIn applies the NotIn predicate on the "fcm_project_id" field.
+func FcmProjectIDNotIn(vs ...string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldNotIn(FieldFcmProjectID, vs...))
+}
+
+// FcmProjectIDGT applies the GT predicate on the "fcm_project_id" field.
+func FcmProjectIDGT(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldGT(FieldFcmProjectID, v))
+}
+
+// FcmProjectIDGTE applies the GTE predicate on the "fcm_project_id" field.
+func FcmProjectIDGTE(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldGTE(FieldFcmProjectID, v))
+}
+
+// FcmProjectIDLT applies the LT predicate on the "fcm_project_id" field.
+func FcmProjectIDLT(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldLT(FieldFcmProjectID, v))
+}
+
+// FcmProjectIDLTE applies the LTE predicate on the "fcm_project_id" field.
+func FcmProjectIDLTE(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldLTE(FieldFcmProjectID, v))
+}
+
+// FcmProjectIDContains applies the Contains predicate on the "fcm_project_id" field.
+func FcmProjectIDContains(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldContains(FieldFcmProjectID, v))
+}
+
+// FcmProjectIDHasPrefix applies the HasPrefix predicate on the "fcm_project_id" field.
+func FcmProjectIDHasPrefix(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldHasPrefix(FieldFcmProjectID, v))
+}
+
+// FcmProjectIDHasSuffix applies the HasSuffix predicate on the "fcm_project_id" field.
+func FcmProjectIDHasSuffix(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldHasSuffix(FieldFcmProjectID, v))
+}
+
+// FcmProjectIDIsNil applies the IsNil predicate on the "fcm_project_id" field.
+func FcmProjectIDIsNil() predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldIsNull(FieldFcmProjectID))
+}
+
+// FcmProjectIDNotNil applies the NotNil predicate on the "fcm_project_id" field.
+func FcmProjectIDNotNil() predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldNotNull(FieldFcmProjectID))
+}
+
+// FcmProjectIDEqualFold applies the EqualFold predicate on the "fcm_project_id" field.
+func FcmProjectIDEqualFold(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEqualFold(FieldFcmProjectID, v))
+}
+
+// FcmProjectIDContainsFold applies the ContainsFold predicate on the "fcm_project_id" field.
+func FcmProjectIDContainsFold(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldContainsFold(FieldFcmProjectID, v))
+}
+
+// FcmServiceAccountJSONEQ applies the EQ predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONEQ(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEQ(FieldFcmServiceAccountJSON, v))
+}
+
+// FcmServiceAccountJSONNEQ applies the NEQ predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONNEQ(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldNEQ(FieldFcmServiceAccountJSON, v))
+}
+
+// FcmServiceAccountJSONIn applies the In predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONIn(vs ...string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldIn(FieldFcmServiceAccountJSON, vs...))
+}
+
+// FcmServiceAccountJSONNotIn applies the NotIn predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONNotIn(vs ...string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldNotIn(FieldFcmServiceAccountJSON, vs...))
+}
+
+// FcmServiceAccountJSONGT applies the GT predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONGT(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldGT(FieldFcmServiceAccountJSON, v))
+}
+
+// FcmServiceAccountJSONGTE applies the GTE predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONGTE(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldGTE(FieldFcmServiceAccountJSON, v))
+}
+
+// FcmServiceAccountJSONLT applies the LT predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONLT(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldLT(FieldFcmServiceAccountJSON, v))
+}
+
+// FcmServiceAccountJSONLTE applies the LTE predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONLTE(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldLTE(FieldFcmServiceAccountJSON, v))
+}
+
+// FcmServiceAccountJSONContains applies the Contains predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONContains(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldContains(FieldFcmServiceAccountJSON, v))
+}
+
+// FcmServiceAccountJSONHasPrefix applies the HasPrefix predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONHasPrefix(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldHasPrefix(FieldFcmServiceAccountJSON, v))
+}
+
+// FcmServiceAccountJSONHasSuffix applies the HasSuffix predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONHasSuffix(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldHasSuffix(FieldFcmServiceAccountJSON, v))
+}
+
+// FcmServiceAccountJSONIsNil applies the IsNil predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONIsNil() predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldIsNull(FieldFcmServiceAccountJSON))
+}
+
+// FcmServiceAccountJSONNotNil applies the NotNil predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONNotNil() predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldNotNull(FieldFcmServiceAccountJSON))
+}
+
+// FcmServiceAccountJSONEqualFold applies the EqualFold predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONEqualFold(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEqualFold(FieldFcmServiceAccountJSON, v))
+}
+
+// FcmServiceAccountJSONContainsFold applies the ContainsFold predicate on the "fcm_service_account_json" field.
+func FcmServiceAccountJSONContainsFold(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldContainsFold(FieldFcmServiceAccountJSON, v))
+}
+
+// FcmAPIKeyEQ applies the EQ predicate on the "fcm_api_key" field.
+func FcmAPIKeyEQ(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEQ(FieldFcmAPIKey, v))
+}
+
+// FcmAPIKeyNEQ applies the NEQ predicate on the "fcm_api_key" field.
+func FcmAPIKeyNEQ(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldNEQ(FieldFcmAPIKey, v))
+}
+
+// FcmAPIKeyIn applies the In predicate on the "fcm_api_key" field.
+func FcmAPIKeyIn(vs ...string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldIn(FieldFcmAPIKey, vs...))
+}
+
+// FcmAPIKeyNotIn applies the NotIn predicate on the "fcm_api_key" field.
+func FcmAPIKeyNotIn(vs ...string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldNotIn(FieldFcmAPIKey, vs...))
+}
+
+// FcmAPIKeyGT applies the GT predicate on the "fcm_api_key" field.
+func FcmAPIKeyGT(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldGT(FieldFcmAPIKey, v))
+}
+
+// FcmAPIKeyGTE applies the GTE predicate on the "fcm_api_key" field.
+func FcmAPIKeyGTE(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldGTE(FieldFcmAPIKey, v))
+}
+
+// FcmAPIKeyLT applies the LT predicate on the "fcm_api_key" field.
+func FcmAPIKeyLT(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldLT(FieldFcmAPIKey, v))
+}
+
+// FcmAPIKeyLTE applies the LTE predicate on the "fcm_api_key" field.
+func FcmAPIKeyLTE(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldLTE(FieldFcmAPIKey, v))
+}
+
+// FcmAPIKeyContains applies the Contains predicate on the "fcm_api_key" field.
+func FcmAPIKeyContains(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldContains(FieldFcmAPIKey, v))
+}
+
+// FcmAPIKeyHasPrefix applies the HasPrefix predicate on the "fcm_api_key" field.
+func FcmAPIKeyHasPrefix(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldHasPrefix(FieldFcmAPIKey, v))
+}
+
+// FcmAPIKeyHasSuffix applies the HasSuffix predicate on the "fcm_api_key" field.
+func FcmAPIKeyHasSuffix(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldHasSuffix(FieldFcmAPIKey, v))
+}
+
+// FcmAPIKeyIsNil applies the IsNil predicate on the "fcm_api_key" field.
+func FcmAPIKeyIsNil() predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldIsNull(FieldFcmAPIKey))
+}
+
+// FcmAPIKeyNotNil applies the NotNil predicate on the "fcm_api_key" field.
+func FcmAPIKeyNotNil() predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldNotNull(FieldFcmAPIKey))
+}
+
+// FcmAPIKeyEqualFold applies the EqualFold predicate on the "fcm_api_key" field.
+func FcmAPIKeyEqualFold(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEqualFold(FieldFcmAPIKey, v))
+}
+
+// FcmAPIKeyContainsFold applies the ContainsFold predicate on the "fcm_api_key" field.
+func FcmAPIKeyContainsFold(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldContainsFold(FieldFcmAPIKey, v))
+}
+
+// FcmAppIDEQ applies the EQ predicate on the "fcm_app_id" field.
+func FcmAppIDEQ(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEQ(FieldFcmAppID, v))
+}
+
+// FcmAppIDNEQ applies the NEQ predicate on the "fcm_app_id" field.
+func FcmAppIDNEQ(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldNEQ(FieldFcmAppID, v))
+}
+
+// FcmAppIDIn applies the In predicate on the "fcm_app_id" field.
+func FcmAppIDIn(vs ...string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldIn(FieldFcmAppID, vs...))
+}
+
+// FcmAppIDNotIn applies the NotIn predicate on the "fcm_app_id" field.
+func FcmAppIDNotIn(vs ...string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldNotIn(FieldFcmAppID, vs...))
+}
+
+// FcmAppIDGT applies the GT predicate on the "fcm_app_id" field.
+func FcmAppIDGT(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldGT(FieldFcmAppID, v))
+}
+
+// FcmAppIDGTE applies the GTE predicate on the "fcm_app_id" field.
+func FcmAppIDGTE(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldGTE(FieldFcmAppID, v))
+}
+
+// FcmAppIDLT applies the LT predicate on the "fcm_app_id" field.
+func FcmAppIDLT(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldLT(FieldFcmAppID, v))
+}
+
+// FcmAppIDLTE applies the LTE predicate on the "fcm_app_id" field.
+func FcmAppIDLTE(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldLTE(FieldFcmAppID, v))
+}
+
+// FcmAppIDContains applies the Contains predicate on the "fcm_app_id" field.
+func FcmAppIDContains(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldContains(FieldFcmAppID, v))
+}
+
+// FcmAppIDHasPrefix applies the HasPrefix predicate on the "fcm_app_id" field.
+func FcmAppIDHasPrefix(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldHasPrefix(FieldFcmAppID, v))
+}
+
+// FcmAppIDHasSuffix applies the HasSuffix predicate on the "fcm_app_id" field.
+func FcmAppIDHasSuffix(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldHasSuffix(FieldFcmAppID, v))
+}
+
+// FcmAppIDIsNil applies the IsNil predicate on the "fcm_app_id" field.
+func FcmAppIDIsNil() predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldIsNull(FieldFcmAppID))
+}
+
+// FcmAppIDNotNil applies the NotNil predicate on the "fcm_app_id" field.
+func FcmAppIDNotNil() predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldNotNull(FieldFcmAppID))
+}
+
+// FcmAppIDEqualFold applies the EqualFold predicate on the "fcm_app_id" field.
+func FcmAppIDEqualFold(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEqualFold(FieldFcmAppID, v))
+}
+
+// FcmAppIDContainsFold applies the ContainsFold predicate on the "fcm_app_id" field.
+func FcmAppIDContainsFold(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldContainsFold(FieldFcmAppID, v))
+}
+
+// FcmSenderIDEQ applies the EQ predicate on the "fcm_sender_id" field.
+func FcmSenderIDEQ(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEQ(FieldFcmSenderID, v))
+}
+
+// FcmSenderIDNEQ applies the NEQ predicate on the "fcm_sender_id" field.
+func FcmSenderIDNEQ(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldNEQ(FieldFcmSenderID, v))
+}
+
+// FcmSenderIDIn applies the In predicate on the "fcm_sender_id" field.
+func FcmSenderIDIn(vs ...string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldIn(FieldFcmSenderID, vs...))
+}
+
+// FcmSenderIDNotIn applies the NotIn predicate on the "fcm_sender_id" field.
+func FcmSenderIDNotIn(vs ...string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldNotIn(FieldFcmSenderID, vs...))
+}
+
+// FcmSenderIDGT applies the GT predicate on the "fcm_sender_id" field.
+func FcmSenderIDGT(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldGT(FieldFcmSenderID, v))
+}
+
+// FcmSenderIDGTE applies the GTE predicate on the "fcm_sender_id" field.
+func FcmSenderIDGTE(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldGTE(FieldFcmSenderID, v))
+}
+
+// FcmSenderIDLT applies the LT predicate on the "fcm_sender_id" field.
+func FcmSenderIDLT(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldLT(FieldFcmSenderID, v))
+}
+
+// FcmSenderIDLTE applies the LTE predicate on the "fcm_sender_id" field.
+func FcmSenderIDLTE(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldLTE(FieldFcmSenderID, v))
+}
+
+// FcmSenderIDContains applies the Contains predicate on the "fcm_sender_id" field.
+func FcmSenderIDContains(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldContains(FieldFcmSenderID, v))
+}
+
+// FcmSenderIDHasPrefix applies the HasPrefix predicate on the "fcm_sender_id" field.
+func FcmSenderIDHasPrefix(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldHasPrefix(FieldFcmSenderID, v))
+}
+
+// FcmSenderIDHasSuffix applies the HasSuffix predicate on the "fcm_sender_id" field.
+func FcmSenderIDHasSuffix(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldHasSuffix(FieldFcmSenderID, v))
+}
+
+// FcmSenderIDIsNil applies the IsNil predicate on the "fcm_sender_id" field.
+func FcmSenderIDIsNil() predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldIsNull(FieldFcmSenderID))
+}
+
+// FcmSenderIDNotNil applies the NotNil predicate on the "fcm_sender_id" field.
+func FcmSenderIDNotNil() predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldNotNull(FieldFcmSenderID))
+}
+
+// FcmSenderIDEqualFold applies the EqualFold predicate on the "fcm_sender_id" field.
+func FcmSenderIDEqualFold(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEqualFold(FieldFcmSenderID, v))
+}
+
+// FcmSenderIDContainsFold applies the ContainsFold predicate on the "fcm_sender_id" field.
+func FcmSenderIDContainsFold(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldContainsFold(FieldFcmSenderID, v))
+}
+
+// FcmStorageBucketEQ applies the EQ predicate on the "fcm_storage_bucket" field.
+func FcmStorageBucketEQ(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEQ(FieldFcmStorageBucket, v))
+}
+
+// FcmStorageBucketNEQ applies the NEQ predicate on the "fcm_storage_bucket" field.
+func FcmStorageBucketNEQ(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldNEQ(FieldFcmStorageBucket, v))
+}
+
+// FcmStorageBucketIn applies the In predicate on the "fcm_storage_bucket" field.
+func FcmStorageBucketIn(vs ...string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldIn(FieldFcmStorageBucket, vs...))
+}
+
+// FcmStorageBucketNotIn applies the NotIn predicate on the "fcm_storage_bucket" field.
+func FcmStorageBucketNotIn(vs ...string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldNotIn(FieldFcmStorageBucket, vs...))
+}
+
+// FcmStorageBucketGT applies the GT predicate on the "fcm_storage_bucket" field.
+func FcmStorageBucketGT(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldGT(FieldFcmStorageBucket, v))
+}
+
+// FcmStorageBucketGTE applies the GTE predicate on the "fcm_storage_bucket" field.
+func FcmStorageBucketGTE(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldGTE(FieldFcmStorageBucket, v))
+}
+
+// FcmStorageBucketLT applies the LT predicate on the "fcm_storage_bucket" field.
+func FcmStorageBucketLT(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldLT(FieldFcmStorageBucket, v))
+}
+
+// FcmStorageBucketLTE applies the LTE predicate on the "fcm_storage_bucket" field.
+func FcmStorageBucketLTE(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldLTE(FieldFcmStorageBucket, v))
+}
+
+// FcmStorageBucketContains applies the Contains predicate on the "fcm_storage_bucket" field.
+func FcmStorageBucketContains(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldContains(FieldFcmStorageBucket, v))
+}
+
+// FcmStorageBucketHasPrefix applies the HasPrefix predicate on the "fcm_storage_bucket" field.
+func FcmStorageBucketHasPrefix(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldHasPrefix(FieldFcmStorageBucket, v))
+}
+
+// FcmStorageBucketHasSuffix applies the HasSuffix predicate on the "fcm_storage_bucket" field.
+func FcmStorageBucketHasSuffix(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldHasSuffix(FieldFcmStorageBucket, v))
+}
+
+// FcmStorageBucketIsNil applies the IsNil predicate on the "fcm_storage_bucket" field.
+func FcmStorageBucketIsNil() predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldIsNull(FieldFcmStorageBucket))
+}
+
+// FcmStorageBucketNotNil applies the NotNil predicate on the "fcm_storage_bucket" field.
+func FcmStorageBucketNotNil() predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldNotNull(FieldFcmStorageBucket))
+}
+
+// FcmStorageBucketEqualFold applies the EqualFold predicate on the "fcm_storage_bucket" field.
+func FcmStorageBucketEqualFold(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldEqualFold(FieldFcmStorageBucket, v))
+}
+
+// FcmStorageBucketContainsFold applies the ContainsFold predicate on the "fcm_storage_bucket" field.
+func FcmStorageBucketContainsFold(v string) predicate.AdminConfig {
+	return predicate.AdminConfig(sql.FieldContainsFold(FieldFcmStorageBucket, v))
 }
 
 // UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
